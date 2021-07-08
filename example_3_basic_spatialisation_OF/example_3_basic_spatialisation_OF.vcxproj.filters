@@ -10,6 +10,8 @@
     <ClCompile Include="src\SoundSourcer.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -23,6 +25,8 @@
     <ClInclude Include="src\SoundSource.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="Room.h" />
+    <ClInclude Include="Wall.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

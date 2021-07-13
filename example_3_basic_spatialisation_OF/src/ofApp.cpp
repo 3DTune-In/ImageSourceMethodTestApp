@@ -79,6 +79,8 @@ void ofApp::draw(){
 	float scale = 100;
 	ofScale(scale);
 	ofTranslate(ofGetWidth() / (scale * 2), ofGetHeight() / (scale * 2), 0);
+	ofRotateX(elevation);
+	ofRotateZ(azimuth);
 
 	wall_1.draw();
 	wall_2.draw();
@@ -87,7 +89,21 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	switch (key)
+	{
+	case OF_KEY_LEFT:
+		azimuth++;
+		break;
+	case OF_KEY_RIGHT:
+		azimuth--;
+		break;
+	case OF_KEY_UP:
+		elevation++;
+		break;
+	case OF_KEY_DOWN:
+		elevation--;
+		break;
+	}
 }
 
 //--------------------------------------------------------------

@@ -31,6 +31,8 @@ class ofApp : public ofBaseApp{
 		
 	private:	
 		Wall wall_1, wall_2;
+		float azimuth;		//Camera azimuth
+		float elevation;	//Camera elevation
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface

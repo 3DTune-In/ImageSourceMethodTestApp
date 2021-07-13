@@ -10,10 +10,10 @@
     <ClCompile Include="src\SoundSourcer.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Room.cpp">
+    <ClCompile Include="src\Room.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Wall.cpp">
+    <ClCompile Include="src\Wall.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +29,10 @@
     <ClInclude Include="src\SoundSource.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Room.h">
+    <ClInclude Include="src\Room.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Wall.h">
+    <ClInclude Include="src\Wall.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

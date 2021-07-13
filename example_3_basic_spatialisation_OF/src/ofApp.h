@@ -5,6 +5,9 @@
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>
 #include "SoundSource.h"
+#include "Room.h"
+#include <Common/Vector3.h>
+
 
 
 class ofApp : public ofBaseApp{
@@ -27,6 +30,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 	private:	
+		Wall wall_1, wall_2;
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface

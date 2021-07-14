@@ -18,6 +18,8 @@ void ofApp::setup(){
 	wall_2.insertCorner(-2, 1, 0);
 	wall_2.insertCorner( 2, 1, 0);
 
+	
+
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
 	audioState.bufferSize = BUFFERSIZE;			// Setting buffer size 
@@ -81,10 +83,11 @@ void ofApp::draw(){
 	ofTranslate(ofGetWidth() / (scale * 2), ofGetHeight() / (scale * 2), 0);
 	ofRotateX(elevation);
 	ofRotateZ(azimuth);
-
+		
+	wall_1.getNormal();
+	wall_2.getNormal();
 	wall_1.draw();
 	wall_2.draw();
-
 }
 
 //--------------------------------------------------------------

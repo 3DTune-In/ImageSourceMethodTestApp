@@ -4,8 +4,34 @@
 void Wall::insertCorner(float _x, float _y, float _z)
 {
 	Common::CVector3 tempCorner(_x, _y, _z);
-	poligon.push_back(tempCorner);
+	if (polygon.size() < 4)
+	{
+		polygon.push_back(tempCorner);
+	}
+	else
+	{
+	}
 }
+Common::CVector3 Wall::getNormal()
+{
+	Common::CVector3 normal, p1, p2;
+	float modulus;
+
+	p1 = polygon.at(1) - polygon.at(0);
+	p2 = polygon.at(2) - polygon.at(0);
+
+	normal = p1.CrossProduct(p2);
+	modulus = normal.GetDistance();
+
+	normal.x = normal.x / modulus;
+	normal.y = normal.y / modulus;
+	normal.z = normal.z / modulus;
+
+	ofLine(0, 0, 0, normal.x, normal.y, normal.z);
+
+	return normal;
+}
+
 
 void Wall::setupPlane (float _x, float _y, float _z,
 	                   float _ax, float _by, float _cz) 
@@ -48,12 +74,12 @@ void Wall::setupPlane(float _x, float _y, float _z,
 
 void Wall::draw()
 {
-	int numberVertex=poligon.size();
+	int numberVertex=polygon.size();
 	for(int i=0; i<numberVertex-1; i++)
 	{
-		ofLine(poligon[i].x, poligon[i].y, poligon[i].z,
-			poligon[i + 1].x, poligon[i + 1].y, poligon[i+1].z);
+		ofLine(polygon[i].x, polygon[i].y, polygon[i].z,
+			polygon[i + 1].x, polygon[i + 1].y, polygon[i+1].z);
 	}
-	ofLine(poligon[0].x, poligon[0].y, poligon[0].z,
-		poligon[numberVertex-1].x, poligon[numberVertex-1].y, poligon[numberVertex-1].z);
+	ofLine(polygon[0].x, polygon[0].y, polygon[0].z,
+		polygon[numberVertex-1].x, polygon[numberVertex-1].y, polygon[numberVertex-1].z);
 }

@@ -41,16 +41,16 @@ void Wall::setupPlane (float _x, float _y, float _z,
     y0 = _y;
 	z0 = _z;
 	// General Plane Eq.: Ax + By + Cz + D = 0
-	ax = _ax;
-	by = _by;
-	cz = _cz;
+	A = _ax;
+	B = _by;
+	C = _cz;
 
-	d = -ax * x0 - by * y0 - cz * z0; 
+	D = -A*x0 + B*y0 - C*z0; 
 
 	// Normal vector 
-	this->normalVec[0] = _ax;
-	this->normalVec[1] = _by;
-	this->normalVec[2] = _cz;
+	this->normalVec[0] = A;
+	this->normalVec[1] = B;
+	this->normalVec[2] = C;
 }
 
 void Wall::setupPlane(float _x, float _y, float _z,
@@ -65,11 +65,11 @@ void Wall::setupPlane(float _x, float _y, float _z,
 	this->normalVec[1] = normalVector[1];
 	this->normalVec[2] = normalVector[2];
 	// General Plane Eq.: Ax + By + Cz + D = 0
-	ax = normalVector[0];
-	by = normalVector[1];
-	cz = normalVector[2];
+	A = normalVector[0];
+	B = normalVector[1];
+	C = normalVector[2];
 
-	d = -ax * x0 - by * y0 - cz * z0;
+	D = -A * x0 + B * y0 - C * z0;
 }
 
 void Wall::draw()

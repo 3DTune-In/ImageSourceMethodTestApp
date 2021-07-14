@@ -15,7 +15,7 @@ public:
 private:
 	std::vector<Common::CVector3> polygon; // corners of the wall
 	float x0, y0, z0;                      // Point: (x0,y0,z0) 
-	float ax, by, cz, d;                   // General Plane Eq.: Ax + By + Cz + D = 0
+	float A, B, C, D;                      // General Plane Eq.: Ax + By + Cz + D = 0
 	float normalVec[3];                    // Normal vector    
 	float width, length, height;           // Dimensions
 };

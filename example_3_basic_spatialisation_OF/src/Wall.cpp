@@ -1,16 +1,27 @@
 #include "ofMain.h"
 #include "Wall.h"
+//#ifndef THRESHOLD
+//#define THRESHOLD 0.0000001f
 
-void Wall::insertCorner(float _x, float _y, float _z)
+int Wall::insertCorner(float _x, float _y, float _z)
 {
 	Common::CVector3 tempCorner(_x, _y, _z);
 	if (polygon.size() < 4)
 	{
 		polygon.push_back(tempCorner);
+		if (polygon.size() == 3) getABCD();
 	}
 	else
 	{
+		if (_x*A + _y+ B + _z*C + D < 0.00001) // ¿DBL_EPSILON? ¿THRESHOLD?
+		{
+			polygon.push_back(tempCorner);
+		}
+		else {
+			return 0;
+		}
 	}
+	return 1;
 }
 Common::CVector3 Wall::getNormal()
 {
@@ -31,7 +42,10 @@ Common::CVector3 Wall::getNormal()
 
 	return normal;
 }
-
+void Wall::getABCD()
+{
+	D = -A * x0 + B * y0 - C * z0;
+}
 
 void Wall::setupPlane (float _x, float _y, float _z,
 	                   float _ax, float _by, float _cz) 

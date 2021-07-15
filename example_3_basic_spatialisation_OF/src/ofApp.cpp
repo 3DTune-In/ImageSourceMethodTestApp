@@ -84,10 +84,12 @@ void ofApp::draw(){
 	ofRotateX(elevation);
 	ofRotateZ(azimuth);
 		
-	wall_1.getNormal();
-	wall_2.getNormal();
+	//wall_1.getNormal();
+	//wall_2.getNormal();
 	wall_1.draw();
 	wall_2.draw();
+	wall_1.drawNormal();
+	wall_2.drawNormal();
 }
 
 //--------------------------------------------------------------

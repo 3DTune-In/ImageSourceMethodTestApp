@@ -9,7 +9,7 @@ int Wall::insertCorner(float _x, float _y, float _z)
 	if (polygon.size() < 4)
 	{
 		polygon.push_back(tempCorner);
-		if (polygon.size() == 3) getABCD();
+		if (polygon.size() == 3) calculate_ABCD();
 	}
 	else
 	{
@@ -25,26 +25,56 @@ int Wall::insertCorner(float _x, float _y, float _z)
 }
 Common::CVector3 Wall::getNormal()
 {
-	Common::CVector3 normal, p1, p2;
+	//Common::CVector3 normal, p1, p2; 
+	Common::CVector3 p1, p2;
 	float modulus;
 
 	p1 = polygon.at(1) - polygon.at(0);
 	p2 = polygon.at(2) - polygon.at(0);
 
 	normal = p1.CrossProduct(p2);
+	
+	//A = normal.x;
+	//B = normal.y;
+	//C = normal.z;
+	//D = -(A * polygon.at(2).x + B * polygon.at(2).y + C * polygon.at(2).z);
+
 	modulus = normal.GetDistance();
 
 	normal.x = normal.x / modulus;
 	normal.y = normal.y / modulus;
 	normal.z = normal.z / modulus;
-
-	ofLine(0, 0, 0, normal.x, normal.y, normal.z);
-
+		
 	return normal;
 }
-void Wall::getABCD()
+
+Common::CVector3 Wall::getCenter()
 {
-	D = -A * x0 + B * y0 - C * z0;
+	center = Common::CVector3::ZERO;
+
+	for (auto i = 0; i < polygon.size(); i++) 
+	{
+		center.x += polygon.at(i).x;
+		center.y += polygon.at(i).y;
+		center.z += polygon.at(i).z;
+	}
+	center.x /= polygon.size();
+	center.y /= polygon.size();
+	center.z /= polygon.size();
+
+	return center;
+	 
+}
+
+
+void Wall::calculate_ABCD()
+{
+	Common::CVector3 normal;
+	normal = getNormal();
+	A = normal.x;
+	B = normal.y;
+	C = normal.z;
+	D = -(A * polygon.at(2).x + B * polygon.at(2).y + C * polygon.at(2).z);
 }
 
 void Wall::setupPlane (float _x, float _y, float _z,
@@ -96,4 +126,12 @@ void Wall::draw()
 	}
 	ofLine(polygon[0].x, polygon[0].y, polygon[0].z,
 		polygon[numberVertex-1].x, polygon[numberVertex-1].y, polygon[numberVertex-1].z);
+}
+void Wall::drawNormal()
+{
+	Common::CVector3 center;
+	Common::CVector3 normalEnd;
+	center = getCenter();
+	normalEnd = center + getNormal();
+	ofLine(center.x, center.y, center.z, normalEnd.x, normalEnd.y, normalEnd.z);
 }

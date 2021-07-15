@@ -30,7 +30,8 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 	private:	
-		Wall wall_1, wall_2;
+		Room mainRoom;
+		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
 

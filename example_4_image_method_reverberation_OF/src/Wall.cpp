@@ -125,5 +125,6 @@ void Wall::drawNormal()
 	Common::CVector3 normalEnd;
 	center = getCenter();
 	normalEnd = center + getNormal();
-	ofLine(center.x, center.y, center.z, normalEnd.x, normalEnd.y, normalEnd.z);
+	ofLine(center.x, center.y, center.z, 
+		normalEnd.x, normalEnd.y, normalEnd.z);
 }

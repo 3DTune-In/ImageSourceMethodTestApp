@@ -12,13 +12,38 @@ void ofApp::setup(){
 	wall_1.insertCorner(2, -1, 0);
 	wall_1.insertCorner(2, -1, 1);
 	wall_1.insertCorner(2, 1, 1);
+	mainRoom.insertWall(wall_1);
 	
 	wall_2.insertCorner( 2, 1, 1);
 	wall_2.insertCorner(-2, 1, 1);
 	wall_2.insertCorner(-2, 1, 0);
 	wall_2.insertCorner( 2, 1, 0);
+	mainRoom.insertWall(wall_2);
 
-	
+	wall_3.insertCorner(-2, 1, 1);
+	wall_3.insertCorner(-2, -1, 1);
+	wall_3.insertCorner(-2, -1, 0);
+	wall_3.insertCorner(-2, 1, 0);
+	mainRoom.insertWall(wall_3);
+
+	wall_4.insertCorner(2, -1, 0);
+	wall_4.insertCorner(-2, -1, 0);
+	wall_4.insertCorner(-2, -1, 1);
+	wall_4.insertCorner(2, -1, 1);
+	mainRoom.insertWall(wall_4);
+
+	floor.insertCorner(2, 1, 0);
+	floor.insertCorner(-2, 1, 0);
+	floor.insertCorner(-2, -1, 0);
+	floor.insertCorner(2, -1, 0);
+	mainRoom.insertWall(floor);
+
+	ceiling.insertCorner(2, -1, 1);
+	ceiling.insertCorner(-2, -1, 1);
+	ceiling.insertCorner(-2, 1, 1);
+	ceiling.insertCorner(2, 1, 1);
+	mainRoom.insertWall(ceiling);
+
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
@@ -84,12 +109,7 @@ void ofApp::draw(){
 	ofRotateX(elevation);
 	ofRotateZ(azimuth);
 		
-	//wall_1.getNormal();
-	//wall_2.getNormal();
-	wall_1.draw();
-	wall_2.draw();
-	//wall_1.drawNormal();
-	//wall_2.drawNormal();
+	mainRoom.draw();
 
 	Common::CVector3 P(0.5, 0.5, 0.5);
 	Common::CVector3 Q= wall_1.getImagePoint(P);

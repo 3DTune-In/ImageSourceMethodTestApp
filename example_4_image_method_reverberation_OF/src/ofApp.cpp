@@ -8,16 +8,16 @@ void ofApp::setup(){
 	
 	// Room setup
 
-	wall_1.insertCorner(2, 1, 0);
+	wall_1.insertCorner(3, 1, 0);
 	wall_1.insertCorner(2, -1, 0);
 	wall_1.insertCorner(2, -1, 1);
-	wall_1.insertCorner(2, 1, 1);
+	wall_1.insertCorner(3, 1, 1);
 	mainRoom.insertWall(wall_1);
 	
-	wall_2.insertCorner( 2, 1, 1);
+	wall_2.insertCorner( 3, 1, 1);
 	wall_2.insertCorner(-2, 1, 1);
 	wall_2.insertCorner(-2, 1, 0);
-	wall_2.insertCorner( 2, 1, 0);
+	wall_2.insertCorner( 3, 1, 0);
 	mainRoom.insertWall(wall_2);
 
 	wall_3.insertCorner(-2, 1, 1);
@@ -32,7 +32,7 @@ void ofApp::setup(){
 	wall_4.insertCorner(2, -1, 1);
 	mainRoom.insertWall(wall_4);
 
-	floor.insertCorner(2, 1, 0);
+	floor.insertCorner(3, 1, 0);
 	floor.insertCorner(-2, 1, 0);
 	floor.insertCorner(-2, -1, 0);
 	floor.insertCorner(2, -1, 0);
@@ -41,7 +41,7 @@ void ofApp::setup(){
 	ceiling.insertCorner(2, -1, 1);
 	ceiling.insertCorner(-2, -1, 1);
 	ceiling.insertCorner(-2, 1, 1);
-	ceiling.insertCorner(2, 1, 1);
+	ceiling.insertCorner(3, 1, 1);
 	mainRoom.insertWall(ceiling);
 
 
@@ -111,7 +111,7 @@ void ofApp::draw(){
 		
 	mainRoom.draw();
 
-	Common::CVector3 P(0.5, 0.5, 0.5);
+	Common::CVector3 P(-0.5, 0.5, 0.5);
 	Common::CVector3 Q= wall_1.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 

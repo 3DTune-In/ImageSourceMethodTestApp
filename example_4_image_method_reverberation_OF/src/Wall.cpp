@@ -1,7 +1,10 @@
 #include "ofMain.h"
 #include "Wall.h"
-//#ifndef THRESHOLD
-//#define THRESHOLD 0.0000001f
+
+#ifndef THRESHOLD
+#define THRESHOLD 0.0000001f
+#endif
+
 
 int Wall::insertCorner(float _x, float _y, float _z)
 {
@@ -13,7 +16,7 @@ int Wall::insertCorner(float _x, float _y, float _z)
 	}
 	else
 	{
-		if (_x*A + _y+ B + _z*C + D < 0.00001) // ¿DBL_EPSILON? ¿THRESHOLD?
+		if (_x*A + _y+ B + _z*C + D < THRESHOLD) // ¿DBL_EPSILON? ¿THRESHOLD?
 		{
 			polygon.push_back(tempCorner);
 		}
@@ -64,6 +67,31 @@ Common::CVector3 Wall::getCenter()
 
 	return center;
 	 
+}
+
+float Wall::getDistanceFromPoint(Common::CVector3 point)
+{
+	float distance;
+	calculate_ABCD();
+	distance = fabs(A*point.x + B * point.y + C * point.z + D);
+	distance = distance / sqrtf(A * A + B * B + C * C);
+	return distance;
+}
+
+Common::CVector3 Wall::getImagePoint(Common::CVector3 point)
+{
+	float distance;
+	Common::CVector3 cutPoint, imagePoint, normalRay;
+	distance = getDistanceFromPoint(point);
+
+	normalRay = getNormal();
+	normalRay.x *= -(2*distance);
+	normalRay.y *= -(2*distance);
+	normalRay.z *= -(2*distance);
+
+	imagePoint = point + normalRay;
+
+	return imagePoint;
 }
 
 

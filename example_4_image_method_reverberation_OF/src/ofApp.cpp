@@ -8,11 +8,11 @@ void ofApp::setup(){
 	
 	// Room setup
 
-	wall_1.insertCorner(2, 1, 1);
-	wall_1.insertCorner(2,-1, 1);
-	wall_1.insertCorner(2,-1, 0);
 	wall_1.insertCorner(2, 1, 0);
-
+	wall_1.insertCorner(2, -1, 0);
+	wall_1.insertCorner(2, -1, 1);
+	wall_1.insertCorner(2, 1, 1);
+	
 	wall_2.insertCorner( 2, 1, 1);
 	wall_2.insertCorner(-2, 1, 1);
 	wall_2.insertCorner(-2, 1, 0);
@@ -88,8 +88,15 @@ void ofApp::draw(){
 	//wall_2.getNormal();
 	wall_1.draw();
 	wall_2.draw();
-	wall_1.drawNormal();
-	wall_2.drawNormal();
+	//wall_1.drawNormal();
+	//wall_2.drawNormal();
+
+	Common::CVector3 P(0.5, 0.5, 0.5);
+	Common::CVector3 Q= wall_1.getImagePoint(P);
+	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+
+	Q = wall_2.getImagePoint(P);
+	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 }
 
 //--------------------------------------------------------------

@@ -10,12 +10,6 @@
     <ClCompile Include="src\SoundSourcer.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Room.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Wall.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -27,12 +21,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\SoundSource.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Room.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Wall.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

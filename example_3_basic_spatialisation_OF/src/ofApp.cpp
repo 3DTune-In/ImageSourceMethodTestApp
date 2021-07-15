@@ -6,20 +6,6 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	
-	// Room setup
-
-	wall_1.insertCorner(2, 1, 1);
-	wall_1.insertCorner(2,-1, 1);
-	wall_1.insertCorner(2,-1, 0);
-	wall_1.insertCorner(2, 1, 0);
-
-	wall_2.insertCorner( 2, 1, 1);
-	wall_2.insertCorner(-2, 1, 1);
-	wall_2.insertCorner(-2, 1, 0);
-	wall_2.insertCorner( 2, 1, 0);
-
-	
-
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
 	audioState.bufferSize = BUFFERSIZE;			// Setting buffer size 
@@ -78,37 +64,12 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	float scale = 100;
-	ofScale(scale);
-	ofTranslate(ofGetWidth() / (scale * 2), ofGetHeight() / (scale * 2), 0);
-	ofRotateX(elevation);
-	ofRotateZ(azimuth);
-		
-	//wall_1.getNormal();
-	//wall_2.getNormal();
-	wall_1.draw();
-	wall_2.draw();
-	wall_1.drawNormal();
-	wall_2.drawNormal();
+
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	switch (key)
-	{
-	case OF_KEY_LEFT:
-		azimuth++;
-		break;
-	case OF_KEY_RIGHT:
-		azimuth--;
-		break;
-	case OF_KEY_UP:
-		elevation++;
-		break;
-	case OF_KEY_DOWN:
-		elevation--;
-		break;
-	}
+
 }
 
 //--------------------------------------------------------------

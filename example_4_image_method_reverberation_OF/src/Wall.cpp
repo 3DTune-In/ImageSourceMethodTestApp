@@ -26,10 +26,11 @@ int Wall::insertCorner(float _x, float _y, float _z)
 	}
 	return 1;
 }
+
 Common::CVector3 Wall::getNormal()
 {
 	//Common::CVector3 normal, p1, p2; 
-	Common::CVector3 p1, p2;
+	Common::CVector3 p1, p2, normal;
 	float modulus;
 
 	p1 = polygon.at(1) - polygon.at(0);
@@ -53,6 +54,8 @@ Common::CVector3 Wall::getNormal()
 
 Common::CVector3 Wall::getCenter()
 {
+	Common::CVector3 center;
+
 	center = Common::CVector3::ZERO;
 
 	for (auto i = 0; i < polygon.size(); i++) 
@@ -94,7 +97,6 @@ Common::CVector3 Wall::getImagePoint(Common::CVector3 point)
 	return imagePoint;
 }
 
-
 void Wall::calculate_ABCD()
 {
 	Common::CVector3 normal;
@@ -103,45 +105,6 @@ void Wall::calculate_ABCD()
 	B = normal.y;
 	C = normal.z;
 	D = -(A * polygon.at(2).x + B * polygon.at(2).y + C * polygon.at(2).z);
-}
-
-void Wall::setupPlane (float _x, float _y, float _z,
-	                   float _ax, float _by, float _cz) 
-{
-	// Point: (x0,y0,z0)
-	x0 = _x;
-    y0 = _y;
-	z0 = _z;
-	// General Plane Eq.: Ax + By + Cz + D = 0
-	A = _ax;
-	B = _by;
-	C = _cz;
-
-	D = -A*x0 + B*y0 - C*z0; 
-
-	// Normal vector 
-	this->normalVec[0] = A;
-	this->normalVec[1] = B;
-	this->normalVec[2] = C;
-}
-
-void Wall::setupPlane(float _x, float _y, float _z,
-	            float normalVector[3])
-{
-	// Point: (x0,y0,z0)
-	x0 = _x;
-	y0 = _y;
-	z0 = _z;
-	// Normal vector 
-	this->normalVec[0] = normalVector[0];
-	this->normalVec[1] = normalVector[1];
-	this->normalVec[2] = normalVector[2];
-	// General Plane Eq.: Ax + By + Cz + D = 0
-	A = normalVector[0];
-	B = normalVector[1];
-	C = normalVector[2];
-
-	D = -A * x0 + B * y0 - C * z0;
 }
 
 void Wall::draw()
@@ -155,6 +118,7 @@ void Wall::draw()
 	ofLine(polygon[0].x, polygon[0].y, polygon[0].z,
 		polygon[numberVertex-1].x, polygon[numberVertex-1].y, polygon[numberVertex-1].z);
 }
+
 void Wall::drawNormal()
 {
 	Common::CVector3 center;

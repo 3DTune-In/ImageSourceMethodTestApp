@@ -119,12 +119,18 @@ void Wall::draw()
 		polygon[numberVertex-1].x, polygon[numberVertex-1].y, polygon[numberVertex-1].z);
 }
 
-void Wall::drawNormal()
+void Wall::drawNormal(float length)
 {
 	Common::CVector3 center;
 	Common::CVector3 normalEnd;
+	Common::CVector3 normal;
 	center = getCenter();
-	normalEnd = center + getNormal();
+	normal = getNormal();
+	normal.x *= length;
+	normal.y *= length;
+	normal.z *= length;
+
+	normalEnd = center + normal;
 	ofLine(center.x, center.y, center.z, 
 		normalEnd.x, normalEnd.y, normalEnd.z);
 }

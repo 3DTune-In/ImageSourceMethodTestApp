@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <Common/Vector3.h>
+
+# define LENGTH_OF_NORMALS 0.2
 class Wall
 {
 public:
@@ -11,7 +13,7 @@ public:
 	float getDistanceFromPoint(Common::CVector3 point);
 	Common::CVector3 getImagePoint(Common::CVector3 point);
 	void draw();
-	void drawNormal();
+	void drawNormal(float length=LENGTH_OF_NORMALS);
 		
 private:
 	std::vector<Common::CVector3> polygon; // corners of the wall

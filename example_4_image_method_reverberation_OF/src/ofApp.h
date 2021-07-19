@@ -6,6 +6,7 @@
 #include <HRTF/HRTFCereal.h>
 #include "SoundSource.h"
 #include "Room.h"
+#include "SourceImages.h"
 #include <Common/Vector3.h>
 
 
@@ -41,6 +42,7 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
+		SourceImages sourceImages;
 		SoundSource source1Wav;
 		SoundSource source2Wav;
 		shared_ptr<Binaural::CSingleSourceDSP>	source1DSP;							 // Pointers to each audio source interface

@@ -44,6 +44,8 @@ void ofApp::setup(){
 	ceiling.insertCorner(3, 1, 1);
 	mainRoom.insertWall(ceiling);
 
+	sourceImages.setLocation(Common::CVector3(0.5, 0.5, 0.5));
+
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
@@ -110,6 +112,7 @@ void ofApp::draw(){
 	ofRotateZ(azimuth);
 		
 	mainRoom.draw();
+	sourceImages.drawSource();
 
 	Common::CVector3 P(-0.5, 0.5, 0.5);
 

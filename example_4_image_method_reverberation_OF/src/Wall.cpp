@@ -2,29 +2,39 @@
 #include "Wall.h"
 
 #ifndef THRESHOLD
-#define THRESHOLD 0.0000001f
+#define THRESHOLD 0.000001f
 #endif
 
 
 int Wall::insertCorner(float _x, float _y, float _z)
 {
 	Common::CVector3 tempCorner(_x, _y, _z);
-	if (polygon.size() < 4)
+
+	if (polygon.size() < 3)
 	{
 		polygon.push_back(tempCorner);
-		if (polygon.size() == 3) calculate_ABCD();
+		if (polygon.size() == 3)
+		{
+			calculate_ABCD();
+			return 1;
+		}
 	}
 	else
 	{
-		if (_x*A + _y+ B + _z*C + D < THRESHOLD) // ¿DBL_EPSILON? ¿THRESHOLD?
-		{
+		double diff = _x * A + _y * B + _z * C + D;
+		diff = fabs(diff);
+	    if (diff < THRESHOLD) // ¿DBL_EPSILON? ¿THRESHOLD?
+	    {
 			polygon.push_back(tempCorner);
-		}
-		else {
+			return 1;
+	    }
+	    else 
+		{
+			tempCorner = getPointProjection(_x, _y, _z);
+			polygon.push_back(tempCorner);
 			return 0;
-		}
+	    }
 	}
-	return 1;
 }
 
 Common::CVector3 Wall::getNormal()
@@ -37,11 +47,6 @@ Common::CVector3 Wall::getNormal()
 	p2 = polygon.at(2) - polygon.at(0);
 
 	normal = p1.CrossProduct(p2);
-	
-	//A = normal.x;
-	//B = normal.y;
-	//C = normal.z;
-	//D = -(A * polygon.at(2).x + B * polygon.at(2).y + C * polygon.at(2).z);
 
 	modulus = normal.GetDistance();
 
@@ -72,18 +77,54 @@ Common::CVector3 Wall::getCenter()
 	 
 }
 
-Common::CVector3 Wall::getPointProjection(float x, float y, float z)
+Common::CVector3 Wall::getPointProjection(Common::CVector3 point)
 {
-	Common::CVector3 normalV;
-	float rX, rY, rZ, lambda;
+	return getPointProjection(point.x, point.y, point.z);
+}
 
+Common::CVector3 Wall::getPointProjection(float x0, float y0, float z0)
+{
+	// Vectorial Ec. of straight line --> (X,Y,Z) = (x0, y0, z0) + lambda (normalV.x, normalV.y, normalV.z)
+	// Plane of the wall              --> AX+BY+CZ+D = 0
+
+	Common::CVector3 normalV, point(x0, y0, z0);
+	double rX1, rY1, rZ1, lambda;
+	double rX2, rY2, rZ2;
+	double diff1, diff2;
+	float rX, rY, rZ;
+	
 	calculate_ABCD();
 	normalV = getNormal();
+	lambda =(double) getDistanceFromPoint(point);
+
+	// lambda could be positive or negative
+	// 
+	rX1 = x0 + lambda * normalV.x;
+	rY1 = y0 + lambda * normalV.y;
+	rZ1 = z0 + lambda * normalV.z;
+	diff1 = rX1 * A + rY1 * B + rZ1 * C + D;
+	diff1 = fabs(diff1);
+
+	rX2 = x0 - lambda * normalV.x;
+	rY2 = y0 - lambda * normalV.y;
+	rZ2 = z0 - lambda * normalV.z;
+	diff2 = rX2 * A + rY2 * B + rZ2 * C + D;
+	diff2 = fabs(diff2);
 	
-	// (rX,rY,rZ) = (x, y, z) + lambda (normalV.x, normalV.y, normalV.z)
-
-
-	return normalV;
+	if (diff1 < diff2)
+	{
+		rX = rX1;
+		rY = rY1;
+		rZ = rZ1;
+	}
+	else
+	{
+		rX = rX2;
+		rY = rY2;
+		rZ = rZ2;
+	}
+		   
+	return Common::CVector3(rX, rY, rZ);
 }
 
 float Wall::getDistanceFromPoint(Common::CVector3 point)

@@ -12,6 +12,9 @@ public:
 	void calculate_ABCD();
 	float getDistanceFromPoint(Common::CVector3 point);
 	Common::CVector3 getImagePoint(Common::CVector3 point);
+
+	Common::CVector3 getPointProjection(float x, float y, float z);
+
 	void draw();
 	void drawNormal(float length=LENGTH_OF_NORMALS);
 		

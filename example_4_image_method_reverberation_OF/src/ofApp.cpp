@@ -112,10 +112,17 @@ void ofApp::draw(){
 	mainRoom.draw();
 
 	Common::CVector3 P(-0.5, 0.5, 0.5);
+
 	Common::CVector3 Q= wall_1.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 
 	Q = wall_2.getImagePoint(P);
+	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+
+	Q = wall_3.getImagePoint(P);
+	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+
+	Q = wall_4.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 }
 

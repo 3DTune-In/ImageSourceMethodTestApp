@@ -72,6 +72,20 @@ Common::CVector3 Wall::getCenter()
 	 
 }
 
+Common::CVector3 Wall::getPointProjection(float x, float y, float z)
+{
+	Common::CVector3 normalV;
+	float rX, rY, rZ, lambda;
+
+	calculate_ABCD();
+	normalV = getNormal();
+	
+	// (rX,rY,rZ) = (x, y, z) + lambda (normalV.x, normalV.y, normalV.z)
+
+
+	return normalV;
+}
+
 float Wall::getDistanceFromPoint(Common::CVector3 point)
 {
 	float distance;

@@ -6,6 +6,7 @@ class SourceImages
 {
 public:
 	void setLocation(Common::CVector3 _location);
+	Common::CVector3 getLocation();
 	void createImages(Room _room);
 	void drawSource();
 	void drawImages();

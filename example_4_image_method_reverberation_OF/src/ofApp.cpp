@@ -3,6 +3,8 @@
 #define SAMPLERATE 44100
 #define BUFFERSIZE 512
 
+#define SOURCE_STEP 0.02f
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 	
@@ -176,6 +178,25 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_DOWN:
 		elevation--;
 		break;
+	case 'j': //Moves the source left (-X)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));
+		break;
+	case 'l': //Moves the source right (+X)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));
+		break;
+	case 'i': //Moves the source up (-Y)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));
+		break;
+	case 'k': //Moves the source down (+Y)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));
+		break;
+	case 'u': //Moves the source up (Z)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, SOURCE_STEP));
+		break;
+	case 'm': //Moves the source down (-Z)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));
+		break;
+
 	}
 }
 

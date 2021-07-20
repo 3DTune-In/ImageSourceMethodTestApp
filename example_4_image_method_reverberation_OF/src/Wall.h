@@ -16,6 +16,8 @@ public:
 	Common::CVector3 getPointProjection(float x, float y, float z);
 	Common::CVector3 getPointProjection(Common::CVector3 point);
 
+	Common::CVector3 getIntersectionPointWithLine(Common::CVector3 point1, Common::CVector3 point2);
+
 	void draw();
 	void drawNormal(float length=LENGTH_OF_NORMALS);
 		

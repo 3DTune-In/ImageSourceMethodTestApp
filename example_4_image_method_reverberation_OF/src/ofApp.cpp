@@ -17,7 +17,8 @@ void ofApp::setup(){
 	wall_2.insertCorner( 3, 1, 1);
 	wall_2.insertCorner(-2, 1, 1);
 	wall_2.insertCorner(-2, 1, 0);
-	wall_2.insertCorner( 3, 1, 0);
+	//wall_2.insertCorner( 3, 1, 0);
+	wall_2.insertCorner(3, 0.5, 0);   //error coord. Y
 	mainRoom.insertWall(wall_2);
 
 	wall_3.insertCorner(-2, 1, 1);
@@ -29,19 +30,24 @@ void ofApp::setup(){
 	wall_4.insertCorner(2, -1, 0);
 	wall_4.insertCorner(-2, -1, 0);
 	wall_4.insertCorner(-2, -1, 1);
-	wall_4.insertCorner(2, -1, 1);
+	//wall_4.insertCorner(2, -1, 1);
+	wall_4.insertCorner(2, 0.5, 1); // error coord. Y
 	mainRoom.insertWall(wall_4);
 
 	floor.insertCorner(3, 1, 0);
 	floor.insertCorner(-2, 1, 0);
 	floor.insertCorner(-2, -1, 0);
-	floor.insertCorner(2, -1, 0);
+	//floor.insertCorner(2, -1, 0); 
+	floor.insertCorner(2, -1, 1);  	// error coord. Z
+
 	mainRoom.insertWall(floor);
 
 	ceiling.insertCorner(2, -1, 1);
 	ceiling.insertCorner(-2, -1, 1);
-	ceiling.insertCorner(-2, 1, 1);
-	ceiling.insertCorner(3, 1, 1);
+	ceiling.insertCorner(-2, 1, 1); 
+	//ceiling.insertCorner(3, 1, 1);
+	ceiling.insertCorner(3, 1, 1.5); 	// error coord. Z
+
 	mainRoom.insertWall(ceiling);
 
 	sourceImages.setLocation(Common::CVector3(0.5, 0.5, 0.5));
@@ -58,7 +64,7 @@ void ofApp::setup(){
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
-	listenerPosition.SetPosition(Common::CVector3(0, 0, 0));
+	listenerPosition.SetPosition(Common::CVector3(0, 0, 0.5));
 	listener->SetListenerTransform(listenerPosition);
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
@@ -112,21 +118,35 @@ void ofApp::draw(){
 	ofRotateZ(azimuth);
 		
 	mainRoom.draw();
+	//draw lisener
+	Common::CTransform lisenerTransform = listener->GetListenerTransform();
+	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
+	ofSphere(lisenerPosition.x, lisenerPosition.y, lisenerPosition.z, 0.09);
+
 	sourceImages.drawSource();
 
 	Common::CVector3 P(-0.5, 0.5, 0.5);
-
-	Common::CVector3 Q= wall_1.getImagePoint(P);
+		
+	Common::CVector3 Q = wall_1.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 
 	Q = wall_2.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+
+	Common::CVector3 R = wall_2.getIntersectionPointWithLine(Q, lisenerPosition);
+	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
+	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
 
 	Q = wall_3.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 
 	Q = wall_4.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+			
+	R = wall_4.getIntersectionPointWithLine(Q, lisenerPosition);
+	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
+	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
+
 }
 
 //--------------------------------------------------------------

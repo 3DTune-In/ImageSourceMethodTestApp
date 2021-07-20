@@ -152,6 +152,25 @@ Common::CVector3 Wall::getImagePoint(Common::CVector3 point)
 	return imagePoint;
 }
 
+Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common::CVector3 p2)
+{
+	Common::CVector3 cutPoint, vecLine;
+	float modulus, lambda;
+
+	vecLine = p2 - p1;
+	
+	lambda = (- D - (A *p1.x + B * p1.y + C * p1.z));
+	lambda = lambda / (A*vecLine.x + B * vecLine.y + C * vecLine.z);
+
+	cutPoint.x = p1.x + lambda * vecLine.x;
+	cutPoint.y = p1.y + lambda * vecLine.y;
+	cutPoint.z = p1.z + lambda * vecLine.z;
+
+	modulus = getDistanceFromPoint(cutPoint); // must be = ZERO
+	
+	return cutPoint;
+}
+
 void Wall::calculate_ABCD()
 {
 	Common::CVector3 normal;

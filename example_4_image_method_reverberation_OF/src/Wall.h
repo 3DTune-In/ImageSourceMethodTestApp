@@ -18,13 +18,14 @@ public:
 
 	Common::CVector3 getIntersectionPointWithLine(Common::CVector3 point1, Common::CVector3 point2);
 
+	bool checkPointInsideWall(Common::CVector3 point);
+
 	void draw();
 	void drawNormal(float length=LENGTH_OF_NORMALS);
 		
 private:
 	std::vector<Common::CVector3> polygon; // corners of the wall
-	
-	//float x0, y0, z0;                      // Point: (x0,y0,z0) 
+
 	float A, B, C, D;                      // General Plane Eq.: Ax + By + Cz + D = 0
 		
 };

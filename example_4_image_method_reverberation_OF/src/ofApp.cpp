@@ -129,13 +129,20 @@ void ofApp::draw(){
 		
 	Common::CVector3 Q = wall_1.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+	Common::CVector3 R = wall_1.getIntersectionPointWithLine(Q, lisenerPosition);
+	//Proff R is in wall
+	bool proff = FALSE;
+	proff = wall_1.checkPointInsideWall(R);
 
 	Q = wall_2.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
 
-	Common::CVector3 R = wall_2.getIntersectionPointWithLine(Q, lisenerPosition);
+	R = wall_2.getIntersectionPointWithLine(Q, lisenerPosition);
 	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
 	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
+	//Proff R is in wall
+	proff = FALSE;
+	proff = wall_2.checkPointInsideWall(R);
 
 	Q = wall_3.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
@@ -146,6 +153,10 @@ void ofApp::draw(){
 	R = wall_4.getIntersectionPointWithLine(Q, lisenerPosition);
 	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
 	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
+	//Proff R is in wall
+	proff = FALSE;
+	proff = wall_4.checkPointInsideWall(R);
+		
 
 }
 

@@ -53,6 +53,7 @@ void ofApp::setup(){
 	mainRoom.insertWall(ceiling);
 
 	sourceImages.setLocation(Common::CVector3(0.5, 0.5, 0.5));
+	sourceImages.createImages(mainRoom);
 
 
 	// Core setup
@@ -126,6 +127,7 @@ void ofApp::draw(){
 	ofSphere(lisenerPosition.x, lisenerPosition.y, lisenerPosition.z, 0.09);
 
 	sourceImages.drawSource();
+	sourceImages.drawImages();
 
 	Common::CVector3 P(-0.5, 0.5, 0.5);
 		

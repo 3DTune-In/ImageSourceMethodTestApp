@@ -7,6 +7,7 @@ class Room
 public:
 	void setup(float width, float length, float height);
 	void insertWall(Wall newWall);
+	std::vector<Wall> getWalls();
 	void draw();
 
 private:

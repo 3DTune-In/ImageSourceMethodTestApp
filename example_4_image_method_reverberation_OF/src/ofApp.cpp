@@ -129,38 +129,53 @@ void ofApp::draw(){
 	sourceImages.drawSource();
 	sourceImages.drawImages();
 
-	Common::CVector3 P(-0.5, 0.5, 0.5);
+	//Common::CVector3 P(-0.5, 0.5, 0.5);
+
+	Common::CVector3 sourceLocation = sourceImages.getLocation();
+
+	Common::CVector3 P(sourceLocation.x, sourceLocation.y, sourceLocation.z);
+
+	Common::CVector3 R(0, 0, 0), Q(0,0,0);
 		
-	Common::CVector3 Q = wall_1.getImagePoint(P);
+	Q = wall_1.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	Common::CVector3 R = wall_1.getIntersectionPointWithLine(Q, lisenerPosition);
-	//Proff R is in wall
-	bool proff = FALSE;
-	proff = wall_1.checkPointInsideWall(R);
+	R = wall_1.getIntersectionPointWithLine(Q, lisenerPosition);
+	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
+	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
+	//proof R is in wall
+	bool proof = FALSE;
+	proof = wall_1.checkPointInsideWall(R);
+	if (proof) ofBox(R.x, R.y, R.z, 0.03);
 
 	Q = wall_2.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-
 	R = wall_2.getIntersectionPointWithLine(Q, lisenerPosition);
 	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
 	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//Proff R is in wall
-	proff = FALSE;
-	proff = wall_2.checkPointInsideWall(R);
+	//proof R is in wall
+	proof = FALSE;
+	proof = wall_2.checkPointInsideWall(R);
+	if (proof) ofBox(R.x, R.y, R.z, 0.03);
 
 	Q = wall_3.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
+	R = wall_3.getIntersectionPointWithLine(Q, lisenerPosition);
+	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
+	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
+	//proof R is in wall
+	proof = FALSE;
+	proof = wall_3.checkPointInsideWall(R);
+	if (proof) ofBox(R.x, R.y, R.z, 0.03);
 
 	Q = wall_4.getImagePoint(P);
 	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-			
 	R = wall_4.getIntersectionPointWithLine(Q, lisenerPosition);
 	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
 	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//Proff R is in wall
-	proff = FALSE;
-	proff = wall_4.checkPointInsideWall(R);
-		
+	//proof R is in wall
+	proof = FALSE;
+	proof = wall_4.checkPointInsideWall(R);
+	if (proof) ofBox(R.x, R.y, R.z, 0.03);
 
 }
 

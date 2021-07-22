@@ -4,6 +4,7 @@
 #define BUFFERSIZE 512
 
 #define SOURCE_STEP 0.02f
+#define LISTENER_STEP 0.02f
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -181,6 +182,9 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+
+	Common::CTransform listenerTransform = listener->GetListenerTransform();
+
 	switch (key)
 	{
 	case OF_KEY_LEFT:
@@ -212,6 +216,30 @@ void ofApp::keyPressed(int key){
 		break;
 	case 'm': //Moves the source down (-Z)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));
+		break;
+	case 'a': //Moves the listener left (-X)
+		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'd': //Moves the listener right (X)
+		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'w': //Moves the listener up (-Y)
+		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 's': //Moves the listener down (Y)
+		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'e': //Moves the listener up (Z)
+		listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'x': //Moves the listener up (--Z)
+		listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
+		listener->SetListenerTransform(listenerTransform);
 		break;
 
 	}

@@ -11,45 +11,42 @@ void ofApp::setup(){
 	
 	// Room setup
 
-	wall_1.insertCorner(3, 1, 0);
-	wall_1.insertCorner(2, -1, 0);
-	wall_1.insertCorner(2, -1, 1);
-	wall_1.insertCorner(3, 1, 1);
+	wall_1.insertCorner(1, 2, 0);
+	wall_1.insertCorner(1, -2, 0);
+	wall_1.insertCorner(1, -2, 2);
+	wall_1.insertCorner(1, 2, 2);
 	mainRoom.insertWall(wall_1);
 	
-	wall_2.insertCorner( 3, 1, 1);
-	wall_2.insertCorner(-2, 1, 1);
-	wall_2.insertCorner(-2, 1, 0);
-	//wall_2.insertCorner( 3, 1, 0);
-	wall_2.insertCorner(3, 0.5, 0);   //error coord. Y
+	wall_2.insertCorner( 1, -2, 0);
+	wall_2.insertCorner(-1, -3, 0);
+	wall_2.insertCorner(-1, -3, 2);
+	wall_2.insertCorner(1, -2, 2);
 	mainRoom.insertWall(wall_2);
 
-	wall_3.insertCorner(-2, 1, 1);
-	wall_3.insertCorner(-2, -1, 1);
-	wall_3.insertCorner(-2, -1, 0);
-	wall_3.insertCorner(-2, 1, 0);
+	wall_3.insertCorner(-1, 2, 0);
+	wall_3.insertCorner(1, 2, 0);
+	wall_3.insertCorner(1, 2, 2);
+	wall_3.insertCorner(-1, 2, 2);
 	mainRoom.insertWall(wall_3);
 
-	wall_4.insertCorner(2, -1, 0);
-	wall_4.insertCorner(-2, -1, 0);
-	wall_4.insertCorner(-2, -1, 1);
-	//wall_4.insertCorner(2, -1, 1);
-	wall_4.insertCorner(2, 0.5, 1); // error coord. Y
+	wall_4.insertCorner(-1, -3, 0);
+	wall_4.insertCorner(-1, 2, 0);
+	wall_4.insertCorner(-1, 2, 2);
+	wall_4.insertCorner(-1, -3, 2);
 	mainRoom.insertWall(wall_4);
 
-	floor.insertCorner(3, 1, 0);
-	floor.insertCorner(-2, 1, 0);
-	floor.insertCorner(-2, -1, 0);
-	//floor.insertCorner(2, -1, 0); 
-	floor.insertCorner(2, -1, 1);  	// error coord. Z
+	floor.insertCorner(1, -2, 0);
+	floor.insertCorner(1, 2, 0);
+	floor.insertCorner(-1, 2, 0);
+	//floor.insertCorner(-1, 2, 0); 
+	floor.insertCorner(-1, -3, 1);  	// error coord. Z
 
 	mainRoom.insertWall(floor);
 
-	ceiling.insertCorner(2, -1, 1);
-	ceiling.insertCorner(-2, -1, 1);
-	ceiling.insertCorner(-2, 1, 1); 
-	//ceiling.insertCorner(3, 1, 1);
-	ceiling.insertCorner(3, 1, 1.5); 	// error coord. Z
+	ceiling.insertCorner(1, 2, 2); 
+	ceiling.insertCorner(1, -2, 2);
+	ceiling.insertCorner(-1, -3, 2);
+	ceiling.insertCorner(-1, 2, 2);
 
 	mainRoom.insertWall(ceiling);
 
@@ -65,7 +62,7 @@ void ofApp::setup(){
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
-	listenerPosition.SetPosition(Common::CVector3(0, 0, 0.5));
+	listenerPosition.SetPosition(Common::CVector3(-0.5, 0, 1));
 	listener->SetListenerTransform(listenerPosition);
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
@@ -76,7 +73,7 @@ void ofApp::setup(){
 	}																			
 
 	// Source  setup
-	sourceImages.setup(myCore, Common::CVector3(0.5, 0.5, 0.5));
+	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
 	sourceImages.createImages(mainRoom);
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
@@ -99,7 +96,8 @@ void ofApp::draw(){
 	ofScale(scale);
 	ofScale(1, -1, 1);
 	ofTranslate(ofGetWidth() / (scale * 2), -ofGetHeight() / (scale * 2), 0);
-	ofRotateX(elevation);
+	ofRotateZ(90);
+	ofRotateY(elevation);
 	ofRotateZ(azimuth);
 		
 	mainRoom.draw();
@@ -180,16 +178,16 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_DOWN:
 		elevation--;
 		break;
-	case 'j': //Moves the source left (-X)
+	case 'k': //Moves the source left (-X)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
-	case 'l': //Moves the source right (+X)
+	case 'i': //Moves the source right (+X)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));
 		break;
-	case 'i': //Moves the source up (+Y)
+	case 'j': //Moves the source up (+Y)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));
 		break;
-	case 'k': //Moves the source down (-Y)
+	case 'l': //Moves the source down (-Y)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));
 		break;
 	case 'u': //Moves the source up (Z)
@@ -198,19 +196,19 @@ void ofApp::keyPressed(int key){
 	case 'm': //Moves the source down (-Z)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));
 		break;
-	case 'a': //Moves the listener left (-X)
+	case 's': //Moves the listener left (-X)
 		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;
-	case 'd': //Moves the listener right (X)
+	case 'w': //Moves the listener right (X)
 		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;
-	case 'w': //Moves the listener up (Y)
+	case 'a': //Moves the listener up (Y)
 		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;
-	case 's': //Moves the listener down (-Y)
+	case 'd': //Moves the listener down (-Y)
 		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;

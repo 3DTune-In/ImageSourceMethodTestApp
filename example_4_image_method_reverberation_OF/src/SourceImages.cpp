@@ -1,8 +1,29 @@
 #include "SourceImages.h"
 
+void SourceImages::setup(Binaural::CCore &_core, Common::CVector3 _location)
+{
+	sourceLocation = _location;
+	sourceDSP = _core.CreateSingleSourceDSP();						// Creating audio source
+	Common::CTransform sourcePosition;
+	sourcePosition.SetPosition(_location);											 
+	sourceDSP->SetSourceTransform(sourcePosition);					//Set source position
+	sourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+	sourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+	sourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+	sourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+}
+
+shared_ptr<Binaural::CSingleSourceDSP> SourceImages::getSourceDSP()
+{
+	return sourceDSP;
+}
+
 void SourceImages::setLocation(Common::CVector3 _location)
 {
 	sourceLocation = _location;
+	Common::CTransform sourcePosition;
+	sourcePosition.SetPosition(_location);									 
+	sourceDSP->SetSourceTransform(sourcePosition);					//Set source position
 	updateImages();
 }
 

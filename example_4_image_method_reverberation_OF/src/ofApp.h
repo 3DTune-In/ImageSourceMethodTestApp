@@ -44,9 +44,7 @@ class ofApp : public ofBaseApp{
 
 		SourceImages sourceImages;
 		SoundSource source1Wav;
-		SoundSource source2Wav;
 		shared_ptr<Binaural::CSingleSourceDSP>	source1DSP;							 // Pointers to each audio source interface
-		shared_ptr<Binaural::CSingleSourceDSP>	source2DSP;							 // Pointers to each audio source interface
 
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
 		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);

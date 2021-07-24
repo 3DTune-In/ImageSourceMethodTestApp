@@ -53,9 +53,6 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 
-	sourceImages.setLocation(Common::CVector3(0.5, 0.5, 0.5));
-	sourceImages.createImages(mainRoom);
-
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
@@ -78,27 +75,10 @@ void ofApp::setup(){
 		cout << "ERROR: Error trying to load the SOFA file" << endl<<endl;
 	}																			
 
-	// Source 1 setup
-	source1DSP = myCore.CreateSingleSourceDSP();									// Creating audio source
+	// Source  setup
+	sourceImages.setup(myCore, Common::CVector3(0.5, 0.5, 0.5));
+	sourceImages.createImages(mainRoom);
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
-	Common::CTransform source1Position = Common::CTransform();
-	source1Position.SetPosition(Common::CVector3(0, 2, 0));							//Set source position on the listener left side				 
-	source1DSP->SetSourceTransform(source1Position);
-	source1DSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-	source1DSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	source1DSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-	source1DSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-
-	// Source 2 setup
-	source2DSP = myCore.CreateSingleSourceDSP();									// Creating audio source
-	LoadWavFile(source2Wav, "speech_male.wav");											// Loading .wav file										  
-	Common::CTransform source2Position = Common::CTransform();
-	source2Position.SetPosition(Common::CVector3(0, -2, 0));						//Set source position on the listener right side
-	source2DSP->SetSourceTransform(source2Position);
-	source2DSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-	source2DSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	source2DSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-	source2DSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
@@ -117,7 +97,8 @@ void ofApp::update(){
 void ofApp::draw(){
 	float scale = 100;
 	ofScale(scale);
-	ofTranslate(ofGetWidth() / (scale * 2), ofGetHeight() / (scale * 2), 0);
+	ofScale(1, -1, 1);
+	ofTranslate(ofGetWidth() / (scale * 2), -ofGetHeight() / (scale * 2), 0);
 	ofRotateX(elevation);
 	ofRotateZ(azimuth);
 		
@@ -205,11 +186,11 @@ void ofApp::keyPressed(int key){
 	case 'l': //Moves the source right (+X)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));
 		break;
-	case 'i': //Moves the source up (-Y)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));
-		break;
-	case 'k': //Moves the source down (+Y)
+	case 'i': //Moves the source up (+Y)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));
+		break;
+	case 'k': //Moves the source down (-Y)
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));
 		break;
 	case 'u': //Moves the source up (Z)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, SOURCE_STEP));
@@ -225,12 +206,12 @@ void ofApp::keyPressed(int key){
 		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;
-	case 'w': //Moves the listener up (-Y)
-		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
+	case 'w': //Moves the listener up (Y)
+		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;
-	case 's': //Moves the listener down (Y)
-		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
+	case 's': //Moves the listener down (-Y)
+		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case 'e': //Moves the listener up (Z)
@@ -415,21 +396,16 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);
 	source1Wav.FillBuffer(source1);
-	CMonoBuffer<float> source2(uiBufferSize);
-	source2Wav.FillBuffer(source2);
 
 	// Declaration of stereo buffer
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
-	// Anechoic process of first source
+
+	// Anechoic process of original source
+	source1DSP = sourceImages.getSourceDSP();
 	source1DSP->SetBuffer(source1);
 	source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+
 	// Adding anechoic processed first source to the output mix
-	bufferOutput.left += bufferProcessed.left;
-	bufferOutput.right += bufferProcessed.right;
-	// Anechoic process of second source
-	source2DSP->SetBuffer(source2);
-	source2DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-	// Adding anechoic processed second source to the output mix
 	bufferOutput.left += bufferProcessed.left;
 	bufferOutput.right += bufferProcessed.right;
 }

@@ -64,3 +64,17 @@ void SourceImages::drawImages()
 		ofBox(imageLocations[i].x, imageLocations[i].y, imageLocations[i].z, 0.05);
 	}
 }
+
+void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation)
+{
+	for (int i = 0; i < imageLocations.size(); i++)
+	{
+		Common::CVector3 reflectionPoint = walls[i].getIntersectionPointWithLine(imageLocations[i], _listenerLocation);
+		if (walls[i].checkPointInsideWall(reflectionPoint))
+		{
+			ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+			ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z, reflectionPoint.x, reflectionPoint.y, reflectionPoint.z);
+			ofLine(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
+		}
+	}
+}

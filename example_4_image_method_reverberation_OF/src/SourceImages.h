@@ -15,6 +15,7 @@ public:
 	void updateImages();
 	void drawSource();
 	void drawImages();
+	void drawRaysToListener(Common::CVector3 _listenerLocation);
 
 private:
 	std::vector<Wall> walls;										//List of walls

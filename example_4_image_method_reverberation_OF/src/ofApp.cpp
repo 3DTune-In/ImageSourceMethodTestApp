@@ -106,9 +106,16 @@ void ofApp::draw(){
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 	ofSphere(lisenerPosition.x, lisenerPosition.y, lisenerPosition.z, 0.09);
 
+	ofPushStyle();
+	ofSetColor(255, 50, 200);
 	sourceImages.drawSource();
+	ofSetColor(255, 150, 200);
 	sourceImages.drawImages();
+	ofPopStyle();
+	sourceImages.drawRaysToListener(lisenerPosition);
 
+
+/*
 	//Common::CVector3 P(-0.5, 0.5, 0.5);
 
 	Common::CVector3 sourceLocation = sourceImages.getLocation();
@@ -157,6 +164,7 @@ void ofApp::draw(){
 	proof = wall_4.checkPointInsideWall(R);
 	if (proof) ofBox(R.x, R.y, R.z, 0.03);
 
+*/
 }
 
 //--------------------------------------------------------------

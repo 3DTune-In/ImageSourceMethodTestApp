@@ -52,5 +52,5 @@ class ofApp : public ofBaseApp{
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
 		void LoadWavFile(SoundSource & source, const char* filePath);
 
-		int k=0; //Image
+		int k=0;					//To listen images
 };

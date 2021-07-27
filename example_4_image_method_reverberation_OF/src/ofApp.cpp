@@ -50,6 +50,8 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 
+	k = (int) mainRoom.getWalls().size();              //To listen images
+
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
@@ -249,7 +251,8 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-	k = (k++) % 5;                                         // Changes active image
+														// k=6 --> Source
+	k = (k++) % ((int)mainRoom.getWalls().size());      // Changes active image
 }
 
 //--------------------------------------------------------------
@@ -269,7 +272,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+	k = (int) mainRoom.getWalls().size();
 }
 
 //--------------------------------------------------------------
@@ -407,14 +410,19 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
 	// Anechoic process of original source
-	//source1DSP = sourceImages.getSourceDSP();
-	//source1DSP->SetBuffer(source1);
-	//source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-
-	// Anechoic process of a image Source
-	source1DSP = sourceImages.getImageSourceDSPs().at(k);
-	source1DSP->SetBuffer(source1);
-	source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+	if (k == mainRoom.getWalls().size())
+	{
+		source1DSP = sourceImages.getSourceDSP();
+		source1DSP->SetBuffer(source1);
+		source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+	}
+	else
+	{
+		// Anechoic process of a image Source
+		source1DSP = sourceImages.getImageSourceDSPs().at(k);
+		source1DSP->SetBuffer(source1);
+		source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+    }
 
 	// Adding anechoic processed first source to the output mix
 	bufferOutput.left += bufferProcessed.left;

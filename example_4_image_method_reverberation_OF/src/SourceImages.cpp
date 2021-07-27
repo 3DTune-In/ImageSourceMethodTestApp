@@ -2,6 +2,7 @@
 
 void SourceImages::setup(Binaural::CCore &_core, Common::CVector3 _location)
 {
+	core = &_core;
 	sourceLocation = _location;
 	sourceDSP = _core.CreateSingleSourceDSP();						// Creating audio source
 	Common::CTransform sourcePosition;
@@ -16,6 +17,11 @@ void SourceImages::setup(Binaural::CCore &_core, Common::CVector3 _location)
 shared_ptr<Binaural::CSingleSourceDSP> SourceImages::getSourceDSP()
 {
 	return sourceDSP;
+}
+
+std::vector<shared_ptr<Binaural::CSingleSourceDSP>> SourceImages::getImageSourceDSPs()
+{
+	return sourceImageDSP;
 }
 
 void SourceImages::setLocation(Common::CVector3 _location)
@@ -40,6 +46,23 @@ void SourceImages::createImages(Room _room)
 		Common::CVector3 tempImageLocation = walls[i].getImagePoint(sourceLocation);
 		imageLocations.push_back(tempImageLocation);
 	}
+	//////////////////////////////////////////	
+	for (int i = 0; i < walls.size(); i++)
+	{
+		shared_ptr<Binaural::CSingleSourceDSP> tempsourceImageDSP;
+		
+		tempsourceImageDSP = core->CreateSingleSourceDSP();						               // Creating image audio source
+		Common::CTransform sourceImagePosition;
+		sourceImagePosition.SetPosition(imageLocations[i]);
+		tempsourceImageDSP->SetSourceTransform(sourceImagePosition);
+		tempsourceImageDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+		tempsourceImageDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+		tempsourceImageDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+		tempsourceImageDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+
+		sourceImageDSP.push_back(tempsourceImageDSP);
+
+	}
 }
 
 void SourceImages::updateImages()
@@ -48,6 +71,11 @@ void SourceImages::updateImages()
 	{
 		//FIXME: When some images disappear or reappear, this has to be done differently
 		imageLocations[i] = walls[i].getImagePoint(sourceLocation);
+		// Moves Images
+		Common::CTransform sourceImagePosition;
+		sourceImagePosition.SetPosition(imageLocations[i]);
+		sourceImageDSP.at(i)->SetSourceTransform(sourceImagePosition);
+
 	}
 }
 

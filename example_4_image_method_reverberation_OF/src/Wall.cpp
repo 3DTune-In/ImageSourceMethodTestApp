@@ -142,7 +142,7 @@ float Wall::getDistanceFromPoint(Common::CVector3 point)
 Common::CVector3 Wall::getImagePoint(Common::CVector3 point)
 {
 	float distance;
-	Common::CVector3 cutPoint, imagePoint, normalRay;
+	Common::CVector3 imagePoint, normalRay;
 	distance = getDistanceFromPoint(point);
 
 	normalRay = getNormal();

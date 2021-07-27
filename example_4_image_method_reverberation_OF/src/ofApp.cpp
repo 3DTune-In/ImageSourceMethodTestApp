@@ -38,8 +38,8 @@ void ofApp::setup(){
 	floor.insertCorner(1, -2, 0);
 	floor.insertCorner(1, 2, 0);
 	floor.insertCorner(-1, 2, 0);
-	//floor.insertCorner(-1, 2, 0); 
-	floor.insertCorner(-1, -3, 1);  	// error coord. Z
+	floor.insertCorner(-1, 2, 0); 
+	//floor.insertCorner(-1, -3, 1);  	// error coord. Z
 
 	mainRoom.insertWall(floor);
 
@@ -249,7 +249,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+	k = (k++) % 5;                                         // Changes active image
 }
 
 //--------------------------------------------------------------
@@ -407,7 +407,12 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
 	// Anechoic process of original source
-	source1DSP = sourceImages.getSourceDSP();
+	//source1DSP = sourceImages.getSourceDSP();
+	//source1DSP->SetBuffer(source1);
+	//source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+
+	// Anechoic process of a image Source
+	source1DSP = sourceImages.getImageSourceDSPs().at(k);
 	source1DSP->SetBuffer(source1);
 	source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
 

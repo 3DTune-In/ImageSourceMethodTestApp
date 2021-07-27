@@ -17,6 +17,9 @@ public:
 	void drawImages();
 	void drawRaysToListener(Common::CVector3 _listenerLocation);
 
+	void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
+	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
+
 private:
 	std::vector<Wall> walls;										//List of walls
 

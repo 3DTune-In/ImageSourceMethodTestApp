@@ -7,6 +7,7 @@ class Wall
 {
 public:
 	int insertCorner(float x, float y, float z);
+	void setAbsortion(float _absortion);
 	Common::CVector3 getNormal();
 	Common::CVector3 getCenter();
 	void calculate_ABCD();
@@ -25,6 +26,7 @@ public:
 		
 private:
 	std::vector<Common::CVector3> polygon; // corners of the wall
+	float absortion = 0;
 
 	float A, B, C, D;                      // General Plane Eq.: Ax + By + Cz + D = 0
 		

@@ -251,8 +251,8 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-														// k=6 --> Source
-	k = (k++) % ((int)mainRoom.getWalls().size());      // Changes active image
+														
+	k = (k + 1) % 2;      // Toggle k
 }
 
 //--------------------------------------------------------------
@@ -272,7 +272,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-	k = (int) mainRoom.getWalls().size();
+
 }
 
 //--------------------------------------------------------------
@@ -406,7 +406,13 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	CMonoBuffer<float> source1(uiBufferSize);
 	source1Wav.FillBuffer(source1);
 
-	// Declaration of stereo buffer
+	sourceImages.processAnechoic(source1, bufferOutput);
+	if (k == 1)
+	{
+		sourceImages.processImages(source1, bufferOutput);
+	}
+
+/*	// Declaration of stereo buffer
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
 	// Anechoic process of original source
@@ -427,6 +433,8 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	// Adding anechoic processed first source to the output mix
 	bufferOutput.left += bufferProcessed.left;
 	bufferOutput.right += bufferProcessed.right;
+	*/
+
 }
 
 

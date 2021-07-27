@@ -40,6 +40,11 @@ int Wall::insertCorner(float _x, float _y, float _z)
 	}
 }
 
+void Wall::setAbsortion(float _absortion)
+{
+	absortion = _absortion;
+}
+
 Common::CVector3 Wall::getNormal()
 {
 	//Common::CVector3 normal, p1, p2; 

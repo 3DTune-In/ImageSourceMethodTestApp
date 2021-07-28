@@ -47,6 +47,7 @@ Common::CVector3 SourceImages::getLocation()
 
 void SourceImages::createImages(Room _room, int reflectionOrder)
 {
+	reflectionOrder--;
 	walls = _room.getWalls();
 	for (int i = 0; i < walls.size(); i++)
 	{
@@ -73,6 +74,20 @@ void SourceImages::createImages(Room _room, int reflectionOrder)
 
 		images.push_back(tempSourceImage);
 
+		if (reflectionOrder > 0)
+		{
+			// We need to calculate the image room before this
+			Room tempRoom;
+			for (int j = 0; j < walls.size(); j++)
+			{
+				if (i != j)
+				{
+					Wall tempWall = walls.at(i).getImageWall(walls.at(j));
+					tempRoom.insertWall(tempWall);
+				}
+			}
+			images[i].createImages(tempRoom, reflectionOrder);
+		}
 	}
 }
 
@@ -96,11 +111,16 @@ void SourceImages::drawSource()
 
 }
 
-void SourceImages::drawImages()
+void SourceImages::drawImages(int reflectionOrder)
 {
+	reflectionOrder--;
 	for (int i = 0; i < images.size(); i++)
 	{
 		ofBox(images[i].getLocation().x, images[i].getLocation().y, images[i].getLocation().z, 0.05);
+		if (reflectionOrder > 0)
+		{
+			images[i].drawImages(reflectionOrder);
+		}
 	}
 }
 

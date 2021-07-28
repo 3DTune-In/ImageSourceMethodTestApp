@@ -15,7 +15,7 @@ public:
 	void createImages(Room _room, int reflectionOrder);
 	void updateImages();
 	void drawSource();
-	void drawImages();
+	void drawImages(int reflectionOrder);
 	void drawRaysToListener(Common::CVector3 _listenerLocation);
 
 	void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);

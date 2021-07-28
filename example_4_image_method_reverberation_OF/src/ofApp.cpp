@@ -77,7 +77,7 @@ void ofApp::setup(){
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
 	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
-	sourceImages.createImages(mainRoom,1); //only first reflections for the moment
+	sourceImages.createImages(mainRoom,2);			//trying second order reflections (only to draw, not to sound)
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
@@ -115,7 +115,7 @@ void ofApp::draw(){
 	ofSetColor(255, 50, 200);
 	sourceImages.drawSource();
 	ofSetColor(255, 150, 200);
-	sourceImages.drawImages();
+	sourceImages.drawImages(2);
 	ofPopStyle();
 	sourceImages.drawRaysToListener(lisenerPosition);
 

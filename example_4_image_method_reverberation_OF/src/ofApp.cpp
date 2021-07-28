@@ -95,7 +95,6 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	float scale = 100;
 	ofScale(scale);
 	ofScale(1, -1, 1);
 	ofTranslate(ofGetWidth() / (scale * 2), -ofGetHeight() / (scale * 2), 0);
@@ -191,6 +190,12 @@ void ofApp::keyPressed(int key){
 		break;
 	case OF_KEY_DOWN:
 		elevation--;
+		break;
+	case OF_KEY_PAGE_UP:
+		scale*=0.9;
+		break;
+	case OF_KEY_PAGE_DOWN:
+		scale*=1.1;
 		break;
 	case 'k': //Moves the source left (-X)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));

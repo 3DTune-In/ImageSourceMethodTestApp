@@ -28,7 +28,7 @@ private:
 	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				   // Pointer to the original source interface
 
 //	std::vector<Common::CVector3> imageLocations;						//List of locations of source images
-	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> sourceImageDSP;	//List of pointers to source image interfaces
+//	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> sourceImageDSP;	//List of pointers to source image interfaces
 	std::vector<SourceImages> images;									//recursive list of images
 
 	Binaural::CCore *core;                                              //Core

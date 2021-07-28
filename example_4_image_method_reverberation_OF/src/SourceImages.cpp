@@ -22,7 +22,13 @@ shared_ptr<Binaural::CSingleSourceDSP> SourceImages::getSourceDSP()
 
 std::vector<shared_ptr<Binaural::CSingleSourceDSP>> SourceImages::getImageSourceDSPs()
 {
-	return sourceImageDSP;
+	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageDSPList;
+	for (int i = 0; i < images.size(); i++)
+	{
+		shared_ptr<Binaural::CSingleSourceDSP> tempDSP = images[i].getSourceDSP();
+		imageDSPList.push_back(tempDSP);
+	}
+	return imageDSPList;
 }
 
 void SourceImages::setLocation(Common::CVector3 _location)
@@ -61,7 +67,7 @@ void SourceImages::createImages(Room _room, int reflectionOrder)
 		tempsourceImageDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 		tempsourceImageDSP->EnablePropagationDelay();
 
-		sourceImageDSP.push_back(tempsourceImageDSP);   //REMOVE this will be inside the recursive sourceImages
+//		sourceImageDSP.push_back(tempsourceImageDSP);   //REMOVE this will be inside the recursive sourceImages
 
 		tempSourceImage.setup(*core, tempImageLocation);
 
@@ -79,7 +85,7 @@ void SourceImages::updateImages()
 		// Moves Images
 		Common::CTransform sourceImagePosition;
 		sourceImagePosition.SetPosition(images[i].getLocation());
-		sourceImageDSP.at(i)->SetSourceTransform(sourceImagePosition);
+		images[i].getSourceDSP()->SetSourceTransform(sourceImagePosition);
 
 	}
 }
@@ -132,8 +138,8 @@ void SourceImages::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPa
 		{
 		    Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
-			sourceImageDSP.at(i)->SetBuffer(bufferInput);
-			sourceImageDSP.at(i)->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+			images.at(i).getSourceDSP()->SetBuffer(bufferInput);
+			images.at(i).getSourceDSP()->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
 
 			bufferOutput.left += bufferProcessed.left;
 			bufferOutput.right += bufferProcessed.right;

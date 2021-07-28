@@ -7,12 +7,16 @@ class Wall
 {
 public:
 	int insertCorner(float x, float y, float z);
+	int insertCorner(Common::CVector3 _corner);
+	std::vector<Common::CVector3> getCorners();
 	void setAbsortion(float _absortion);
+	float getAbsortion();
 	Common::CVector3 getNormal();
 	Common::CVector3 getCenter();
 	void calculate_ABCD();
 	float getDistanceFromPoint(Common::CVector3 point);
 	Common::CVector3 getImagePoint(Common::CVector3 point);
+	Wall getImageWall(Wall _wall);
 
 	Common::CVector3 getPointProjection(float x, float y, float z);
 	Common::CVector3 getPointProjection(Common::CVector3 point);

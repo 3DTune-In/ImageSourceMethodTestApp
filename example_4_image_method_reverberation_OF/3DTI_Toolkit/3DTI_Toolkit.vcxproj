@@ -166,7 +166,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\3dti_AudioToolkit\3dti_Toolkit</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\boost_circular_buffer;..\..\3dti_AudioToolkit\3dti_Toolkit</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

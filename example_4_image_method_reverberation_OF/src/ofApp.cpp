@@ -104,6 +104,9 @@ void ofApp::draw(){
 	ofRotateZ(azimuth);
 		
 	mainRoom.draw();
+	std::vector<Room> roomImages=mainRoom.getImageRooms();
+	for (int i = 0; i < roomImages.size(); i++) roomImages.at(i).draw();
+
 	//draw lisener
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();

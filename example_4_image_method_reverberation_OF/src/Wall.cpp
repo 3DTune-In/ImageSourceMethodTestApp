@@ -8,6 +8,11 @@
 #define TWOPI 6.283185307179586476925287
 #define RTOD 57.2957795
 
+int Wall::insertCorner(Common::CVector3 _corner)
+{
+	return insertCorner(_corner.x, _corner.y, _corner.z);
+}
+
 
 int Wall::insertCorner(float _x, float _y, float _z)
 {
@@ -38,6 +43,11 @@ int Wall::insertCorner(float _x, float _y, float _z)
 			return 0;
 	    }
 	}
+}
+
+vector<Common::CVector3> Wall::getCorners()
+{
+	return polygon;
 }
 
 void Wall::setAbsortion(float _absortion)
@@ -158,6 +168,18 @@ Common::CVector3 Wall::getImagePoint(Common::CVector3 point)
 	imagePoint = point + normalRay;
 
 	return imagePoint;
+}
+
+Wall Wall::getImageWall(Wall _wall)
+{
+	Wall tempWall;
+	vector<Common::CVector3> corners = _wall.getCorners();
+	for(int i = corners.size()-1; i >= 0; i--)
+	{
+		Common::CVector3 tempImageCorner = getImagePoint(corners.at(i));
+		tempWall.insertCorner(tempImageCorner);
+	}
+	return tempWall;
 }
 
 Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common::CVector3 p2)

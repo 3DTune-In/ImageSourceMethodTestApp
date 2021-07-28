@@ -163,7 +163,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\3dti_AudioToolkit\3dti_Toolkit;..\3dti_AudioToolkit\3dti_ResourceManager;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\cereal\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\3dti_AudioToolkit\3dti_Toolkit;..\3dti_AudioToolkit\3dti_ResourceManager;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\cereal\include;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\boost_circular_buffer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>

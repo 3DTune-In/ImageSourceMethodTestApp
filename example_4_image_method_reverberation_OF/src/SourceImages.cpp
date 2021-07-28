@@ -12,6 +12,7 @@ void SourceImages::setup(Binaural::CCore &_core, Common::CVector3 _location)
 	sourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 	sourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
 	sourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	sourceDSP->EnablePropagationDelay();
 }
 
 shared_ptr<Binaural::CSingleSourceDSP> SourceImages::getSourceDSP()
@@ -59,6 +60,7 @@ void SourceImages::createImages(Room _room)
 		tempsourceImageDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 		tempsourceImageDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
 		tempsourceImageDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+		tempsourceImageDSP->EnablePropagationDelay();
 
 		sourceImageDSP.push_back(tempsourceImageDSP);
 

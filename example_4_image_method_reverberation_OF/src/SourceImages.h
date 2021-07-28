@@ -12,7 +12,7 @@ public:
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> getImageSourceDSPs();
 	void setLocation(Common::CVector3 _location);
 	Common::CVector3 getLocation();
-	void createImages(Room _room);
+	void createImages(Room _room, int reflectionOrder);
 	void updateImages();
 	void drawSource();
 	void drawImages();
@@ -27,7 +27,7 @@ private:
 	Common::CVector3 sourceLocation;								   //Original source location
 	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				   // Pointer to the original source interface
 
-	std::vector<Common::CVector3> imageLocations;						//List of locations of source images
+//	std::vector<Common::CVector3> imageLocations;						//List of locations of source images
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> sourceImageDSP;	//List of pointers to source image interfaces
 	std::vector<SourceImages> images;									//recursive list of images
 

@@ -77,7 +77,7 @@ void ofApp::setup(){
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
 	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
-	sourceImages.createImages(mainRoom);
+	sourceImages.createImages(mainRoom,1); //only first reflections for the moment
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup

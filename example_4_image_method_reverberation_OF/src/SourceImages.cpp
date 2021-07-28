@@ -120,17 +120,21 @@ void SourceImages::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEar
 		bufferOutput.right += bufferProcessed.right;
 }
 
-void SourceImages::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
+void SourceImages::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation)
 {
 	for (int i = 0; i < walls.size(); i++)
 	{
-		Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
+		Common::CVector3 reflectionPoint = walls.at(i).getIntersectionPointWithLine(imageLocations[i], _listenerLocation);
+		if (walls[i].checkPointInsideWall(reflectionPoint))
+		{
+		    Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
-		sourceImageDSP.at(i)->SetBuffer(bufferInput);
-		sourceImageDSP.at(i)->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+			sourceImageDSP.at(i)->SetBuffer(bufferInput);
+			sourceImageDSP.at(i)->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
 
-		bufferOutput.left += bufferProcessed.left;
-		bufferOutput.right += bufferProcessed.right;
+			bufferOutput.left += bufferProcessed.left;
+			bufferOutput.right += bufferProcessed.right;
+		}
 
 	}
 }

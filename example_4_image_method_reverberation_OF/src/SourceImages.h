@@ -6,6 +6,7 @@
 class SourceImages
 {
 public:
+	//void setup(Binaural::CCore &_core, Common::CVector3 _listenerLocation, Common::CVector3 _location);
 	void setup(Binaural::CCore &_core, Common::CVector3 _location);
 	shared_ptr<Binaural::CSingleSourceDSP> getSourceDSP();
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> getImageSourceDSPs();
@@ -18,17 +19,18 @@ public:
 	void drawRaysToListener(Common::CVector3 _listenerLocation);
 
 	void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
-	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
+	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation);
 
 private:
-	std::vector<Wall> walls;										//List of walls
+	std::vector<Wall> walls;										   //List of walls
 
-	Common::CVector3 sourceLocation;								//Original source location
-	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				// Pointer to the original source interface
+	Common::CVector3 sourceLocation;								   //Original source location
+	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				   // Pointer to the original source interface
 
 	std::vector<Common::CVector3> imageLocations;						//List of locations of source images
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> sourceImageDSP;	//List of pointers to source image interfaces
 
-	Binaural::CCore *core;                                          //Core
+	Binaural::CCore *core;                                              //Core
+	
 };
 

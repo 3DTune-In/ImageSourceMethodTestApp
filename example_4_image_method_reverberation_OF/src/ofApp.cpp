@@ -38,8 +38,8 @@ void ofApp::setup(){
 	floor.insertCorner(1, -2, 0);
 	floor.insertCorner(1, 2, 0);
 	floor.insertCorner(-1, 2, 0);
-	floor.insertCorner(-1, 2, 0); 
-	//floor.insertCorner(-1, -3, 1);  	// error coord. Z
+	//floor.insertCorner(-1, -3, 0); 
+	floor.insertCorner(-1, -3, 1);      // error coord. Z	
 
 	mainRoom.insertWall(floor);
 
@@ -75,6 +75,7 @@ void ofApp::setup(){
 	}																			
 
 	// Source  setup
+	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
 	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
 	sourceImages.createImages(mainRoom);
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
@@ -409,7 +410,9 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	sourceImages.processAnechoic(source1, bufferOutput);
 	if (k == 1)
 	{
-		sourceImages.processImages(source1, bufferOutput);
+		Common::CTransform lisenerTransform = listener->GetListenerTransform();
+		Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
+		sourceImages.processImages(source1, bufferOutput, lisenerPosition);
 	}
 
 /*	// Declaration of stereo buffer

@@ -77,7 +77,7 @@ void ofApp::setup(){
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
 	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
-	sourceImages.createImages(mainRoom,2);			//trying second order reflections (only to draw, not to sound)
+	sourceImages.createImages(mainRoom,3);			//trying second order reflections (only to draw, not to sound)
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
@@ -101,10 +101,24 @@ void ofApp::draw(){
 	ofRotateZ(90);
 	ofRotateY(elevation);
 	ofRotateZ(azimuth);
+
+	ofSetColor(255, 250);									// deault drawing color is white 
 		
 	mainRoom.draw();
 	std::vector<Room> roomImages=mainRoom.getImageRooms();
+	ofPushStyle();
+	ofSetColor(255, 50);									//image rooms are drawn semi-transparent
 	for (int i = 0; i < roomImages.size(); i++) roomImages.at(i).draw();
+	ofSetColor(255, 10);									//second image rooms are drawn almost transparent
+	for (int i = 0; i < roomImages.size(); i++)
+	{
+		std::vector<Room> roomSecondImages = roomImages.at(i).getImageRooms();
+		for (int j = 0; j < roomSecondImages.size(); j++)
+		{
+			roomSecondImages.at(j).draw();
+		}
+	}
+	ofPopStyle();
 
 	//draw lisener
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
@@ -112,10 +126,10 @@ void ofApp::draw(){
 	ofSphere(lisenerPosition.x, lisenerPosition.y, lisenerPosition.z, 0.09);
 
 	ofPushStyle();
-	ofSetColor(255, 50, 200);
+	ofSetColor(255, 50, 200,50);
 	sourceImages.drawSource();
-	ofSetColor(255, 150, 200);
-	sourceImages.drawImages(2);
+	ofSetColor(255, 150, 200,50);
+	sourceImages.drawImages(3);
 	ofPopStyle();
 	sourceImages.drawRaysToListener(lisenerPosition);
 

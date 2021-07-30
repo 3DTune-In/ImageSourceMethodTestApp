@@ -20,11 +20,8 @@ std::vector<Room> Room::getImageRooms()
 		Room tempRoom;
 		for (int j = 0; j < walls.size(); j++)
 		{
-			if (i != j)
-			{
-				Wall tempWall = walls.at(i).getImageWall(walls.at(j));
-				tempRoom.insertWall(tempWall);
-			}
+			Wall tempWall = walls.at(i).getImageWall(walls.at(j));
+			tempRoom.insertWall(tempWall);
 		}
 		roomList.push_back(tempRoom);
 	}

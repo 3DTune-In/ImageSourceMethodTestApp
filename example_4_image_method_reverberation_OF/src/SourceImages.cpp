@@ -80,11 +80,8 @@ void SourceImages::createImages(Room _room, int reflectionOrder)
 			Room tempRoom;
 			for (int j = 0; j < walls.size(); j++)
 			{
-				if (i != j)
-				{
-					Wall tempWall = walls.at(i).getImageWall(walls.at(j));
-					tempRoom.insertWall(tempWall);
-				}
+				Wall tempWall = walls.at(i).getImageWall(walls.at(j));
+				tempRoom.insertWall(tempWall);
 			}
 			images[i].createImages(tempRoom, reflectionOrder);
 		}

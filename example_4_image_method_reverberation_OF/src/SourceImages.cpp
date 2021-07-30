@@ -110,13 +110,16 @@ void SourceImages::drawSource()
 
 void SourceImages::drawImages(int reflectionOrder)
 {
-	reflectionOrder--;
-	for (int i = 0; i < images.size(); i++)
+	if (reflectionOrder > 0)
 	{
-		ofBox(images[i].getLocation().x, images[i].getLocation().y, images[i].getLocation().z, 0.05);
-		if (reflectionOrder > 0)
+		reflectionOrder--;
+		for (int i = 0; i < images.size(); i++)
 		{
-			images[i].drawImages(reflectionOrder);
+			ofBox(images[i].getLocation().x, images[i].getLocation().y, images[i].getLocation().z, 0.05);
+			if (reflectionOrder > 0)
+			{
+				images[i].drawImages(reflectionOrder);
+			}
 		}
 	}
 }

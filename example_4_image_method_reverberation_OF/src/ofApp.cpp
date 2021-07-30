@@ -5,6 +5,7 @@
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.02f
+#define MAX_REFLECTION_ORDER 3
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -77,7 +78,7 @@ void ofApp::setup(){
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
 	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
-	sourceImages.createImages(mainRoom,3);			//trying second order reflections (only to draw, not to sound)
+	sourceImages.createImages(mainRoom,MAX_REFLECTION_ORDER);			//trying second order reflections (only to draw, not to sound)
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
@@ -104,18 +105,27 @@ void ofApp::draw(){
 
 	ofSetColor(255, 250);									// deault drawing color is white 
 		
-	mainRoom.draw();
-	std::vector<Room> roomImages=mainRoom.getImageRooms();
-	ofPushStyle();
-	ofSetColor(255, 50);									//image rooms are drawn semi-transparent
-	for (int i = 0; i < roomImages.size(); i++) roomImages.at(i).draw();
-	ofSetColor(255, 10);									//second image rooms are drawn almost transparent
-	for (int i = 0; i < roomImages.size(); i++)
+	if (reflectionOrder > 0)
 	{
-		std::vector<Room> roomSecondImages = roomImages.at(i).getImageRooms();
-		for (int j = 0; j < roomSecondImages.size(); j++)
+		mainRoom.draw();
+		if (reflectionOrder > 1)
 		{
-			roomSecondImages.at(j).draw();
+			std::vector<Room> roomImages = mainRoom.getImageRooms();
+			ofPushStyle();
+			ofSetColor(255, 50);									//image rooms are drawn semi-transparent
+			for (int i = 0; i < roomImages.size(); i++) roomImages.at(i).draw();
+			if (reflectionOrder > 2)
+			{
+				ofSetColor(255, 10);									//second image rooms are drawn almost transparent
+				for (int i = 0; i < roomImages.size(); i++)
+				{
+					std::vector<Room> roomSecondImages = roomImages.at(i).getImageRooms();
+					for (int j = 0; j < roomSecondImages.size(); j++)
+					{
+						roomSecondImages.at(j).draw();
+					}
+				}
+			}
 		}
 	}
 	ofPopStyle();
@@ -129,7 +139,7 @@ void ofApp::draw(){
 	ofSetColor(255, 50, 200,50);
 	sourceImages.drawSource();
 	ofSetColor(255, 150, 200,50);
-	sourceImages.drawImages(3);
+	sourceImages.drawImages(reflectionOrder);
 	ofPopStyle();
 	sourceImages.drawRaysToListener(lisenerPosition);
 
@@ -252,6 +262,14 @@ void ofApp::keyPressed(int key){
 	case 'x': //Moves the listener up (--Z)
 		listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
 		listener->SetListenerTransform(listenerTransform);
+		break;
+	case '+': //increases the reflection order 
+		reflectionOrder++;
+		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
+		break;
+	case '-': //decreases the reflection order 
+		reflectionOrder--;
+		if (reflectionOrder <0) reflectionOrder = 0;
 		break;
 
 	}

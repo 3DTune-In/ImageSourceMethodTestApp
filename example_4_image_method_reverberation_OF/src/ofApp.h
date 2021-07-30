@@ -10,7 +10,6 @@
 #include <Common/Vector3.h>
 
 
-
 class ofApp : public ofBaseApp{
 
 	public:
@@ -53,5 +52,6 @@ class ofApp : public ofBaseApp{
 		void LoadWavFile(SoundSource & source, const char* filePath);
 
 		float scale = 100;			//visualization scale
+		int reflectionOrder = 0;	//number of simulated reflections
 		int k=0;					//To listen images
 };

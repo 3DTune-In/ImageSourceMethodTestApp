@@ -16,7 +16,9 @@ public:
 	void updateImages();
 	void drawSource();
 	void drawImages(int reflectionOrder);
-	void drawRaysToListener(Common::CVector3 _listenerLocation);
+	void drawRaysToListener(Common::CVector3 _listenerLocation, int reflectionOrder);
+	void drawFirstReflectionRays(Common::CVector3 _listenerLocation);
+
 
 	void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation);

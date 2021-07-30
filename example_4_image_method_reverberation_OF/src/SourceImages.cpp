@@ -124,7 +124,26 @@ void SourceImages::drawImages(int reflectionOrder)
 	}
 }
 
-void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation)
+void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation, int _reflectionOrder)
+{
+	if (_reflectionOrder > 0)
+	{
+		_reflectionOrder--;
+		for (int i = 0; i < images.size(); i++)
+		{
+			Common::CVector3 tempImageLocation = images.at(i).getLocation();
+			Common::CVector3 reflectionPoint = walls[i].getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
+			if (walls[i].checkPointInsideWall(reflectionPoint))
+			{
+				ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+				ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
+				images.at(i).drawRaysToListener(_listenerLocation, _reflectionOrder);
+			}
+		}
+	}
+}
+
+void SourceImages::drawFirstReflectionRays(Common::CVector3 _listenerLocation)
 {
 	for (int i = 0; i < images.size(); i++)
 	{
@@ -137,6 +156,7 @@ void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation)
 		}
 	}
 }
+
 
 void SourceImages::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
 {

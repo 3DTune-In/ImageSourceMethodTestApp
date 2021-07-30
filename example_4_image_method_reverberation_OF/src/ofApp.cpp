@@ -131,9 +131,10 @@ void ofApp::draw(){
 	ofPopStyle();
 
 	//draw lisener
-	Common::CTransform lisenerTransform = listener->GetListenerTransform();
-	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
-	ofSphere(lisenerPosition.x, lisenerPosition.y, lisenerPosition.z, 0.09);
+	Common::CTransform listenerTransform = listener->GetListenerTransform();
+	Common::CVector3 listenerPosition = listenerTransform.GetPosition();
+	ofSphere(listenerPosition.x, listenerPosition.y, listenerPosition.z, 0.09);
+	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
 
 	ofPushStyle();
 	ofSetColor(255, 50, 200,50);
@@ -141,7 +142,8 @@ void ofApp::draw(){
 	ofSetColor(255, 150, 200,50);
 	sourceImages.drawImages(reflectionOrder);
 	ofPopStyle();
-	sourceImages.drawRaysToListener(lisenerPosition);
+	//sourceImages.drawFirstReflectionRays(listenerPosition);
+	sourceImages.drawRaysToListener(listenerPosition, reflectionOrder);
 
 
 /*

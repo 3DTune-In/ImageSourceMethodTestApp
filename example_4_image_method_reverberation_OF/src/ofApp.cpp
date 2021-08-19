@@ -51,7 +51,6 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 
-	k = (int) mainRoom.getWalls().size();              //To listen images
 
 
 	// Core setup
@@ -295,7 +294,6 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 														
-	k = (k + 1) % 2;      // Toggle k
 }
 
 //--------------------------------------------------------------
@@ -450,12 +448,10 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	source1Wav.FillBuffer(source1);
 
 	sourceImages.processAnechoic(source1, bufferOutput);
-	if (k == 1)
-	{
-		Common::CTransform lisenerTransform = listener->GetListenerTransform();
-		Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
-		sourceImages.processImages(source1, bufferOutput, lisenerPosition);
-	}
+	Common::CTransform lisenerTransform = listener->GetListenerTransform();
+	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
+	sourceImages.processImages(source1, bufferOutput, lisenerPosition, reflectionOrder);
+
 
 /*	// Declaration of stereo buffer
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;

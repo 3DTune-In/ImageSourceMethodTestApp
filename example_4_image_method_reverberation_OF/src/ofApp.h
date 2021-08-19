@@ -1,3 +1,23 @@
+/**
+*
+* \brief This is the header file of a reverberation renderer based in the Image Source Methot (ISM) using 3D Tune-In Toolkit
+* \date	July 2021
+*
+* \authors F. Arebola-Pérez and A. Reyes-Lecuona, members of the 3DI-DIANA Research Group (University of Malaga)
+* \b Contact: A. Reyes-Lecuona as head of 3DI-DIANA Research Group (University of Malaga): areyes@uma.es
+*
+* \b Contributions: (additional authors/contributors can be added here)
+*
+* \b Project: SAVLab (Spatial Audio Virtual Laboratory) ||
+* \b Website: 
+*
+* \b Copyright: University of Malaga - 2021
+*
+* \b Licence: GPLv3
+*
+* \b Acknowledgement: This project has received funding from Spanish Ministerio de Ciencia e Innovación under the SAVLab project (PID2019-107854GB-I00)
+*
+*/
 #pragma once
 
 #include "ofMain.h"
@@ -53,5 +73,4 @@ class ofApp : public ofBaseApp{
 
 		float scale = 100;			//visualization scale
 		int reflectionOrder = 0;	//number of simulated reflections
-		int k=0;					//To listen images
 };

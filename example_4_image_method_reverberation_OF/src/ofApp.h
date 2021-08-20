@@ -50,6 +50,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 	private:	
+		ofTrueTypeFont textFont;
 		Room mainRoom;
 		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;
 		float azimuth;		//Camera azimuth

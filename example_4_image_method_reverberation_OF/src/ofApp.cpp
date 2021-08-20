@@ -95,6 +95,8 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	//////////////////////////////////////begin of 3D drawing//////////////////////////////////////
+	ofPushMatrix();
 	ofScale(scale);
 	ofScale(1, -1, 1);
 	ofTranslate(ofGetWidth() / (scale * 2), -ofGetHeight() / (scale * 2), 0);
@@ -143,6 +145,18 @@ void ofApp::draw(){
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
 	sourceImages.drawRaysToListener(listenerPosition, reflectionOrder);
+
+	ofPopMatrix();
+	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
+
+	/// print number of visible images
+	ofPushStyle();
+	ofSetColor(50, 150);
+	ofRect(ofGetWidth() - 300, 30, 270, 35);
+	ofPopStyle();
+	char numberOfImagesStr[255];
+	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerPosition));
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
 
 
 /*

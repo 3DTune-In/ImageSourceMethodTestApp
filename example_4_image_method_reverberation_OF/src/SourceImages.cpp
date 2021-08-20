@@ -20,6 +20,7 @@ shared_ptr<Binaural::CSingleSourceDSP> SourceImages::getSourceDSP()
 	return sourceDSP;
 }
 
+//FIXME: returns only the first reflections and should return all reflectons uo to a reflection order
 std::vector<shared_ptr<Binaural::CSingleSourceDSP>> SourceImages::getImageSourceDSPs()
 {
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageDSPList;
@@ -30,6 +31,33 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> SourceImages::getImageSource
 	}
 	return imageDSPList;
 }
+
+//FIXME: the condition of visibility is wrong and should be fixed only the first reflection after the source is checked 
+int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3 listenerLocation)
+{
+	int subtotal = 0;
+	if (reflectionOrder > 0)
+	{
+		reflectionOrder--;
+		for (int i = 0; i < walls.size(); i++)
+		{
+			Common::CVector3 reflectionPoint = walls.at(i).getIntersectionPointWithLine(images[i].getLocation(), listenerLocation);
+			if (walls[i].checkPointInsideWall(reflectionPoint))
+			{
+				subtotal++;
+				subtotal+=images.at(i).getNumberOfVisibleImages(reflectionOrder, listenerLocation);
+			}
+
+		}
+		return subtotal;
+	}
+	else
+	{
+		return 0;
+	}
+
+}
+
 
 void SourceImages::setLocation(Common::CVector3 _location)
 {

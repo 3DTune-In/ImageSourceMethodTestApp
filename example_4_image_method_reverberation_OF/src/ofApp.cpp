@@ -11,7 +11,7 @@
 void ofApp::setup(){
 	
 	// Room setup
-
+/*
 	wall_1.insertCorner(1, 2, 0);
 	wall_1.insertCorner(1, -2, 0);
 	wall_1.insertCorner(1, -2, 2);
@@ -50,7 +50,8 @@ void ofApp::setup(){
 	ceiling.insertCorner(-1, 2, 2);
 
 	mainRoom.insertWall(ceiling);
-
+*/
+	mainRoom.setup(3, 2, 2.5);
 
 
 	// Core setup

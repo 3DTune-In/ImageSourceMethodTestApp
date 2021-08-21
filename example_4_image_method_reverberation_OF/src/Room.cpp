@@ -1,6 +1,32 @@
 #include "Room.h"
 #include "ofMain.h"
 
+void Room::setup(float width, float length, float height)
+{
+	Wall front,back,left,right,ceiling,floor;
+	front.insertCorner(length / 2, width / 2, height / 2);
+	front.insertCorner(length / 2, width / 2, -height / 2);
+	front.insertCorner(length / 2, -width / 2, -height / 2);
+	front.insertCorner(length / 2, -width / 2, height / 2);
+	insertWall(front);
+	left.insertCorner(-length / 2, width / 2, height / 2);
+	left.insertCorner(-length / 2, width / 2, -height / 2);
+	left.insertCorner(length / 2, width / 2, -height / 2);
+	left.insertCorner(length / 2, width / 2, height / 2);
+	insertWall(left);
+	right.insertCorner(length / 2, -width / 2, height / 2);
+	right.insertCorner(length / 2, -width / 2, -height / 2);
+	right.insertCorner(-length / 2, -width / 2, -height / 2);
+	right.insertCorner(-length / 2, -width / 2, height / 2);
+	insertWall(right);
+	back.insertCorner(-length / 2, -width / 2, height / 2);
+	back.insertCorner(-length / 2, -width / 2, -height / 2);
+	back.insertCorner(-length / 2, width / 2, -height / 2);
+	back.insertCorner(-length / 2, width / 2, height / 2);
+	insertWall(back);
+
+
+}
 
 void Room::insertWall(Wall _newWall)
 {

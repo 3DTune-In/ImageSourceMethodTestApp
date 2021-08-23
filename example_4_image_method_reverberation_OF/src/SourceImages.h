@@ -49,6 +49,18 @@ class SourceImages
 	*/
 	Common::CVector3 getLocation();
 
+	/** \brief sets the wall where this image was reflected
+	*	\details The first source, which model the original (not reflected) source has not a reflection wall, but all teh images 
+				 should have teh wall where the reflecion is modeled in order to make furtehr calculations
+	*   \param [in] _reflectionWall.
+	*/
+	void setReflectionWall(Wall _reflectionWall);
+
+	/** \brief Returns the  wall where the reflecion produced this image
+	*   \param [out] Reflection wall.
+	*/
+	Wall getReflectionWall();
+
 	/** \brief Returns the 3DTI single source DSP of the original source
 	*   \param [out] SingleSourceDSP: 3DTI single source DSP of the original source.
 	*/
@@ -73,13 +85,16 @@ class SourceImages
 	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation, int _reflectionOrder);
 
 private:
-	std::vector<Wall> walls;										   //List of walls
+	////////////
+	// Attributes
+	////////////
 
+
+	std::vector<Wall> walls;										   //DEPRECATED: List of walls where the source will be reflected. Not used any more, as each image source reminds its reflection wall
+	Wall reflectionWall;											   //Wall which produced current image as a reflection
 	Common::CVector3 sourceLocation;								   //Original source location
-	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				   // Pointer to the original source interface
+	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				   //Pointer to the original source interface
 
-//	std::vector<Common::CVector3> imageLocations;						//List of locations of source images
-//	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> sourceImageDSP;	//List of pointers to source image interfaces
 	std::vector<SourceImages> images;									//recursive list of images
 
 	Binaural::CCore *core;                                              //Core

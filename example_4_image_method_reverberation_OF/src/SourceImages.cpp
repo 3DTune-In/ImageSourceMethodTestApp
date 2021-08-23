@@ -39,10 +39,10 @@ int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3
 	if (reflectionOrder > 0)
 	{
 		reflectionOrder--;
-		for (int i = 0; i < walls.size(); i++)
+		for (int i = 0; i < images.size(); i++)
 		{
-			Common::CVector3 reflectionPoint = walls.at(i).getIntersectionPointWithLine(images[i].getLocation(), listenerLocation);
-			if (walls[i].checkPointInsideWall(reflectionPoint))
+			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), listenerLocation);
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
 			{
 				subtotal++;
 				subtotal+=images.at(i).getNumberOfVisibleImages(reflectionOrder, listenerLocation);
@@ -73,32 +73,28 @@ Common::CVector3 SourceImages::getLocation()
 	return sourceLocation;
 }
 
+void SourceImages::setReflectionWall(Wall _reflectionWall)
+{
+	reflectionWall = _reflectionWall;
+}
+
+Wall SourceImages::getReflectionWall()
+{
+	return reflectionWall;
+}
+
 void SourceImages::createImages(Room _room, int reflectionOrder)
 {
 	reflectionOrder--;
-	walls = _room.getWalls();
+	std::vector<Wall> walls = _room.getWalls();
 	for (int i = 0; i < walls.size(); i++)
 	{
 		SourceImages tempSourceImage;
 
 		Common::CVector3 tempImageLocation = walls[i].getImagePoint(sourceLocation);
-//		imageLocations.push_back(tempImageLocation);   //REMOVE this will be inside the recursive sourceImages
-
-		shared_ptr<Binaural::CSingleSourceDSP> tempsourceImageDSP;
-		
-		tempsourceImageDSP = core->CreateSingleSourceDSP();						               // Creating image audio source
-		Common::CTransform sourceImagePosition;
-		sourceImagePosition.SetPosition(tempImageLocation);
-		tempsourceImageDSP->SetSourceTransform(sourceImagePosition);
-		tempsourceImageDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-		tempsourceImageDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-		tempsourceImageDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-		tempsourceImageDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-		tempsourceImageDSP->EnablePropagationDelay();
-
-//		sourceImageDSP.push_back(tempsourceImageDSP);   //REMOVE this will be inside the recursive sourceImages
 
 		tempSourceImage.setup(*core, tempImageLocation);
+		tempSourceImage.setReflectionWall(walls.at(i));
 
 		images.push_back(tempSourceImage);
 
@@ -118,13 +114,13 @@ void SourceImages::createImages(Room _room, int reflectionOrder)
 
 void SourceImages::updateImages()
 {
-	for (int i = 0; i < walls.size(); i++)
+	for (int i = 0; i < images.size(); i++)
 	{
 		//FIXME: When some images disappear or reappear, this has to be done differently
-		images[i].setLocation(walls[i].getImagePoint(sourceLocation));
+		images[i].setLocation(images.at(i).getReflectionWall().getImagePoint(sourceLocation));
 		// Moves Images
 		Common::CTransform sourceImagePosition;
-		sourceImagePosition.SetPosition(images[i].getLocation());
+		sourceImagePosition.SetPosition(images.at(i).getLocation());
 		images[i].getSourceDSP()->SetSourceTransform(sourceImagePosition);
 
 	}
@@ -160,8 +156,8 @@ void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation, int _
 		for (int i = 0; i < images.size(); i++)
 		{
 			Common::CVector3 tempImageLocation = images.at(i).getLocation();
-			Common::CVector3 reflectionPoint = walls[i].getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
-			if (walls[i].checkPointInsideWall(reflectionPoint))
+			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
 			{
 				ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
 				ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
@@ -175,8 +171,8 @@ void SourceImages::drawFirstReflectionRays(Common::CVector3 _listenerLocation)
 {
 	for (int i = 0; i < images.size(); i++)
 	{
-		Common::CVector3 reflectionPoint = walls[i].getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-		if (walls[i].checkPointInsideWall(reflectionPoint))
+		Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
+		if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
 		{
 			ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
 			ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z, reflectionPoint.x, reflectionPoint.y, reflectionPoint.z);
@@ -205,10 +201,10 @@ void SourceImages::processImages(CMonoBuffer<float> &bufferInput,
 	if (reflectionOrder > 0)
 	{
 		reflectionOrder--;
-		for (int i = 0; i < walls.size(); i++)
+		for (int i = 0; i < images.size(); i++)
 		{
-			Common::CVector3 reflectionPoint = walls.at(i).getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-			if (walls[i].checkPointInsideWall(reflectionPoint))
+			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
 			{
 				Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 

@@ -73,7 +73,7 @@ class SourceImages
 
 	int getNumberOfVisibleImages(int reflectionOrder, Common::CVector3 listenerLocation);
 
-	void createImages(Room _room, int reflectionOrder);
+	void createImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
 	void updateImages();
 	void drawSource();
 	void drawImages(int reflectionOrder);

@@ -3,15 +3,15 @@
 #define SAMPLERATE 44100
 #define BUFFERSIZE 512
 
-#define SOURCE_STEP 0.02f
-#define LISTENER_STEP 0.02f
+#define SOURCE_STEP 0.01f
+#define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 3
 
 //--------------------------------------------------------------
 void ofApp::setup(){
 	
 	// Room setup
-/*
+	/*
 	wall_1.insertCorner(1, 2, 0);
 	wall_1.insertCorner(1, -2, 0);
 	wall_1.insertCorner(1, -2, 2);
@@ -64,8 +64,9 @@ void ofApp::setup(){
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
+	Common::CVector3 listenerLocation(-0.5, 0, 1);
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
-	listenerPosition.SetPosition(Common::CVector3(-0.5, 0, 1));
+	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
@@ -78,7 +79,7 @@ void ofApp::setup(){
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
 	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
-	sourceImages.createImages(mainRoom,MAX_REFLECTION_ORDER);			//trying second order reflections (only to draw, not to sound)
+	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);			//trying second order reflections (only to draw, not to sound)
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup

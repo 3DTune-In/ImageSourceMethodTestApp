@@ -93,6 +93,7 @@ void SourceImages::createImages(Room _room, Common::CVector3 listenerLocation, i
 		Common::CVector3 tempImageLocation = walls[i].getImagePoint(sourceLocation);
 
 		// if the image is closer to the listener than the previous original, that reflection is not real and should not be included
+		// this is equivalent to determine wether source and listener are on the same side of the wall or not
 		if ((listenerLocation - sourceLocation).GetDistance() < (listenerLocation - tempImageLocation).GetDistance())
 		{
 			tempSourceImage.setup(*core, tempImageLocation);

@@ -24,6 +24,16 @@ void Room::setup(float width, float length, float height)
 	back.insertCorner(-length / 2, width / 2, -height / 2);
 	back.insertCorner(-length / 2, width / 2, height / 2);
 	insertWall(back);
+	floor.insertCorner(length / 2, width / 2, -height / 2);
+	floor.insertCorner(-length / 2, width / 2, -height / 2);
+	floor.insertCorner(-length / 2, -width / 2, -height / 2);
+	floor.insertCorner(length / 2, -width / 2, -height / 2);
+	insertWall(floor);
+	ceiling.insertCorner(length / 2, -width / 2, height / 2);
+	ceiling.insertCorner(-length / 2, -width / 2, height / 2);
+	ceiling.insertCorner(-length / 2, width / 2, height / 2);
+	ceiling.insertCorner(length / 2, width / 2, height / 2);
+	insertWall(ceiling);
 
 
 }

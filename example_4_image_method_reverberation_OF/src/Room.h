@@ -18,7 +18,8 @@
 *
 * \b Acknowledgement: This project has received funding from Spanish Ministerio de Ciencia e Innovación under the SAVLab project (PID2019-107854GB-I00)
 *
-*/#pragma once
+*/
+#pragma once
 #include <vector>
 #include "Wall.h"
 
@@ -41,6 +42,7 @@ public:
 	/** \brief insert a new wall in the room
 	*	\details Instead of using the setup method, this method can be used to create any arbitrary room. It should be 
 				 called once per wall to be inserted, after creating a new empty room.
+	*	\param [in] Wall to be inserted.
 	*/
 	void insertWall(Wall newWall);
 

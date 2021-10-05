@@ -72,6 +72,6 @@ class ofApp : public ofBaseApp{
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
 		void LoadWavFile(SoundSource & source, const char* filePath);
 
-		float scale = 100;			//visualization scale
+		float scale = 20;			//visualization scale
 		int reflectionOrder = 0;	//number of simulated reflections
 };

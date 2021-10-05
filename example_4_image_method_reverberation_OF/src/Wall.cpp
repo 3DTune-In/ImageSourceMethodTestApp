@@ -55,6 +55,11 @@ void Wall::setAbsortion(float _absortion)
 	absortion = _absortion;
 }
 
+float Wall::getAbsortion()
+{
+	return absortion;
+}
+
 Common::CVector3 Wall::getNormal()
 {
 	//Common::CVector3 normal, p1, p2; 
@@ -204,7 +209,7 @@ Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common:
 bool  Wall::checkPointInsideWall(Common::CVector3 point)
 {
 	float modulus = getDistanceFromPoint(point);
-	if (modulus > THRESHOLD) return FALSE;        // Point is not in the wall
+	if (modulus > THRESHOLD) return FALSE;        // Point is not in the wall's plane
 
 	double m1, m2, anglesum=0, costheta, anglediff;
 	Common::CVector3 p1, p2;

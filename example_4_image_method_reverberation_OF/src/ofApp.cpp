@@ -5,13 +5,13 @@
 
 #define SOURCE_STEP 0.01f
 #define LISTENER_STEP 0.01f
-#define MAX_REFLECTION_ORDER 3
+#define MAX_REFLECTION_ORDER 4
 
 //--------------------------------------------------------------
 void ofApp::setup(){
 	
 	// Room setup
-	/*
+/*
 	wall_1.insertCorner(1, 2, 0);
 	wall_1.insertCorner(1, -2, 0);
 	wall_1.insertCorner(1, -2, 2);
@@ -51,7 +51,7 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 */
-	mainRoom.setup(3, 2, 2.5);
+	mainRoom.setup(10, 7, 3);
 
 
 	// Core setup
@@ -139,6 +139,7 @@ void ofApp::draw(){
 	ofSphere(listenerPosition.x, listenerPosition.y, listenerPosition.z, 0.09);
 	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
 
+	//draw sources
 	ofPushStyle();
 	ofSetColor(255, 50, 200,50);
 	sourceImages.drawSource();

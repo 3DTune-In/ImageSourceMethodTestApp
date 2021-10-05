@@ -71,17 +71,70 @@ class SourceImages
 	*/
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> getImageSourceDSPs();
 
+	/** \brief Returns the number of images whcih are visible to teh listener (real reflections) 
+	*	\details Given a location of the listener, this method computes how many images are active because they are visible to the listener
+				 To do so it iterates the whole recursive tree up to a given order checking it the sources are visible or not
+	*	\param [in] ReflectionOrder: number of reflections cosidered.
+	*   \param [in] ListenerLocation: Location of the Listener in the 3DTI toolkit
+	*	\param [out] Number_Images: number of visible images.
+	*/
 	int getNumberOfVisibleImages(int reflectionOrder, Common::CVector3 listenerLocation);
 
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void createImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
+
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void updateImages();
+
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void drawSource();
+
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void drawImages(int reflectionOrder);
+
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void drawRaysToListener(Common::CVector3 _listenerLocation, int reflectionOrder);
+
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void drawFirstReflectionRays(Common::CVector3 _listenerLocation);
 
 
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
+
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
 	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation, int _reflectionOrder);
 
 private:

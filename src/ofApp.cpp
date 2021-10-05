@@ -3,7 +3,7 @@
 #define SAMPLERATE 44100
 #define BUFFERSIZE 512
 
-#define SOURCE_STEP 0.01f
+#define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 4
 
@@ -78,7 +78,7 @@ void ofApp::setup(){
 
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
-	sourceImages.setup(myCore, Common::CVector3(0.5, -1, 1));
+	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));
 	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);			//trying second order reflections (only to draw, not to sound)
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 

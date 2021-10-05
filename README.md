@@ -1,57 +1,35 @@
-# 3dti_AudioToolkit_Examples
-This is a repository containing examples to show how to use the 3D Tune-In Toolkit library, which is located here: https://github.com/3DTune-In/3dti_AudioToolkit. This examples include as a submodule the 3D Tune-In Toolkit as well as some 3rd party libraries which are listed below.
+Example that shows how to implements image source method using the 3DTI Toolkit and OpenFramework, with a Visual Studio project
 
-Technical details about the 3D Tune-In Toolkit spatialiser are described in:
+Folder Content
+-
 
-Cuevas-Rodríguez M, Picinali L, González-Toledo D, Garre C, de la Rubia-Cuestas E, Molina-Tanco L and Reyes-Lecuona A. (2019) 3D Tune-In Toolkit: An open-source library for real-time binaural spatialisation. PLOS ONE 14(3): e0211899. https://doi.org/10.1371/journal.pone.0211899
+- resources: files needed by the example program to work (HRTF, BRIR and audio files). These files must be copied into the same folder as the solution file.
+- src: source files of the image source method TestApp project 
+- vstudio: VisualStudio proyect files
 
-**The structure of the repository is as follows:**
-```
-3dti_AudioToolkit_Examples
-├── 3dti_AudioToolkit
-├── third_party_libraries
-|   ├── portaudio
-|   └── rtaudio
-├── example_1_basic_spatialisation_rtaudio
-├── example_2_basic_spatialisation_portAudio
-└── example_3_basic_spatialisation_OF
-```
+How to Build and Run in Windows
+-
+1. Download Openframework for Windows from https://openframeworks.cc/download/. Lastest version tested: of_v0.11.2_vs2017_release
 
-## List of included examples
+2. Clone the repository in a folder (you can call it "ImageSourceMethodTestApp") inside the openFramework folder.
 
-**Note:** For more information about each example, please go to README files in the example folder.
-### Example 1. Basic spatialisation using RTAudio
-This example spatialize two static sources using RTAudio as the audio library. HRTF and BRIR for the spatialisation as well as sample clips are provided in the resource folder.
-### Example 2. Basic spatialisation using PortAudio
-This example spatialize two static sources using PortAudio as the audio library. HRTF and BRIR for the spatialisation as well as sample clips are provided in the resource folder.
-### Example 3. Basic spatialisation using openFramework
-This example spatialize two anechoic static sources using openFramework to manage the audio. HRTF for the spatialisation as well as sample clips are provided in the resource folder.
+3. Clone the submodules ("3dti_AudioToolkit") inside the openFramework folder .
 
-## External content distributed together with this software 
+4. Open the solution `Image_Source_Method_TestApp.sln` located at 
+`localPath\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\vstudio` 
+This has been tested with Visual Studio 2017 (v141) and Windows SDK 10.0.17763.0. To be able to build the 'libsofa' project, add (using VS Installer) the Visual C++ build tool called "VC++ 2015.3 v140 toolset".
 
-*	HRTF file extracted from the LISTEN database and processed to extract ITD.
+5. Compile the project for the first time. 
 
-*	Audio clips are extracted from Music from Archimedes, Bang&Olufsen, 1992. 
+6. Run the project
 
-## Credits
+**Note 1**: To run the project from VisualStudio, copy all the files from the folder 
+`localPath\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\resources`
+into the same folder as the project solution or the folder containing the exe file if you are going to run it directly.
 
-This software is being developed by a team coordinated by 
--	[Arcadio Reyes-Lecuona](https://github.com/areyesl) ([University of Malaga](https://www.uma.es/)). Contact: areyes@uma.es  
-
-The current members of the development team are (in alphabetical order):
-- [Maria Cuevas-Rodriguez](https://github.com/mariacuevas)
-- [Daniel Gonzalez-Toledo](https://github.com/dgonzalezt) 
-- [Luis Molina-Tanco](https://github.com/lmtanco) 
-
-Former members of the development team are (in alphabetical order):
-- [Gonzalo Bueno Santana](https://github.com/gonzupi) (Joinined the team Feb 2020, to Jul 2020)
-- [Carlos Garre](https://github.com/carlosgarre) (Left the team Jan 2018)
-- [Angel Rodriguez-Rivero](https://github.com/ardgzrivero) (Joined the team Feb 2018 to Jul 2019)
-- [Ernesto de la Rubia](https://github.com/ernestodelarubia) (Left the team Apr 2018)
+**Note 2:** The use of the third party library Libsofa may require the user to add to the environment variable PATH the **absolute** path of the folder containing the libsofa libs. For example, in a 64-bit Microsoft Windows, you can find that folder in `3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\dependencies\lib\win\x64`
 
 
-## Acknowledgements 
 
-![European Union](EU_flag.png "European Union") This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 644051 
 
-We would like to acknowledge Dr. Brian FG Katz and his team for their contributions in the field of sound spatialization, which were used as the basis for part of this software.
+

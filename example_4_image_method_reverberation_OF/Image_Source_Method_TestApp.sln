@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1525
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example_3_basic_spatialisation_OF", "example_3_basic_spatialisation_OF.vcxproj", "{7FD42DF7-442E-479A-BA76-D0022F99702A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "image_source_method", "image_source_method.vcxproj", "{7FD42DF7-442E-479A-BA76-D0022F99702A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9B195338-5AD8-446A-B59D-4171039F086F} = {9B195338-5AD8-446A-B59D-4171039F086F}
 		{CAC1614C-FACF-45E4-883E-C882558A9DFF} = {CAC1614C-FACF-45E4-883E-C882558A9DFF}

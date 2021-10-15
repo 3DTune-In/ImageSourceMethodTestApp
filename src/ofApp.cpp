@@ -3,15 +3,17 @@
 #define SAMPLERATE 44100
 #define BUFFERSIZE 512
 
-#define SOURCE_STEP 0.02f
+#define SOURCE_STEP 0.01f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 4
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	
+	ofSetVerticalSync(true);
+	//float targetRate = ofGetFrameRate();
+	//ofSetFrameRate(40);
 	// Room setup
-/*
+	/*
 	wall_1.insertCorner(1, 2, 0);
 	wall_1.insertCorner(1, -2, 0);
 	wall_1.insertCorner(1, -2, 2);
@@ -23,13 +25,13 @@ void ofApp::setup(){
 	wall_2.insertCorner(-1, -3, 2);
 	wall_2.insertCorner(1, -2, 2);
 	mainRoom.insertWall(wall_2);
-
+	
 	wall_3.insertCorner(-1, 2, 0);
 	wall_3.insertCorner(1, 2, 0);
 	wall_3.insertCorner(1, 2, 2);
 	wall_3.insertCorner(-1, 2, 2);
 	mainRoom.insertWall(wall_3);
-
+	*/
 	wall_4.insertCorner(-1, -3, 0);
 	wall_4.insertCorner(-1, 2, 0);
 	wall_4.insertCorner(-1, 2, 2);
@@ -39,19 +41,21 @@ void ofApp::setup(){
 	floor.insertCorner(1, -2, 0);
 	floor.insertCorner(1, 2, 0);
 	floor.insertCorner(-1, 2, 0);
-	//floor.insertCorner(-1, -3, 0); 
-	floor.insertCorner(-1, -3, 1);      // error coord. Z	
+	floor.insertCorner(-1, -3, 0); 
+	//floor.insertCorner(-1, -3, 1);      // error coord. Z	
 
 	mainRoom.insertWall(floor);
 
+	/*
 	ceiling.insertCorner(1, 2, 2); 
 	ceiling.insertCorner(1, -2, 2);
 	ceiling.insertCorner(-1, -3, 2);
 	ceiling.insertCorner(-1, 2, 2);
 
 	mainRoom.insertWall(ceiling);
-*/
-	mainRoom.setup(10, 7, 3);
+	*/
+
+	//mainRoom.setup(8, 4, 2.5);
 
 
 	// Core setup
@@ -133,10 +137,14 @@ void ofApp::draw(){
 	}
 	ofPopStyle();
 
+	//draw Axis
+	ofSetLineWidth(2);
+	ofDrawAxis(16);
+
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerPosition = listenerTransform.GetPosition();
-	ofSphere(listenerPosition.x, listenerPosition.y, listenerPosition.z, 0.09);
+	ofSphere(listenerPosition.x, listenerPosition.y, listenerPosition.z, 0.2);
 	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
 
 	//draw sources
@@ -147,6 +155,7 @@ void ofApp::draw(){
 	sourceImages.drawImages(reflectionOrder);
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
+	ofSetLineWidth(1);
 	sourceImages.drawRaysToListener(listenerPosition, reflectionOrder);
 
 	ofPopMatrix();
@@ -161,57 +170,13 @@ void ofApp::draw(){
 	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerPosition));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
 
+	/// print number of frames
+	char numberOfFramesStr[255];
+	sprintf(numberOfFramesStr, "Number of frames: %d", (int) (ofGetFrameRate()+0.01));
+	ofDrawBitmapString(numberOfFramesStr, ofGetWidth() - 280, 70);
 
-/*
-	//Common::CVector3 P(-0.5, 0.5, 0.5);
-
-	Common::CVector3 sourceLocation = sourceImages.getLocation();
-
-	Common::CVector3 P(sourceLocation.x, sourceLocation.y, sourceLocation.z);
-
-	Common::CVector3 R(0, 0, 0), Q(0,0,0);
-		
-	Q = wall_1.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_1.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	bool proof = FALSE;
-	proof = wall_1.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-	Q = wall_2.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_2.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	proof = FALSE;
-	proof = wall_2.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-	Q = wall_3.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_3.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	proof = FALSE;
-	proof = wall_3.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-	Q = wall_4.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_4.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	proof = FALSE;
-	proof = wall_4.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-*/
+	
+	
 }
 
 //--------------------------------------------------------------
@@ -289,7 +254,6 @@ void ofApp::keyPressed(int key){
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
 		break;
-
 	}
 }
 

@@ -31,7 +31,7 @@ int Wall::insertCorner(float _x, float _y, float _z)
 	{
 		double diff = _x * A + _y * B + _z * C + D;
 		diff = fabs(diff);
-	    if (diff < THRESHOLD) // ¿DBL_EPSILON? ¿THRESHOLD?
+	    if (diff <= THRESHOLD) // ¿DBL_EPSILON? ¿THRESHOLD?
 	    {
 			polygon.push_back(tempCorner);
 			return 1;
@@ -209,28 +209,56 @@ Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common:
 bool  Wall::checkPointInsideWall(Common::CVector3 point)
 {
 	float modulus = getDistanceFromPoint(point);
-	if (modulus > THRESHOLD) return FALSE;        // Point is not in the wall's plane
+	if (modulus > THRESHOLD) 
+	  return FALSE;        // Point is not in the wall's plane
 
-	double m1, m2, anglesum=0, costheta, anglediff;
+	double m1, m2, anglesum=0.0, costheta=0.0, anglediff;
 	Common::CVector3 p1, p2;
+	double p1x, p1y, p1z, p2x, p2y, p2z;
 	int n = polygon.size();
 		
 	for (auto i = 0; i<n; i++) 
 	{
+		/*
 		p1.x = polygon[i].x - point.x;
 		p1.y = polygon[i].y - point.y;
 		p1.z = polygon[i].z - point.z;
 		p2.x = polygon[(i + 1) % n].x - point.x;
 		p2.y = polygon[(i + 1) % n].y - point.y;
 		p2.z = polygon[(i + 1) % n].z - point.z;
-		m1 = p1.GetDistance();
-		m2 = p2.GetDistance();
+		*/
+		p1x = polygon[i].x - point.x;
+		p1y = polygon[i].y - point.y;
+		p1z = polygon[i].z - point.z;
+		p2x = polygon[(i + 1) % n].x - point.x;
+		p2y = polygon[(i + 1) % n].y - point.y;
+		p2z = polygon[(i + 1) % n].z - point.z;
+		
+		m1 = (double) p1.GetDistance();
+		m2 = (double) p2.GetDistance();
+
 		if (m1*m2 <= THRESHOLD)
 			return TRUE;                     // Point is on a corner of the wall,
 		else
-			costheta = (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (m1*m2);
+		{
+			//costheta = (double) (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (double) (m1*m2);
+			//costheta = (double)(p1x*p2x + p1y*p2y + p1z*p2z) / (double)(m1*m2);
+			
+			costheta =  (double) p1x*p2x;
+			costheta += (double) p1y*p2y;
+			costheta += (double) p1z*p2z;
+			costheta /= (double) m1;
+			costheta /= (double) m2;
+			
+		}
 
-		anglesum += acos(costheta);
+		//safe
+		if (costheta < -1.0) 
+			costheta = -1.0;
+		else if (costheta > 1.0) 
+			costheta = 1.0;
+
+		anglesum += acos (costheta);
     }
 	anglediff = fabs(TWOPI - anglesum);
     if (anglediff < THRESHOLD)

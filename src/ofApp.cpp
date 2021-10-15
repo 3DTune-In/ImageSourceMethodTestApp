@@ -31,20 +31,20 @@ void ofApp::setup(){
 	wall_3.insertCorner(1, 2, 2);
 	wall_3.insertCorner(-1, 2, 2);
 	mainRoom.insertWall(wall_3);
-	*/
+	
 	wall_4.insertCorner(-1, -3, 0);
 	wall_4.insertCorner(-1, 2, 0);
 	wall_4.insertCorner(-1, 2, 2);
 	wall_4.insertCorner(-1, -3, 2);
 	mainRoom.insertWall(wall_4);
-
+	/*
 	floor.insertCorner(1, -2, 0);
 	floor.insertCorner(1, 2, 0);
 	floor.insertCorner(-1, 2, 0);
 	floor.insertCorner(-1, -3, 0); 
-	//floor.insertCorner(-1, -3, 1);      // error coord. Z	
+	*/
 
-	mainRoom.insertWall(floor);
+	// mainRoom.insertWall(floor);
 
 	/*
 	ceiling.insertCorner(1, 2, 2); 
@@ -55,7 +55,7 @@ void ofApp::setup(){
 	mainRoom.insertWall(ceiling);
 	*/
 
-	//mainRoom.setup(8, 4, 2.5);
+	mainRoom.setup(8, 4, 2.5);
 
 
 	// Core setup

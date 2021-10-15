@@ -2,7 +2,7 @@
 #include "Wall.h"
 
 #ifndef THRESHOLD
-#define THRESHOLD 0.000001f
+#define THRESHOLD 0.00005f
 #endif
 
 #define TWOPI 6.283185307179586476925287
@@ -219,20 +219,20 @@ bool  Wall::checkPointInsideWall(Common::CVector3 point)
 		
 	for (auto i = 0; i<n; i++) 
 	{
-		/*
+		
 		p1.x = polygon[i].x - point.x;
 		p1.y = polygon[i].y - point.y;
 		p1.z = polygon[i].z - point.z;
 		p2.x = polygon[(i + 1) % n].x - point.x;
 		p2.y = polygon[(i + 1) % n].y - point.y;
 		p2.z = polygon[(i + 1) % n].z - point.z;
-		*/
-		p1x = polygon[i].x - point.x;
-		p1y = polygon[i].y - point.y;
-		p1z = polygon[i].z - point.z;
-		p2x = polygon[(i + 1) % n].x - point.x;
-		p2y = polygon[(i + 1) % n].y - point.y;
-		p2z = polygon[(i + 1) % n].z - point.z;
+		
+		p1x = (double) polygon[i].x - point.x;
+		p1y = (double) polygon[i].y - point.y;
+		p1z = (double) polygon[i].z - point.z;
+		p2x = (double) polygon[(i + 1) % n].x - point.x;
+		p2y = (double) polygon[(i + 1) % n].y - point.y;
+		p2z = (double) polygon[(i + 1) % n].z - point.z;
 		
 		m1 = (double) p1.GetDistance();
 		m2 = (double) p2.GetDistance();
@@ -260,11 +260,15 @@ bool  Wall::checkPointInsideWall(Common::CVector3 point)
 
 		anglesum += acos (costheta);
     }
+
 	anglediff = fabs(TWOPI - anglesum);
+	
     if (anglediff < THRESHOLD)
 		return TRUE;
 	else
 		return FALSE;
+
+	
 }
 
 void Wall::calculate_ABCD()

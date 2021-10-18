@@ -43,6 +43,11 @@ void Room::insertWall(Wall _newWall)
 	walls.push_back(_newWall);
 }
 
+void Room::deleteWall()
+{
+	if (walls.size() > 0) walls.pop_back();
+}
+
 std::vector<Wall> Room::getWalls()
 {
 	return walls;
@@ -72,3 +77,4 @@ void Room::draw()
 		walls[i].drawNormal();
 	}
 }
+

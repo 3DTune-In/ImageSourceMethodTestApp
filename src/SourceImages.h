@@ -86,6 +86,13 @@ class SourceImages
 	*   \param [in]
 	*/
 	void createImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
+	
+	/** \brief
+	*	\details
+	*	\param [in]
+	*   \param [in]
+	*/
+	void deleteImages();
 
 	/** \brief
 	*	\details

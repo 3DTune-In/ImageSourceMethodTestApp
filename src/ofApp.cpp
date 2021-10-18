@@ -254,6 +254,14 @@ void ofApp::keyPressed(int key){
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
 		break;
+	case 'q': //quit last wall of the room
+		mainRoom.deleteWall();
+		sourceImages.deleteImages();
+		std::vector<Room> roomImages = mainRoom.getImageRooms();
+		sourceImages.createImages(mainRoom, listenerTransform.GetPosition(), MAX_REFLECTION_ORDER);
+		sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerTransform.GetPosition());
+		//ofApp::draw();
+		break;
 	}
 }
 

@@ -117,6 +117,13 @@ void SourceImages::createImages(Room _room, Common::CVector3 listenerLocation, i
 	}
 }
 
+void SourceImages::deleteImages()
+{
+	int numImages  = images.size();
+	for (int i = 0; i < numImages; i++) 
+		images.pop_back();
+}
+
 void SourceImages::updateImages()
 {
 	for (int i = 0; i < images.size(); i++)

@@ -2,7 +2,7 @@
 #include "Wall.h"
 
 #ifndef THRESHOLD
-#define THRESHOLD 0.00005f
+#define THRESHOLD 0.000005f
 #endif
 
 #define TWOPI 6.283185307179586476925287
@@ -241,15 +241,15 @@ bool  Wall::checkPointInsideWall(Common::CVector3 point)
 			return TRUE;                     // Point is on a corner of the wall,
 		else
 		{
-			//costheta = (double) (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (double) (m1*m2);
+			costheta = (double) (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (double) (m1*m2);
 			//costheta = (double)(p1x*p2x + p1y*p2y + p1z*p2z) / (double)(m1*m2);
-			
+			/*
 			costheta =  (double) p1x*p2x;
 			costheta += (double) p1y*p2y;
 			costheta += (double) p1z*p2z;
 			costheta /= (double) m1;
 			costheta /= (double) m2;
-			
+			*/
 		}
 
 		//safe

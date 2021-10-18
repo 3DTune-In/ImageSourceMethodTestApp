@@ -46,6 +46,10 @@ public:
 	*/
 	void insertWall(Wall newWall);
 
+	/** \brief delete last wall in the room
+	*/
+	void deleteWall();
+
 	/** \brief Returns a vector of walls containing all the walls of the room.
 	*	\param [out] Walls: vector of walls with all the walls of the room.
 	*/

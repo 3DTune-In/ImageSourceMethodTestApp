@@ -89,30 +89,33 @@ void SourceImages::createImages(Room _room, Common::CVector3 listenerLocation, i
 	std::vector<Wall> walls = _room.getWalls();
 	for (int i = 0; i < walls.size(); i++)
 	{
-		SourceImages tempSourceImage;
-		Common::CVector3 tempImageLocation = walls[i].getImagePoint(sourceLocation);
-
-		// if the image is closer to the listener than the previous original, that reflection is not real and should not be included
-		// this is equivalent to determine wether source and listener are on the same side of the wall or not
-		if ((listenerLocation - sourceLocation).GetDistance() < (listenerLocation - tempImageLocation).GetDistance())
+		if (walls.at(i).isActive())
 		{
-			tempSourceImage.setup(*core, tempImageLocation);
-			tempSourceImage.setReflectionWall(walls.at(i));
+			SourceImages tempSourceImage;
+			Common::CVector3 tempImageLocation = walls[i].getImagePoint(sourceLocation);
 
-			if (reflectionOrder > 0)
+			// if the image is closer to the listener than the previous original, that reflection is not real and should not be included
+			// this is equivalent to determine wether source and listener are on the same side of the wall or not
+			if ((listenerLocation - sourceLocation).GetDistance() < (listenerLocation - tempImageLocation).GetDistance())
 			{
-				// We need to calculate the image room before asking for all the new images
+				tempSourceImage.setup(*core, tempImageLocation);
+				tempSourceImage.setReflectionWall(walls.at(i));
 
-				Room tempRoom;
-				for (int j = 0; j < walls.size(); j++)
+				if (reflectionOrder > 0)
 				{
-					Wall tempWall = walls.at(i).getImageWall(walls.at(j));
-					tempRoom.insertWall(tempWall);
+					// We need to calculate the image room before asking for all the new images
+					Room tempRoom;
+					for (int j = 0; j < walls.size(); j++)
+					{
+						Wall tempWall = walls.at(i).getImageWall(walls.at(j));
+						tempRoom.insertWall(tempWall);
+					}
+					tempSourceImage.createImages(tempRoom, listenerLocation, reflectionOrder);
+					surroundingRoom = tempRoom;
 				}
-				tempSourceImage.createImages(tempRoom, listenerLocation, reflectionOrder);
-			}
 
-			images.push_back(tempSourceImage);
+				images.push_back(tempSourceImage);
+			}
 		}
 	}
 }
@@ -131,6 +134,12 @@ void SourceImages::updateImages()
 	}
 }
 
+void SourceImages::refresh(Room _room, Common::CVector3 listenerLocation, int reflectionOrder)
+{
+	images.clear();
+	createImages(_room, listenerLocation, reflectionOrder);
+}
+
 void SourceImages::drawSource()
 {
 	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);
@@ -144,10 +153,13 @@ void SourceImages::drawImages(int reflectionOrder)
 		reflectionOrder--;
 		for (int i = 0; i < images.size(); i++)
 		{
-			ofBox(images[i].getLocation().x, images[i].getLocation().y, images[i].getLocation().z, 0.2);
-			if (reflectionOrder > 0)
+			if (images.at(i).reflectionWall.isActive())
 			{
-				images[i].drawImages(reflectionOrder);
+				ofBox(images[i].getLocation().x, images[i].getLocation().y, images[i].getLocation().z, 0.2);
+				if (reflectionOrder > 0)
+				{
+					images[i].drawImages(reflectionOrder);
+				}
 			}
 		}
 	}

@@ -52,7 +52,8 @@ void ofApp::setup(){
 	mainRoom.insertWall(ceiling);
 */
 	mainRoom.setup(10, 7, 3);
-
+	mainRoom.disableWall(4);
+	mainRoom.disableWall(5);
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
@@ -218,6 +219,7 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
+	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 
 	switch (key)
 	{
@@ -289,7 +291,104 @@ void ofApp::keyPressed(int key){
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
 		break;
+	case '1': //enable/disable wall number 1 
+		if (mainRoom.getWalls().at(0).isActive())
+		{
+			mainRoom.disableWall(0);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);			
+			systemSoundStream.start();
+		}
+		else
+		{
+			mainRoom.enableWall(0);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
 
+		}
+		break;
+	case '2': //enable/disable wall number 2 
+		if (mainRoom.getWalls().at(1).isActive())
+		{
+			mainRoom.disableWall(1);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		else
+		{
+			mainRoom.enableWall(1);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		break;
+
+	case '3': //enable/disable wall number 2 
+		if (mainRoom.getWalls().at(2).isActive())
+		{
+			mainRoom.disableWall(2);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		else
+		{
+			mainRoom.enableWall(2);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		break;
+	case '4': //enable/disable wall number 2 
+		if (mainRoom.getWalls().at(3).isActive())
+		{
+			mainRoom.disableWall(3);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		else
+		{
+			mainRoom.enableWall(3);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		break;
+	case '5': //enable/disable wall number 2 
+		if (mainRoom.getWalls().at(4).isActive())
+		{
+			mainRoom.disableWall(4);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		else
+		{
+			mainRoom.enableWall(4);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		break;
+	case '6': //enable/disable wall number 2 
+		if (mainRoom.getWalls().at(5).isActive())
+		{
+			mainRoom.disableWall(5);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		else
+		{
+			mainRoom.enableWall(5);
+			systemSoundStream.stop();
+			sourceImages.refresh(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			systemSoundStream.start();
+		}
+		break;
 	}
 }
 

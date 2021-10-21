@@ -46,6 +46,18 @@ public:
 	*/
 	void insertWall(Wall newWall);
 
+	/** \brief Makes one of the room's walls active
+	*	\details Sets the i-th wall of the room as active and therefore reflective.
+	*	\param [in] index of the wall to be active.
+	*/
+	void enableWall(int wallIndex);
+
+	/** \brief Makes one of the room's walls transparent
+	*	\details Sets the i-th wall of the room as not active and therefore transparent.
+	*	\param [in] index of the wall to be active.
+	*/
+	void disableWall(int wallIndex);
+
 	/** \brief Returns a vector of walls containing all the walls of the room.
 	*	\param [out] Walls: vector of walls with all the walls of the room.
 	*/

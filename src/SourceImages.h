@@ -94,6 +94,14 @@ class SourceImages
 	*/
 	void updateImages();
 
+	/** \brief refresh source images
+	*	\details removes all the images and creates them again to refresh which ones are active. This method
+	*			 should be invoked after disabling or enabling walls
+	*	\param [in]
+	*   \param [in]
+	*/
+	void refresh(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
+
 	/** \brief
 	*	\details
 	*	\param [in]
@@ -143,14 +151,15 @@ private:
 	////////////
 
 
-	std::vector<Wall> walls;										   //DEPRECATED: List of walls where the source will be reflected. Not used any more, as each image source reminds its reflection wall
-	Wall reflectionWall;											   //Wall which produced current image as a reflection
-	Common::CVector3 sourceLocation;								   //Original source location
-	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;				   //Pointer to the original source interface
+	std::vector<Wall> walls;								//DEPRECATED: List of walls where the source will be reflected. Not used any more, as each image source reminds its reflection wall
+	Wall reflectionWall;									//Wall which produced current image as a reflection
+	Room surroundingRoom;									//Room to generate further images reflectin in its walls
+	Common::CVector3 sourceLocation;						//Original source location
+	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;		//Pointer to the original source interface
 
-	std::vector<SourceImages> images;									//recursive list of images
+	std::vector<SourceImages> images;						//recursive list of images
 
-	Binaural::CCore *core;                                              //Core
+	Binaural::CCore *core;                                  //Core
 	
 };
 

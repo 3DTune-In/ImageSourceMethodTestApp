@@ -184,6 +184,7 @@ Wall Wall::getImageWall(Wall _wall)
 		Common::CVector3 tempImageCorner = getImagePoint(corners.at(i));
 		tempWall.insertCorner(tempImageCorner);
 	}
+	if(!_wall.isActive()) tempWall.disable();
 	return tempWall;
 }
 

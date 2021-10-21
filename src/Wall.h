@@ -129,6 +129,24 @@ public:
 	*/
 	bool checkPointInsideWall(Common::CVector3 point);
 
+	/** \brief Enable the wall.
+	*	\details Every wall can be active (it reflects) or not (i does not reflect anything, so it is as it does not exist.
+				 This methof sets the wall as active.
+	*/
+	void enable() { active = true; }
+
+	/** \brief Disable the wall.
+	*	\details Every wall can be active (it reflects) or not (i does not reflect anything, so it is as it does not exist.
+			 This method sets the wall as incative.
+	*/
+	void disable() { active = false; }
+
+	/** \brief Returns wether the wall is active or not.
+	*	\details Every wall can be active (it reflects) or not (i does not reflect anything, so it is as it does not exist.
+			 This method returs wether the wall is active or not.
+	*/
+	bool isActive() { return active; }
+
 	/** \brief Draws the wall.
 	*	\details Draws the wall with lines between each pair of consecutive vertices.
 	*/
@@ -154,6 +172,7 @@ private:
 	////////////
 	std::vector<Common::CVector3> polygon;	// corners of the wall
 	float absortion = 0;					// Absortion coeficient (0 = no absortion; 1 = no reflection)
+	bool active = true;						//sets wether the wall is active or not (if false, the wall is transparent)
 
 	float A, B, C, D;						// General Plane Eq.: Ax + By + Cz + D = 0
 		

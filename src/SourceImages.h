@@ -49,13 +49,6 @@ class SourceImages
 	*/
 	Common::CVector3 getLocation();
 
-	/** \brief sets the wall where this image was reflected
-	*	\details The first source, which model the original (not reflected) source has not a reflection wall, but all teh images 
-				 should have teh wall where the reflecion is modeled in order to make furtehr calculations
-	*   \param [in] _reflectionWall.
-	*/
-	void setReflectionWall(Wall _reflectionWall);
-
 	/** \brief Returns the  wall where the reflecion produced this image
 	*   \param [out] Reflection wall.
 	*/
@@ -100,7 +93,7 @@ class SourceImages
 	*	\param [in]
 	*   \param [in]
 	*/
-	void refresh(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
+	void refreshImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
 
 	/** \brief
 	*	\details
@@ -146,6 +139,19 @@ class SourceImages
 	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation, int _reflectionOrder);
 
 private:
+
+///////////////////
+// Private Methods
+///////////////////
+
+/** \brief sets the wall where this image was reflected
+*	\details The first source, which model the original (not reflected) source has not a reflection wall, but all teh images
+			 should have teh wall where the reflecion is modeled in order to make furtehr calculations
+*   \param [in] _reflectionWall.
+*/
+	void setReflectionWall(Wall _reflectionWall);
+
+
 	////////////
 	// Attributes
 	////////////

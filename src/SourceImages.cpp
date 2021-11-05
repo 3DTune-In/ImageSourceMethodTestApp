@@ -134,7 +134,7 @@ void SourceImages::updateImages()
 	}
 }
 
-void SourceImages::refresh(Room _room, Common::CVector3 listenerLocation, int reflectionOrder)
+void SourceImages::refreshImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder)
 {
 	images.clear();
 	createImages(_room, listenerLocation, reflectionOrder);

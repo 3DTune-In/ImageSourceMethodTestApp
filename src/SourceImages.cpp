@@ -64,7 +64,7 @@ void SourceImages::setLocation(Common::CVector3 _location)
 	sourceLocation = _location;
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(_location);									 
-	sourceDSP->SetSourceTransform(sourcePosition);					//Set source position
+	sourceDSP->SetSourceTransform(sourcePosition);					//Set source position (this will be removed as the DSP will be hancled by the application
 	updateImages();
 }
 
@@ -72,6 +72,29 @@ Common::CVector3 SourceImages::getLocation()
 {
 	return sourceLocation;
 }
+
+void SourceImages::getImageLocations(std::vector<Common::CVector3> &imageSourceList,
+	int reflectionOrder)
+{
+	if (reflectionOrder > 0)
+	{
+		reflectionOrder--;
+		for (int i = 0; i < images.size(); i++)
+		{
+//			if (images.at(i).reflectionWall.isActive())//////////////////////////////////////////////////////////////////
+			{
+				imageSourceList.push_back(images.at(i).getLocation());
+				if (reflectionOrder > 0)
+				{
+					images.at(i).getImageLocations(imageSourceList, reflectionOrder);
+				}
+			}
+		}
+	}
+
+}
+
+
 
 void SourceImages::setReflectionWall(Wall _reflectionWall)
 {

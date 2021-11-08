@@ -184,13 +184,15 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\ofApp.cpp" />
     <ClCompile Include="..\src\Room.cpp" />
-    <ClCompile Include="..\src\SoundSourcer.cpp" />
+    <ClCompile Include="..\src\ISM.cpp" />
+    <ClCompile Include="..\src\SoundSource.cpp" />
     <ClCompile Include="..\src\SourceImages.cpp" />
     <ClCompile Include="..\src\Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ofApp.h" />
     <ClInclude Include="..\src\Room.h" />
+    <ClInclude Include="..\src\ISM.h" />
     <ClInclude Include="..\src\SoundSource.h" />
     <ClInclude Include="..\src\SourceImages.h" />
     <ClInclude Include="..\src\Wall.h" />

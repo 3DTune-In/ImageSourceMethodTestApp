@@ -7,9 +7,6 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SoundSourcer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Room.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -17,6 +14,12 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\SourceImages.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ISM.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SoundSource.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,6 +42,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SourceImages.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ISM.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

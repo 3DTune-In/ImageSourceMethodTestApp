@@ -9,7 +9,29 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	
+
+	// Core setup
+	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
+	audioState.bufferSize = BUFFERSIZE;			// Setting buffer size 
+	audioState.sampleRate = SAMPLERATE;			// Setting frame rate 
+	myCore.SetAudioState(audioState);		    // Applying configuration to core
+	myCore.SetHRTFResamplingStep(15);		    // Setting 15-degree resampling step for HRTF
+
+
+	// Listener setup
+	listener = myCore.CreateListener();								 // First step is creating listener
+	Common::CVector3 listenerLocation(-0.5, 0, 1);
+	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
+	listenerPosition.SetPosition(listenerLocation);
+	listener->SetListenerTransform(listenerPosition);
+	listener->DisableCustomizedITD();								 // Disabling custom head radius
+	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
+	bool specifiedDelays;
+	bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);
+	if (!sofaLoadResult) {
+		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
+	}
+
 	// Room setup
 /*
 	wall_1.insertCorner(1, 2, 0);
@@ -51,36 +73,22 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 */
-	mainRoom.setupShoebox(10, 7, 3);
-	mainRoom.disableWall(4);
-	mainRoom.disableWall(5);
+	mainRoom.setupShoebox(7, 10, 3); //old way
+	mainRoom.disableWall(4);         //
+	mainRoom.disableWall(5);         //
 
-	// Core setup
-	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
-	audioState.bufferSize = BUFFERSIZE;			// Setting buffer size 
-	audioState.sampleRate = SAMPLERATE;			// Setting frame rate 
-	myCore.SetAudioState(audioState);		    // Applying configuration to core
-	myCore.SetHRTFResamplingStep(15);		    // Setting 15-degree resampling step for HRTF
+	ISMHandler.SetupShoeBoxRoom(7, 10, 3, myCore); //new way (el core debe desaparecer)
+	ISMHandler.setReflectionOrder(2);
+	ISMHandler.disableWall(4);
+	ISMHandler.disableWall(5);
 
-
-	// Listener setup
-	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(-0.5, 0, 1);
-	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
-	listenerPosition.SetPosition(listenerLocation);
-	listener->SetListenerTransform(listenerPosition);
-	listener->DisableCustomizedITD();								 // Disabling custom head radius
-	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
-	bool specifiedDelays;
-	bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);			
-	if (!sofaLoadResult) { 
-		cout << "ERROR: Error trying to load the SOFA file" << endl<<endl;
-	}																			
 
 	// Source  setup
-	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
-	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));
-	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);			//trying second order reflections (only to draw, not to sound)
+	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));						//Old way
+	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);		//	//trying second order reflections (only to draw, not to sound)
+
+	ISMHandler.setSourceLocation(Common::CVector3(-0.5, -1, 1));					//New way
+
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
@@ -242,22 +250,33 @@ void ofApp::keyPressed(int key){
 		scale*=1.1;
 		break;
 	case 'k': //Moves the source left (-X)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));			//Old way
+		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));	//New way
 		break;
 	case 'i': //Moves the source right (+X)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));				//Old way
+		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(SOURCE_STEP, 0, 0));		//New way
+
 		break;
 	case 'j': //Moves the source up (+Y)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));				//Old way
+		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, SOURCE_STEP, 0));		//New way
+
 		break;
 	case 'l': //Moves the source down (-Y)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));			//Old way
+		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, -SOURCE_STEP, 0));	//New way
+
 		break;
 	case 'u': //Moves the source up (Z)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, SOURCE_STEP));
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, SOURCE_STEP));				//Old way
+		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, 0, SOURCE_STEP));		//New way
+
 		break;
 	case 'm': //Moves the source down (-Z)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));
+		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));			//Old way
+		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, 0, -SOURCE_STEP));	//New way
+
 		break;
 	case 's': //Moves the listener left (-X)
 		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
@@ -389,6 +408,13 @@ void ofApp::keyPressed(int key){
 			systemSoundStream.start();
 		}
 		break;
+	case 't': //Test
+		std::vector<Common::CVector3> locations = ISMHandler.getVirtualSourceLocations();
+		cout << "--------------------------------------------------\n";
+		for (int i = 0; i < locations.size(); i++)
+		{
+			cout << locations.at(i).x << ", " << locations.at(i).y << ", " << locations.at(i).z << "\n";
+ 		}
 	}
 }
 

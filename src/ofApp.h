@@ -25,9 +25,7 @@
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>
 #include "SoundSource.h"
-#include "Room.h"
-#include "SourceImages.h"
-#include <Common/Vector3.h>
+#include "ISM.h"
 
 
 class ofApp : public ofBaseApp{
@@ -51,8 +49,9 @@ class ofApp : public ofBaseApp{
 		
 	private:	
 		ofTrueTypeFont textFont;
-		Room mainRoom;
-		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;
+		ISM ISMHandler;
+		Room mainRoom;//////////////////////////////////////////////////////////////////////////////////////To be moved into the ISM API
+		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;//////////////////////////////////////To be moved into the ISM API
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
 
@@ -62,7 +61,7 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
-		SourceImages sourceImages;
+		SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		SoundSource source1Wav;
 		shared_ptr<Binaural::CSingleSourceDSP>	source1DSP;							 // Pointers to each audio source interface
 
@@ -73,5 +72,5 @@ class ofApp : public ofBaseApp{
 		void LoadWavFile(SoundSource & source, const char* filePath);
 
 		float scale = 20;			//visualization scale
-		int reflectionOrder = 0;	//number of simulated reflections
+		int reflectionOrder = 0;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
 };

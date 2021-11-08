@@ -49,6 +49,13 @@ class SourceImages
 	*/
 	Common::CVector3 getLocation();
 
+	/** \brief Returns the locations of all images but the original source
+	*   \details this method recurively goes through the image tree to collect all the image locations
+	*   \param [out] imageSourceList: vector containing all image locations.
+	*   \param [in] reflectionOrder: needed to trim the recursive tree
+	*/
+	void getImageLocations(std::vector<Common::CVector3> &imageSourceList, int reflectionOrder);
+
 	/** \brief Returns the  wall where the reflecion produced this image
 	*   \param [out] Reflection wall.
 	*/

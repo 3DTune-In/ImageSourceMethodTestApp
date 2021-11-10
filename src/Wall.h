@@ -111,7 +111,7 @@ public:
 	*/
 	Common::CVector3 getPointProjection(Common::CVector3 point);
 
-	/** \brief Returns the poin where a giben line intersects the wall's plane.
+	/** \brief Returns the poin where a given line intersects the wall's plane.
 	*	\details Given a line defined with two points, this method computes its intersection qithg the wall's plane and returns
 				 that intersection point.
 	*	\param [in] Point1: one of the points to define the line.
@@ -121,13 +121,27 @@ public:
 	Common::CVector3 getIntersectionPointWithLine(Common::CVector3 point1, Common::CVector3 point2);
 
 	/** \brief Checks wether a given point is inside the wall or not.
-	*	\details Given a point, this method returns TRUE when the point is in the wall's plane and within the limits defined by
-				 the wall's corners. If the point is not int wall's plane or if the point is outside the polygon defined by the
-				wall's corners, it returns FALSE.
+	*	\details Given a point, this method returns a positive value -that is the distance from the point to the closest edge of the wall-
+	            when the point is in the wall's plane and within the limits defined by the wall's corners. If the point is not int wall's plane 
+				or if the point is outside the polygon defined by the wall's corners, it returns a negative value.
 	*	\param [in] Point: point to be checked.
-	*	\param [out] Result: true if the point is within the wall's plane and plygon and false otherwise.
+	*	\param [out] Result: positive value if the point is within the wall's plane and plygon and negativve value otherwise.
 	*/
-	bool checkPointInsideWall(Common::CVector3 point);
+	float checkPointInsideWall(Common::CVector3 point);
+
+	/** \brief Returns the distance to the nearest edge of the wall.
+	*	\details 
+	*	\param [in] Point: point to be checked.
+	*	\param [out] Result: distance to the nearest edge.
+	*/
+	float calculateDistanceNearestEdge(Common::CVector3 point);
+	
+	/** \brief Returns the distance between a 3D point and a line in a 3D plane.
+	*	\details
+	*	\param [in] Point: 3D point, 3D point_1 of line,  3D point_2 of line.
+	*	\param [out] Result: distance to the nearest edge.
+	*/
+	float distancePointToLine(Common::CVector3 point, Common::CVector3 pointLine1, Common::CVector3 pointLine2);
 
 	/** \brief Enable the wall.
 	*	\details Every wall can be active (it reflects) or not (i does not reflect anything, so it is as it does not exist.

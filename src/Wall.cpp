@@ -207,10 +207,14 @@ Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common:
 	return cutPoint;
 }
 
-bool  Wall::checkPointInsideWall(Common::CVector3 point)
+float  Wall::checkPointInsideWall(Common::CVector3 point)
 {
 	float modulus = getDistanceFromPoint(point);
-	if (modulus > THRESHOLD) return FALSE;        // Point is not in the wall's plane
+	if (modulus > THRESHOLD) 
+	{
+		return 0.f;
+		//return FALSE;        // Point is not in the wall's plane
+	}
 
 	double m1, m2, anglesum=0, costheta, anglediff;
 	Common::CVector3 p1, p2;
@@ -227,17 +231,58 @@ bool  Wall::checkPointInsideWall(Common::CVector3 point)
 		m1 = p1.GetDistance();
 		m2 = p2.GetDistance();
 		if (m1*m2 <= THRESHOLD)
-			return TRUE;                     // Point is on a corner of the wall,
+		{
+			return 0.f;
+			//return TRUE;                     // Point is on a corner of the wall,
+		}
 		else
 			costheta = (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (m1*m2);
 
 		anglesum += acos(costheta);
     }
 	anglediff = fabs(TWOPI - anglesum);
-    if (anglediff < THRESHOLD)
-		return TRUE;
-	else
-		return FALSE;
+	if (anglediff < THRESHOLD) 
+	{   // Is inside Wall
+		float distanceNearestEdge=0.0;
+		distanceNearestEdge = calculateDistanceNearestEdge(point);
+		return distanceNearestEdge;
+		//return TRUE;
+	}
+		
+	else 
+	{   // Is not inside Wall
+		float distanceNearestEdge = 0.0;
+		distanceNearestEdge -= calculateDistanceNearestEdge(point);		return distanceNearestEdge;
+		// return FALSE;
+	}
+		
+}
+
+float Wall::calculateDistanceNearestEdge(Common::CVector3 point) {
+	float minDistance = 0.0, distance = 0.0;
+	int n = polygon.size();
+	for (auto i = 0; i < n; i++) 
+	{
+		distance = distancePointToLine(point, polygon[i], polygon[(i + 1)%n]);
+		if (i == 0) minDistance = distance;
+		else
+		{
+			if (distance < minDistance) minDistance = distance;
+		}
+	}
+	return(minDistance);
+}
+
+float Wall::distancePointToLine(Common::CVector3 point, Common::CVector3 pointLine1, Common::CVector3 pointLine2)
+{
+	float distance = 0, vectorModulus;
+	Common::CVector3 vector1, vector2, vector3;
+	vector1 = pointLine2 - pointLine1;
+	vector2 = point - pointLine1;
+	vector3 = vector1.CrossProduct(vector2);
+	//vectorModulus = vector3.GetDistance();
+	distance = vector3.GetDistance() / vector1.GetDistance();
+	return distance;
 }
 
 void Wall::calculate_ABCD()

@@ -37,7 +37,7 @@ public:
 	*	\param [in] length: extension of the room along the X axis.
 	*	\param [in] height: extension of the room along the Z axis
 	*/
-	void setup(float width, float length, float height);
+	void setupShoebox(float width, float length, float height);
 
 	/** \brief insert a new wall in the room
 	*	\details Instead of using the setup method, this method can be used to create any arbitrary room. It should be 

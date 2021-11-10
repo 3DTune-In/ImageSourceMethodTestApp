@@ -1,7 +1,7 @@
 #include "Room.h"
 #include "ofMain.h"
 
-void Room::setup(float width, float length, float height)
+void Room::setupShoebox(float width, float length, float height)
 {
 	Wall front,back,left,right,ceiling,floor;
 	front.insertCorner(length / 2, width / 2, height / 2);

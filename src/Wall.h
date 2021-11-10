@@ -127,7 +127,7 @@ public:
 	*	\param [in] Point: point to be checked.
 	*	\param [out] Result: positive value if the point is within the wall's plane and plygon and negativve value otherwise.
 	*/
-	float checkPointInsideWall(Common::CVector3 point);
+	bool checkPointInsideWall(Common::CVector3 point, float &distanceNearestEdge);
 
 	/** \brief Returns the distance to the nearest edge of the wall.
 	*	\details 

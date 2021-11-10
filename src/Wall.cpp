@@ -2,7 +2,7 @@
 #include "Wall.h"
 
 #ifndef THRESHOLD
-#define THRESHOLD 0.000001f
+#define THRESHOLD 0.00001f
 #endif
 
 #define TWOPI 6.283185307179586476925287
@@ -207,13 +207,12 @@ Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common:
 	return cutPoint;
 }
 
-float  Wall::checkPointInsideWall(Common::CVector3 point)
+bool  Wall::checkPointInsideWall(Common::CVector3 point, float &distanceNearestEdge)
 {
 	float modulus = getDistanceFromPoint(point);
 	if (modulus > THRESHOLD) 
 	{
-		return 0.f;
-		//return FALSE;        // Point is not in the wall's plane
+		return FALSE;        // Point is not in the wall's plane
 	}
 
 	double m1, m2, anglesum=0, costheta, anglediff;
@@ -232,8 +231,8 @@ float  Wall::checkPointInsideWall(Common::CVector3 point)
 		m2 = p2.GetDistance();
 		if (m1*m2 <= THRESHOLD)
 		{
-			return 0.f;
-			//return TRUE;                     // Point is on a corner of the wall,
+			distanceNearestEdge = 0.0f;
+			return TRUE;                     // Point is on a corner of the wall,
 		}
 		else
 			costheta = (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (m1*m2);
@@ -243,17 +242,14 @@ float  Wall::checkPointInsideWall(Common::CVector3 point)
 	anglediff = fabs(TWOPI - anglesum);
 	if (anglediff < THRESHOLD) 
 	{   // Is inside Wall
-		float distanceNearestEdge=0.0;
 		distanceNearestEdge = calculateDistanceNearestEdge(point);
-		return distanceNearestEdge;
-		//return TRUE;
+		return TRUE;
 	}
 		
 	else 
 	{   // Is not inside Wall
-		float distanceNearestEdge = 0.0;
-		distanceNearestEdge -= calculateDistanceNearestEdge(point);		return distanceNearestEdge;
-		// return FALSE;
+		distanceNearestEdge = -calculateDistanceNearestEdge(point);		
+		return FALSE;
 	}
 		
 }

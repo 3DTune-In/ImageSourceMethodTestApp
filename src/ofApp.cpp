@@ -51,7 +51,7 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 */
-	mainRoom.setupShoebox(10, 7, 3);
+	mainRoom.setupShoebox(10, 7, 4);
 	mainRoom.disableWall(4);
 	mainRoom.disableWall(5);
 
@@ -65,7 +65,8 @@ void ofApp::setup(){
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(-0.5, 0, 1);
+	//Common::CVector3 listenerLocation(-0.5, 0, 1);
+	Common::CVector3 listenerLocation(-1, 1, 1);
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -79,7 +80,7 @@ void ofApp::setup(){
 
 	// Source  setup
 	//sourceImages.setup(myCore, Common::CVector3(-0.5, 0, 1), Common::CVector3(0.5, -1, 1));
-	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));
+	sourceImages.setup(myCore, Common::CVector3(-1, -2, 1));
 	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);			//trying second order reflections (only to draw, not to sound)
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 

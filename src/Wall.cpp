@@ -2,7 +2,11 @@
 #include "Wall.h"
 
 #ifndef THRESHOLD
-#define THRESHOLD 0.00001f
+#define THRESHOLD 0.000001f
+#endif
+
+#ifndef THRESHOLD_BORDER
+#define THRESHOLD_BORDER 0.3f
 #endif
 
 #define TWOPI 6.283185307179586476925287
@@ -207,12 +211,13 @@ Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common:
 	return cutPoint;
 }
 
-bool  Wall::checkPointInsideWall(Common::CVector3 point, float &distanceNearestEdge)
+int  Wall::checkPointInsideWall(Common::CVector3 point, float &distanceNearestEdge, float &sharpness)
 {
 	float modulus = getDistanceFromPoint(point);
 	if (modulus > THRESHOLD) 
 	{
-		return FALSE;        // Point is not in the wall's plane
+		return 0;              // Point is not in the wall's plane
+		//return FALSE;        
 	}
 
 	double m1, m2, anglesum=0, costheta, anglediff;
@@ -232,24 +237,38 @@ bool  Wall::checkPointInsideWall(Common::CVector3 point, float &distanceNearestE
 		if (m1*m2 <= THRESHOLD)
 		{
 			distanceNearestEdge = 0.0f;
-			return TRUE;                     // Point is on a corner of the wall,
+			sharpness = 0.5f;
+			return 1;                       // Point is on a corner of the wall,
+			//return TRUE;                  // Point is on a corner of the wall,
 		}
 		else
 			costheta = (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (m1*m2);
 
 		anglesum += acos(costheta);
     }
+
 	anglediff = fabs(TWOPI - anglesum);
 	if (anglediff < THRESHOLD) 
-	{   // Is inside Wall
+	{   // Point is inside Wall
 		distanceNearestEdge = calculateDistanceNearestEdge(point);
-		return TRUE;
+		if (fabs(distanceNearestEdge) < THRESHOLD_BORDER)
+			sharpness = 0.5 + distanceNearestEdge / (2.0 * THRESHOLD_BORDER);
+		else
+			sharpness = 1.0;
+		return 1;                           // Point is inside the wall,
+		//return TRUE;
 	}
-		
 	else 
-	{   // Is not inside Wall
-		distanceNearestEdge = -calculateDistanceNearestEdge(point);		
-		return FALSE;
+	{   // Point is outside Wall
+		distanceNearestEdge = -calculateDistanceNearestEdge(point);
+		if (fabs(distanceNearestEdge) < THRESHOLD_BORDER)
+		{
+			sharpness = 0.5 + distanceNearestEdge / (2.0 * THRESHOLD_BORDER);
+			return 2;                           // Point is coming out of the wall
+		}
+		else
+			return 0;
+		//return FALSE;
 	}
 		
 }

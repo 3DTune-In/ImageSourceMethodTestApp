@@ -173,6 +173,7 @@ private:
 	std::vector<SourceImages> images;						//recursive list of images
 
 	Binaural::CCore *core;                                  //Core
-	
+
+	float diffraction = 1.0f;
 };
 

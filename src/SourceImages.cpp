@@ -1,5 +1,9 @@
 #include "SourceImages.h"
 
+//#ifndef THRESHOLD_BORDER
+//#define THRESHOLD_BORDER 0.2f
+//#endif
+
 void SourceImages::setup(Binaural::CCore &_core, Common::CVector3 _location)
 {
 	core = &_core;
@@ -42,7 +46,8 @@ int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3
 		for (int i = 0; i < images.size(); i++)
 		{
 			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), listenerLocation);
-			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
+			float distanceToBorder, sharpness;
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
 			{
 				subtotal++;
 				subtotal+=images.at(i).getNumberOfVisibleImages(reflectionOrder, listenerLocation);
@@ -57,7 +62,6 @@ int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3
 	}
 
 }
-
 
 void SourceImages::setLocation(Common::CVector3 _location)
 {
@@ -190,6 +194,8 @@ void SourceImages::drawImages(int reflectionOrder)
 
 void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation, int _reflectionOrder)
 {
+	float distanceToBorder;
+
 	if (_reflectionOrder > 0)
 	{
 		_reflectionOrder--;
@@ -197,11 +203,24 @@ void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation, int _
 		{
 			Common::CVector3 tempImageLocation = images.at(i).getLocation();
 			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
-			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
+			float distanceToBorder, sharpness;
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
 			{
-				ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
-				ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
-				images.at(i).drawRaysToListener(_listenerLocation, _reflectionOrder);
+				//if (fabs(distanceToBorder) > THRESHOLD_BORDER)
+				if (sharpness >= 1.0f)
+				{
+					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+					ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
+					images.at(i).drawRaysToListener(_listenerLocation, _reflectionOrder);
+				}
+				else
+				{
+				    //float sharpness = 0.5 + distanceToBorder / (2.0 * THRESHOLD_BORDER);
+				    ofPushStyle();
+				    ofSetColor(0, 0, 255, int(200.0*sharpness));
+				    ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.2);
+				    ofPopStyle();
+				}
 			}
 		}
 	}
@@ -212,7 +231,8 @@ void SourceImages::drawFirstReflectionRays(Common::CVector3 _listenerLocation)
 	for (int i = 0; i < images.size(); i++)
 	{
 		Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-		if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
+		float distanceToBorder, sharpness;
+		if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) == 1)
 		{
 			ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
 			ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z, reflectionPoint.x, reflectionPoint.y, reflectionPoint.z);
@@ -244,7 +264,8 @@ void SourceImages::processImages(CMonoBuffer<float> &bufferInput,
 		for (int i = 0; i < images.size(); i++)
 		{
 			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint))
+			float distanceToBorder, sharpness;
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0 )
 			{
 				Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 

@@ -5,6 +5,10 @@
 #define THRESHOLD 0.000001f
 #endif
 
+#ifndef THRESHOLD_BORDER
+#define THRESHOLD_BORDER 0.3f
+#endif
+
 #define TWOPI 6.283185307179586476925287
 #define RTOD 57.2957795
 
@@ -207,10 +211,14 @@ Common::CVector3 Wall::getIntersectionPointWithLine(Common::CVector3 p1, Common:
 	return cutPoint;
 }
 
-bool  Wall::checkPointInsideWall(Common::CVector3 point)
+int  Wall::checkPointInsideWall(Common::CVector3 point, float &distanceNearestEdge, float &sharpness)
 {
 	float modulus = getDistanceFromPoint(point);
-	if (modulus > THRESHOLD) return FALSE;        // Point is not in the wall's plane
+	if (modulus > THRESHOLD) 
+	{
+		return 0;              // Point is not in the wall's plane
+		//return FALSE;        
+	}
 
 	double m1, m2, anglesum=0, costheta, anglediff;
 	Common::CVector3 p1, p2;
@@ -227,17 +235,69 @@ bool  Wall::checkPointInsideWall(Common::CVector3 point)
 		m1 = p1.GetDistance();
 		m2 = p2.GetDistance();
 		if (m1*m2 <= THRESHOLD)
-			return TRUE;                     // Point is on a corner of the wall,
+		{
+			distanceNearestEdge = 0.0f;
+			sharpness = 0.5f;
+			return 1;                       // Point is on a corner of the wall,
+			//return TRUE;                  // Point is on a corner of the wall,
+		}
 		else
 			costheta = (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z) / (m1*m2);
 
 		anglesum += acos(costheta);
     }
+
 	anglediff = fabs(TWOPI - anglesum);
-    if (anglediff < THRESHOLD)
-		return TRUE;
-	else
-		return FALSE;
+	if (anglediff < THRESHOLD) 
+	{   // Point is inside Wall
+		distanceNearestEdge = calculateDistanceNearestEdge(point);
+		if (fabs(distanceNearestEdge) < THRESHOLD_BORDER)
+			sharpness = 0.5 + distanceNearestEdge / (2.0 * THRESHOLD_BORDER);
+		else
+			sharpness = 1.0;
+		return 1;                           // Point is inside the wall,
+		//return TRUE;
+	}
+	else 
+	{   // Point is outside Wall
+		distanceNearestEdge = -calculateDistanceNearestEdge(point);
+		if (fabs(distanceNearestEdge) < THRESHOLD_BORDER)
+		{
+			sharpness = 0.5 + distanceNearestEdge / (2.0 * THRESHOLD_BORDER);
+			return 2;                           // Point is coming out of the wall
+		}
+		else
+			return 0;
+		//return FALSE;
+	}
+		
+}
+
+float Wall::calculateDistanceNearestEdge(Common::CVector3 point) {
+	float minDistance = 0.0, distance = 0.0;
+	int n = polygon.size();
+	for (auto i = 0; i < n; i++) 
+	{
+		distance = distancePointToLine(point, polygon[i], polygon[(i + 1)%n]);
+		if (i == 0) minDistance = distance;
+		else
+		{
+			if (distance < minDistance) minDistance = distance;
+		}
+	}
+	return(minDistance);
+}
+
+float Wall::distancePointToLine(Common::CVector3 point, Common::CVector3 pointLine1, Common::CVector3 pointLine2)
+{
+	float distance = 0, vectorModulus;
+	Common::CVector3 vector1, vector2, vector3;
+	vector1 = pointLine2 - pointLine1;
+	vector2 = point - pointLine1;
+	vector3 = vector1.CrossProduct(vector2);
+	//vectorModulus = vector3.GetDistance();
+	distance = vector3.GetDistance() / vector1.GetDistance();
+	return distance;
 }
 
 void Wall::calculate_ABCD()

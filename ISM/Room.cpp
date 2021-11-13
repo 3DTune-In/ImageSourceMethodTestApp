@@ -1,5 +1,4 @@
 #include "Room.h"
-#include "ofMain.h"
 
 void Room::setupShoebox(float length, float width, float height)
 {
@@ -84,14 +83,3 @@ std::vector<Room> Room::getImageRooms()
 	return roomList;
 }
 
-void Room::draw() 
-{
-	for (int i = 0; i < walls.size(); i++)
-	{
-		if (walls.at(i).isActive())
-		{
-			walls[i].draw();
-			walls[i].drawNormal();
-		}
-	}
-}

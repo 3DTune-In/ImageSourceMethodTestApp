@@ -77,6 +77,11 @@ Common::CVector3 SourceImages::getLocation()
 	return sourceLocation;
 }
 
+std::vector<SourceImages> SourceImages::getImages()
+{
+	return images;
+}
+
 void SourceImages::getImageLocations(std::vector<Common::CVector3> &imageSourceList,
 	int reflectionOrder)
 {
@@ -167,79 +172,6 @@ void SourceImages::refreshImages(Room _room, Common::CVector3 listenerLocation, 
 	createImages(_room, listenerLocation, reflectionOrder);
 }
 
-void SourceImages::drawSource()
-{
-	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);
-
-}
-
-void SourceImages::drawImages(int reflectionOrder)
-{
-	if (reflectionOrder > 0)
-	{
-		reflectionOrder--;
-		for (int i = 0; i < images.size(); i++)
-		{
-			if (images.at(i).reflectionWall.isActive())
-			{
-				ofBox(images[i].getLocation().x, images[i].getLocation().y, images[i].getLocation().z, 0.2);
-				if (reflectionOrder > 0)
-				{
-					images[i].drawImages(reflectionOrder);
-				}
-			}
-		}
-	}
-}
-
-void SourceImages::	drawRaysToListener(Common::CVector3 _listenerLocation, int _reflectionOrder)
-{
-	float distanceToBorder;
-
-	if (_reflectionOrder > 0)
-	{
-		_reflectionOrder--;
-		for (int i = 0; i < images.size(); i++)
-		{
-			Common::CVector3 tempImageLocation = images.at(i).getLocation();
-			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
-			float distanceToBorder, sharpness;
-			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
-			{
-				//if (fabs(distanceToBorder) > THRESHOLD_BORDER)
-				if (sharpness >= 1.0f)
-				{
-					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
-					ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
-					images.at(i).drawRaysToListener(_listenerLocation, _reflectionOrder);
-				}
-				else
-				{
-				    //float sharpness = 0.5 + distanceToBorder / (2.0 * THRESHOLD_BORDER);
-				    ofPushStyle();
-				    ofSetColor(0, 0, 255, int(200.0*sharpness));
-				    ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.2);
-				    ofPopStyle();
-				}
-			}
-		}
-	}
-}
-
-void SourceImages::drawFirstReflectionRays(Common::CVector3 _listenerLocation)
-{
-	for (int i = 0; i < images.size(); i++)
-	{
-		Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-		float distanceToBorder, sharpness;
-		if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) == 1)
-		{
-			ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
-			ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z, reflectionPoint.x, reflectionPoint.y, reflectionPoint.z);
-			ofLine(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
-		}
-	}
-}
 
 
 void SourceImages::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)

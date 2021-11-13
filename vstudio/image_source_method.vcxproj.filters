@@ -7,25 +7,28 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Room.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Wall.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\SourceImages.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ISM.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\SoundSource.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ISM\ISM.cpp">
+      <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ISM\Room.cpp">
+      <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ISM\Wall.cpp">
+      <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ISM\SourceImages.cpp">
+      <Filter>ISM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
       <UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ISM">
+      <UniqueIdentifier>{9841b588-7d38-44e1-b70f-c65aff7adf32}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -35,17 +38,17 @@
     <ClInclude Include="..\src\SoundSource.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Room.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\ISM\ISM.h">
+      <Filter>ISM</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Wall.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\ISM\Room.h">
+      <Filter>ISM</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\SourceImages.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\ISM\Wall.h">
+      <Filter>ISM</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ISM.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\ISM\SourceImages.h">
+      <Filter>ISM</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -309,31 +309,3 @@ void Wall::calculate_ABCD()
 	C = normal.z;
 	D = -(A * polygon.at(2).x + B * polygon.at(2).y + C * polygon.at(2).z);
 }
-
-void Wall::draw()
-{
-	int numberVertex=polygon.size();
-	for(int i=0; i<numberVertex-1; i++)
-	{
-		ofLine(polygon[i].x, polygon[i].y, polygon[i].z,
-			polygon[i + 1].x, polygon[i + 1].y, polygon[i+1].z);
-	}
-	ofLine(polygon[0].x, polygon[0].y, polygon[0].z,
-		polygon[numberVertex-1].x, polygon[numberVertex-1].y, polygon[numberVertex-1].z);
-}
-
-void Wall::drawNormal(float length)
-{
-	Common::CVector3 center;
-	Common::CVector3 normalEnd;
-	Common::CVector3 normal;
-	center = getCenter();
-	normal = getNormal();
-	normal.x *= length;
-	normal.y *= length;
-	normal.z *= length;
-
-	normalEnd = center + normal;
-	ofLine(center.x, center.y, center.z, 
-		normalEnd.x, normalEnd.y, normalEnd.z);
-}

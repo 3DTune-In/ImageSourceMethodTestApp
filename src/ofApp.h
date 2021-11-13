@@ -25,7 +25,7 @@
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>
 #include "SoundSource.h"
-#include "ISM.h"
+#include "../ISM/ISM.h"
 
 
 class ofApp : public ofBaseApp{
@@ -70,6 +70,15 @@ class ofApp : public ofBaseApp{
 		void audioOut(float * output, int bufferSize, int nChannels);
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
 		void LoadWavFile(SoundSource & source, const char* filePath);
+
+		/// Methods to draw rooms, walls, sources, etc. 
+		void drawRoom(Room room);
+		void drawWall(Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
+		void drawWallNormal(Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		void drawSource(SourceImages source);
+		void drawImages(SourceImages source, int reflectionOrder);
+		void drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int reflectionOrder);
+		void drawFirstReflectionRays(SourceImages source, Common::CVector3 _listenerLocation);
 
 		float scale = 20;			//visualization scale
 		int reflectionOrder = 0;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API

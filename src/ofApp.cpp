@@ -120,13 +120,13 @@ void ofApp::draw(){
 		
 	if (reflectionOrder > 0)
 	{
-		mainRoom.draw();
+		drawRoom(mainRoom);
 		if (reflectionOrder > 1)
 		{
 			std::vector<Room> roomImages = mainRoom.getImageRooms();
 			ofPushStyle();
 			ofSetColor(255, 50);									//image rooms are drawn semi-transparent
-			for (int i = 0; i < roomImages.size(); i++) roomImages.at(i).draw();
+			for (int i = 0; i < roomImages.size(); i++) drawRoom(roomImages.at(i));
 			if (reflectionOrder > 2)
 			{
 				ofSetColor(255, 10);									//second image rooms are drawn almost transparent
@@ -135,7 +135,7 @@ void ofApp::draw(){
 					std::vector<Room> roomSecondImages = roomImages.at(i).getImageRooms();
 					for (int j = 0; j < roomSecondImages.size(); j++)
 					{
-						roomSecondImages.at(j).draw();
+						drawRoom(roomSecondImages.at(j));
 					}
 				}
 			}
@@ -152,12 +152,12 @@ void ofApp::draw(){
 	//draw sources
 	ofPushStyle();
 	ofSetColor(255, 50, 200,50);
-	sourceImages.drawSource();
+	drawSource(sourceImages);
 	ofSetColor(255, 150, 200,50);
-	sourceImages.drawImages(reflectionOrder);
+	drawImages(sourceImages, reflectionOrder);
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
-	sourceImages.drawRaysToListener(listenerPosition, reflectionOrder);
+	drawRaysToListener(sourceImages, listenerPosition, reflectionOrder);
 
 	ofPopMatrix();
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
@@ -629,4 +629,119 @@ void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
 		cout << "ERROR: file " << filePath << " doesn't exist." << endl<<endl;
 	}
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+//Methods for drawing 
+////////////////////////////////////////////////////////////////////////////////////////
+void ofApp::drawRoom(Room room)
+{
+	std::vector<Wall> walls = room.getWalls();
+	for (int i = 0; i < walls.size(); i++)
+	{
+		if (walls.at(i).isActive())
+		{
+			drawWall(walls[i]);
+			drawWallNormal(walls[i]);
+		}
+	}
+}
+
+void ofApp::drawWall(Wall wall)
+{
+	std::vector<Common::CVector3> polygon = wall.getCorners();
+	int numberVertex = polygon.size();
+	for (int i = 0; i < numberVertex - 1; i++)
+	{
+		ofLine(polygon[i].x, polygon[i].y, polygon[i].z,
+			polygon[i + 1].x, polygon[i + 1].y, polygon[i + 1].z);
+	}
+	ofLine(polygon[0].x, polygon[0].y, polygon[0].z,
+		polygon[numberVertex - 1].x, polygon[numberVertex - 1].y, polygon[numberVertex - 1].z);
+}
+
+void ofApp::drawWallNormal(Wall wall, float length)
+{
+	Common::CVector3 center;
+	Common::CVector3 normalEnd;
+	Common::CVector3 normal;
+	center = wall.getCenter();
+	normal = wall.getNormal();
+	normal.x *= length;
+	normal.y *= length;
+	normal.z *= length;
+
+	normalEnd = center + normal;
+	ofLine(center.x, center.y, center.z,
+		normalEnd.x, normalEnd.y, normalEnd.z);
+}
+
+void ofApp::drawSource(SourceImages source)
+{
+	Common::CVector3 sourceLocation = source.getLocation();
+	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);
+
+}
+
+void ofApp::drawImages(SourceImages source, int reflectionOrder)
+{
+	std::vector<Common::CVector3> imageLocations;
+	source.getImageLocations(imageLocations, reflectionOrder);
+	for (int i = 0; i < imageLocations.size(); i++)
+	{
+		ofBox(imageLocations[i].x, imageLocations[i].y, imageLocations[i].z, 0.2);
+	}
+}
+
+void ofApp::drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int _reflectionOrder)
+{
+//	float distanceToBorder;
+	std::vector<SourceImages> images = source.getImages();
+	if (_reflectionOrder > 0)
+	{
+		_reflectionOrder--;
+		for (int i = 0; i < images.size(); i++)
+		{
+			Common::CVector3 tempImageLocation = images.at(i).getLocation();
+			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
+			float distanceToBorder, sharpness;
+			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
+			{
+				//if (fabs(distanceToBorder) > THRESHOLD_BORDER)
+				if (sharpness >= 1.0f)
+				{
+					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+					ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
+					drawRaysToListener(images.at(i), _listenerLocation, _reflectionOrder);
+				}
+				else
+				{
+					//float sharpness = 0.5 + distanceToBorder / (2.0 * THRESHOLD_BORDER);
+					ofPushStyle();
+					ofSetColor(0, 0, 255, int(200.0*sharpness));
+					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.2);
+					ofPopStyle();
+				}
+			}
+		}
+	}
+}
+
+void ofApp::drawFirstReflectionRays(SourceImages source, Common::CVector3 _listenerLocation)
+{
+	std::vector<SourceImages> images = source.getImages();
+	Common::CVector3 sourceLocation = source.getLocation();
+	for (int i = 0; i < images.size(); i++)
+	{
+		Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
+		float distanceToBorder, sharpness;
+		if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) == 1)
+		{
+			ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+			ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z, reflectionPoint.x, reflectionPoint.y, reflectionPoint.z);
+			ofLine(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
+		}
+	}
+}
+
 

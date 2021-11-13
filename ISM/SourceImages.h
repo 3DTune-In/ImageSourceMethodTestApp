@@ -20,7 +20,7 @@
 *
 */
 #pragma once
-#include "SoundSource.h"
+//#include "SoundSource.h"
 #include "Room.h"
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <Common/Vector3.h>
@@ -44,10 +44,15 @@ class SourceImages
 	*/
 	void setLocation(Common::CVector3 _location);
 
-	/** \brief Returns the location of the original source 
+	/** \brief Returns the location of the original source
 	*   \param [out] Location: Current location for the original source.
 	*/
 	Common::CVector3 getLocation();
+
+	/** \brief Returns the first order reflections of the original source
+	*   \param [out] Images: vector with the first order reflection images.
+	*/
+	std::vector<SourceImages> getImages();
 
 	/** \brief Returns the locations of all images but the original source
 	*   \details this method recurively goes through the image tree to collect all the image locations
@@ -101,35 +106,6 @@ class SourceImages
 	*   \param [in]
 	*/
 	void refreshImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
-
-	/** \brief
-	*	\details
-	*	\param [in]
-	*   \param [in]
-	*/
-	void drawSource();
-
-	/** \brief
-	*	\details
-	*	\param [in]
-	*   \param [in]
-	*/
-	void drawImages(int reflectionOrder);
-
-	/** \brief
-	*	\details
-	*	\param [in]
-	*   \param [in]
-	*/
-	void drawRaysToListener(Common::CVector3 _listenerLocation, int reflectionOrder);
-
-	/** \brief
-	*	\details
-	*	\param [in]
-	*   \param [in]
-	*/
-	void drawFirstReflectionRays(Common::CVector3 _listenerLocation);
-
 
 	/** \brief
 	*	\details

@@ -69,10 +69,6 @@ public:
 	*/
 	std::vector<Room> getImageRooms();
 
-	/** \brief Draws the room.
-	*	\details draws the room with a line for each edge of each wall and the normal vector to each wall in their centers.
-	*/
-	void draw();
 
 private:
 	////////////

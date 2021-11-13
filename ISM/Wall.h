@@ -161,15 +161,6 @@ public:
 	*/
 	bool isActive() { return active; }
 
-	/** \brief Draws the wall.
-	*	\details Draws the wall with lines between each pair of consecutive vertices.
-	*/
-	void draw();
-
-	/** \brief Draws the wall's normal.
-	*	\details Draws a short line, normal to the wall and in the center of the wall towards inside the room.
-	*/
-	void drawNormal(float length=LENGTH_OF_NORMALS);
 		
 private:
 

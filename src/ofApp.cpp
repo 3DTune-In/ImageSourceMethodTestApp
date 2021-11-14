@@ -79,7 +79,7 @@ void ofApp::setup(){
 	mainRoom.disableWall(5);         //
 
 	ISMHandler.SetupShoeBoxRoom(7, 10, 3, myCore); //new way (el core debe desaparecer)
-	ISMHandler.setReflectionOrder(2);
+	ISMHandler.setReflectionOrder(reflectionOrder);
 	ISMHandler.disableWall(4);
 	activeWalls[4] = false;
 	ISMHandler.disableWall(5);
@@ -314,10 +314,12 @@ void ofApp::keyPressed(int key){
 	case '+': //increases the reflection order 
 		reflectionOrder++;
 		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
+		ISMHandler.setReflectionOrder(reflectionOrder);
 		break;
 	case '-': //decreases the reflection order 
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
+		ISMHandler.setReflectionOrder(reflectionOrder);
 		break;
 	case '1': //enable/disable wall number 1 
 		if (mainRoom.getWalls().at(0).isActive())  //Old way

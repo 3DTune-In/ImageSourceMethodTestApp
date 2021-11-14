@@ -81,7 +81,9 @@ void ofApp::setup(){
 	ISMHandler.SetupShoeBoxRoom(7, 10, 3, myCore); //new way (el core debe desaparecer)
 	ISMHandler.setReflectionOrder(2);
 	ISMHandler.disableWall(4);
+	activeWalls[4] = false;
 	ISMHandler.disableWall(5);
+	activeWalls[5] = false;
 
 
 	// Source  setup
@@ -318,7 +320,7 @@ void ofApp::keyPressed(int key){
 		if (reflectionOrder <0) reflectionOrder = 0;
 		break;
 	case '1': //enable/disable wall number 1 
-		if (mainRoom.getWalls().at(0).isActive())  //Ols way
+		if (mainRoom.getWalls().at(0).isActive())  //Old way
 		{
 			mainRoom.disableWall(0);
 			systemSoundStream.stop();
@@ -333,6 +335,9 @@ void ofApp::keyPressed(int key){
 			systemSoundStream.start();
 
 		}
+
+		toggleWall(0);        //New way
+
 		break;
 	case '2': //enable/disable wall number 2 
 		if (mainRoom.getWalls().at(1).isActive())
@@ -349,6 +354,9 @@ void ofApp::keyPressed(int key){
 			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
+
+		toggleWall(1);        //New way
+
 		break;
 
 	case '3': //enable/disable wall number 2 
@@ -366,6 +374,9 @@ void ofApp::keyPressed(int key){
 			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
+
+		toggleWall(2);        //New way
+
 		break;
 	case '4': //enable/disable wall number 2 
 		if (mainRoom.getWalls().at(3).isActive())
@@ -382,6 +393,9 @@ void ofApp::keyPressed(int key){
 			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
+
+		toggleWall(3);        //New way
+
 		break;
 	case '5': //enable/disable wall number 2 
 		if (mainRoom.getWalls().at(4).isActive())
@@ -398,6 +412,9 @@ void ofApp::keyPressed(int key){
 			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
+
+		toggleWall(4);        //New way
+
 		break;
 	case '6': //enable/disable wall number 2 
 		if (mainRoom.getWalls().at(5).isActive())
@@ -414,6 +431,9 @@ void ofApp::keyPressed(int key){
 			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
+
+		toggleWall(5);        //New way
+
 		break;
 	case 't': //Test
 		std::vector<Common::CVector3> location = ISMHandler.getImageSourceLocations();
@@ -751,4 +771,18 @@ void ofApp::moveSource(Common::CVector3 movement)
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(newLocation);
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);		
+}
+
+void ofApp::toggleWall(int wallIndex)
+{
+	if (activeWalls[wallIndex])
+	{
+		ISMHandler.disableWall(wallIndex);
+		activeWalls[wallIndex] = false;
+	} else
+	{
+		ISMHandler.enableWall(wallIndex);
+		activeWalls[wallIndex] = true;
+	}
+
 }

@@ -50,6 +50,7 @@ class ofApp : public ofBaseApp{
 	private:	
 		ofTrueTypeFont textFont;
 		ISM ISMHandler;
+		std::vector<bool> activeWalls = { true, true, true, true, true, true };
 		Room mainRoom;//////////////////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;//////////////////////////////////////To be moved into the ISM API
 		float azimuth;		//Camera azimuth
@@ -93,4 +94,5 @@ class ofApp : public ofBaseApp{
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
+		void toggleWall(int wallIndex);
 };

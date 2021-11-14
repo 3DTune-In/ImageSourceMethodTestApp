@@ -23,6 +23,14 @@
 #include "SourceImages.h"
 #include <Common/Vector3.h>
 
+/*
+struct ImageSourceData
+{
+	Common::CVector3 location;
+	bool visible;
+};
+*/
+
 class ISM
 {
 public:
@@ -75,12 +83,18 @@ public:
 	*/
 	Common::CVector3 getSourceLocation();
 
-	/** \brief Returns the location of all image sources
-	*	\details This method returns the location of all image sources which are active (visible), not including the 
-		original source (direct path). TODO: Clarify what happens with indices when some images are not active
-	*	\param [out] ImageSourcelocations: Vector containing the location of the image sources
+	/** \brief Returns the location of image sources
+	*	\details This method returns a vector with the location of the image sources (reflectionsImage). The original source is not included
+	*	\param [out] location: location of the direct path source
 	*/
-	std::vector<Common::CVector3> getVirtualSourceLocations();
+	std::vector<Common::CVector3> getImageSourceLocations();
+
+	/** \brief Returns data of all image sources
+	*	\details This method returns the location of all image sources and wether they are visible or not, not including the 
+		original source (direct path). 
+	*	\param [out] ImageSourceData: Vector containing the data of the image sources
+	*/
+//	std::vector<ImageSourceData> getImageSourceData();
 
 	/** \brief process image sources
 	*	\details This method prcess all all image sources which are active (visible), not including the

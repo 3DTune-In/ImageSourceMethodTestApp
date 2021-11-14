@@ -66,9 +66,6 @@ int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3
 void SourceImages::setLocation(Common::CVector3 _location)
 {
 	sourceLocation = _location;
-	Common::CTransform sourcePosition;
-	sourcePosition.SetPosition(_location);									 
-	sourceDSP->SetSourceTransform(sourcePosition);					//Set source position (this will be removed as the DSP will be hancled by the application
 	updateImages();
 }
 
@@ -90,7 +87,7 @@ void SourceImages::getImageLocations(std::vector<Common::CVector3> &imageSourceL
 		reflectionOrder--;
 		for (int i = 0; i < images.size(); i++)
 		{
-//			if (images.at(i).reflectionWall.isActive())//////////////////////////////////////////////////////////////////
+			if (images.at(i).reflectionWall.isActive())
 			{
 				imageSourceList.push_back(images.at(i).getLocation());
 				if (reflectionOrder > 0)
@@ -103,7 +100,30 @@ void SourceImages::getImageLocations(std::vector<Common::CVector3> &imageSourceL
 
 }
 
+/*
+void SourceImages::getImageData(std::vector<ImageSourceData> &imageSourceDataList, int reflectionOrder)
+{
+	if (reflectionOrder > 0)
+	{
+		reflectionOrder--;
+		for (int i = 0; i < images.size(); i++)
+		{
+			if (images.at(i).reflectionWall.isActive())//////////////////////////////////////////////////////////////////
+			{
+				ImageSourceData temp;
+				temp.location = images.at(i).getLocation();
+				imageSourceDataList.push_back(temp);
+//				imageSourceDataList.push_back(images.at(i).getLocation());
+				if (reflectionOrder > 0)
+				{
+					images.at(i).getImageData(imageSourceDataList, reflectionOrder);
+				}
+			}
+		}
+	}
 
+}
+*/
 
 void SourceImages::setReflectionWall(Wall _reflectionWall)
 {
@@ -174,16 +194,6 @@ void SourceImages::refreshImages(Room _room, Common::CVector3 listenerLocation, 
 
 
 
-void SourceImages::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
-{
-		Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
-
-		sourceDSP->SetBuffer(bufferInput);
-		sourceDSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-
-		bufferOutput.left += bufferProcessed.left;
-		bufferOutput.right += bufferProcessed.right;
-}
 
 void SourceImages::processImages(CMonoBuffer<float> &bufferInput, 
 								 Common::CEarPair<CMonoBuffer<float>> & bufferOutput, 

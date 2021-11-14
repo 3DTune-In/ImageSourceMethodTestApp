@@ -41,13 +41,21 @@ Common::CVector3 ISM::getSourceLocation()
 }
 
 
-std::vector<Common::CVector3> ISM::getVirtualSourceLocations()
+std::vector<Common::CVector3> ISM::getImageSourceLocations()
 {
 	std::vector<Common::CVector3> imageSourceList;
 	originalSource.getImageLocations(imageSourceList, reflectionOrder);
 	return imageSourceList;
 }
 
+/*
+std::vector<ImageSourceData> ISM::getImageSourceData()
+{
+	std::vector<ImageSourceData> imageSourceList;
+	originalSource.getImageData(imageSourceList, reflectionOrder);
+	return imageSourceList;
+}
+*/
 
 
 

@@ -20,10 +20,11 @@
 *
 */
 #pragma once
-//#include "SoundSource.h"
 #include "Room.h"
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <Common/Vector3.h>
+//#include "ISM.h"
+
 class SourceImages
 {
 	public:
@@ -60,6 +61,14 @@ class SourceImages
 	*   \param [in] reflectionOrder: needed to trim the recursive tree
 	*/
 	void getImageLocations(std::vector<Common::CVector3> &imageSourceList, int reflectionOrder);
+
+	/** \brief Returns data of all image sources
+	*	\details This method returns the location of all image sources and wether they are visible or not, not including the
+		original source (direct path).
+	*	\param [out] ImageSourceData: Vector containing the data of the image sources
+	*   \param [in] reflectionOrder: needed to trim the recursive tree
+	*/
+//	void getImageData(std::vector<ImageSourceData> &imageSourceDataList, int reflectionOrder);
 
 	/** \brief Returns the  wall where the reflecion produced this image
 	*   \param [out] Reflection wall.
@@ -106,13 +115,6 @@ class SourceImages
 	*   \param [in]
 	*/
 	void refreshImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
-
-	/** \brief
-	*	\details
-	*	\param [in]
-	*   \param [in]
-	*/
-	void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 	/** \brief
 	*	\details

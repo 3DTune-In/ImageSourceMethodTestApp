@@ -61,15 +61,26 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
+//		std::vector<ImageSourceData>	sourceImageDataList;
 		SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		SoundSource source1Wav;
-		shared_ptr<Binaural::CSingleSourceDSP>	source1DSP;							 // Pointers to each audio source interface
 
+		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
+		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> listOfImageSourceDSP;			// Vector of pointers to all image source DSPs
+
+		float scale = 20;			//visualization scale
+		int reflectionOrder = 0;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
+
+									
+		/// Methods to handle Audio
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
 		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);
 		void audioOut(float * output, int bufferSize, int nChannels);
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
 		void LoadWavFile(SoundSource & source, const char* filePath);
+
+		/// Methods to render audio
+		void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms, walls, sources, etc. 
 		void drawRoom(Room room);
@@ -80,6 +91,6 @@ class ofApp : public ofBaseApp{
 		void drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int reflectionOrder);
 		void drawFirstReflectionRays(SourceImages source, Common::CVector3 _listenerLocation);
 
-		float scale = 20;			//visualization scale
-		int reflectionOrder = 0;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
+		/// Methods to manage source images
+		void moveSource(Common::CVector3 movement);
 };

@@ -86,10 +86,21 @@ void ofApp::setup(){
 
 	// Source  setup
 	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));						//Old way
-	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);		//	//trying second order reflections (only to draw, not to sound)
+	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);		//
 
-	ISMHandler.setSourceLocation(Common::CVector3(-0.5, -1, 1));					//New way
-
+	Common::CVector3 initialLocation(-0.5, -1, 1);
+	ISMHandler.setSourceLocation(initialLocation);									//New way
+	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
+	Common::CTransform sourcePosition;
+	sourcePosition.SetPosition(initialLocation);
+	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
+	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+	anechoicSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	anechoicSourceDSP->EnablePropagationDelay();
+	
+	
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
@@ -252,32 +263,27 @@ void ofApp::keyPressed(int key){
 		break;
 	case 'k': //Moves the source left (-X)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));			//Old way
-		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));	//New way
+		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
 	case 'i': //Moves the source right (+X)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));				//Old way
-		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(SOURCE_STEP, 0, 0));		//New way
-
+		moveSource(Common::CVector3(SOURCE_STEP, 0, 0));
 		break;
 	case 'j': //Moves the source up (+Y)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));				//Old way
-		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, SOURCE_STEP, 0));		//New way
-
+		moveSource(Common::CVector3(0, SOURCE_STEP, 0));
 		break;
 	case 'l': //Moves the source down (-Y)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));			//Old way
-		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, -SOURCE_STEP, 0));	//New way
-
+		moveSource(Common::CVector3(0, -SOURCE_STEP, 0));
 		break;
 	case 'u': //Moves the source up (Z)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, SOURCE_STEP));				//Old way
-		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, 0, SOURCE_STEP));		//New way
-
+		moveSource(Common::CVector3(0, 0, SOURCE_STEP));
 		break;
 	case 'm': //Moves the source down (-Z)
 		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));			//Old way
-		ISMHandler.setSourceLocation(ISMHandler.getSourceLocation() + Common::CVector3(0, 0, -SOURCE_STEP));	//New way
-
+		moveSource(Common::CVector3(0, 0, -SOURCE_STEP));
 		break;
 	case 's': //Moves the listener left (-X)
 		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
@@ -312,7 +318,7 @@ void ofApp::keyPressed(int key){
 		if (reflectionOrder <0) reflectionOrder = 0;
 		break;
 	case '1': //enable/disable wall number 1 
-		if (mainRoom.getWalls().at(0).isActive())
+		if (mainRoom.getWalls().at(0).isActive())  //Ols way
 		{
 			mainRoom.disableWall(0);
 			systemSoundStream.stop();
@@ -410,11 +416,11 @@ void ofApp::keyPressed(int key){
 		}
 		break;
 	case 't': //Test
-		std::vector<Common::CVector3> locations = ISMHandler.getVirtualSourceLocations();
+		std::vector<Common::CVector3> location = ISMHandler.getImageSourceLocations();
 		cout << "--------------------------------------------------\n";
-		for (int i = 0; i < locations.size(); i++)
+		for (int i = 0; i < location.size(); i++)
 		{
-			cout << locations.at(i).x << ", " << locations.at(i).y << ", " << locations.at(i).z << "\n";
+			cout << location.at(i).x << ", " << location.at(i).y << ", " << location.at(i).z << "\n";
  		}
 	}
 }
@@ -587,47 +593,36 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
 	// Declaration, initialization and filling mono buffers
-	CMonoBuffer<float> source1(uiBufferSize);
+	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
 	source1Wav.FillBuffer(source1);
 
-	sourceImages.processAnechoic(source1, bufferOutput);
+	processAnechoic(source1, bufferOutput);
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 	sourceImages.processImages(source1, bufferOutput, lisenerPosition, reflectionOrder);
-
-
-/*	// Declaration of stereo buffer
-	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
-
-	// Anechoic process of original source
-	if (k == mainRoom.getWalls().size())
-	{
-		source1DSP = sourceImages.getSourceDSP();
-		source1DSP->SetBuffer(source1);
-		source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-	}
-	else
-	{
-		// Anechoic process of a image Source
-		source1DSP = sourceImages.getImageSourceDSPs().at(k);
-		source1DSP->SetBuffer(source1);
-		source1DSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-    }
-
-	// Adding anechoic processed first source to the output mix
-	bufferOutput.left += bufferProcessed.left;
-	bufferOutput.right += bufferProcessed.right;
-	*/
-
 }
-
-
 
 void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
 {	
 	if (!source.LoadWav(filePath)) {
 		cout << "ERROR: file " << filePath << " doesn't exist." << endl<<endl;
 	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+//Methods for audio rendering 
+////////////////////////////////////////////////////////////////////////////////////////
+
+void ofApp::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
+{
+	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
+
+	anechoicSourceDSP->SetBuffer(bufferInput);
+	anechoicSourceDSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+
+	bufferOutput.left += bufferProcessed.left;
+	bufferOutput.right += bufferProcessed.right;
 }
 
 
@@ -744,4 +739,16 @@ void ofApp::drawFirstReflectionRays(SourceImages source, Common::CVector3 _liste
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+//Methods for managing sources 
+////////////////////////////////////////////////////////////////////////////////////////
 
+void ofApp::moveSource(Common::CVector3 movement)
+{
+	/// Moving the original anechoic source
+	Common::CVector3 newLocation = ISMHandler.getSourceLocation() + movement;
+	ISMHandler.setSourceLocation(newLocation);	
+	Common::CTransform sourcePosition;
+	sourcePosition.SetPosition(newLocation);
+	anechoicSourceDSP->SetSourceTransform(sourcePosition);		
+}

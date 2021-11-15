@@ -90,6 +90,7 @@ void ofApp::setup(){
 	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));						//Old way
 	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);		//
 
+	// setup of the anechoic source
 	Common::CVector3 initialLocation(-0.5, -1, 1);
 	ISMHandler.setSourceLocation(initialLocation);									//New way
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
@@ -102,6 +103,8 @@ void ofApp::setup(){
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 	anechoicSourceDSP->EnablePropagationDelay();
 	
+	// setup of the image sources
+	ImageSourceDSPList = createImageSourceDSP();
 	
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
@@ -178,11 +181,13 @@ void ofApp::draw(){
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, 30, 270, 35);
+	ofRect(ofGetWidth() - 300, 30, 270, 65);
 	ofPopStyle();
 	char numberOfImagesStr[255];
 	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerPosition));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
+	sprintf(numberOfImagesStr, "Number of source DSPs: %d", ImageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
 
 
 /*
@@ -315,11 +320,13 @@ void ofApp::keyPressed(int key){
 		reflectionOrder++;
 		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
 		ISMHandler.setReflectionOrder(reflectionOrder);
+		ImageSourceDSPList = createImageSourceDSP();
 		break;
 	case '-': //decreases the reflection order 
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
 		ISMHandler.setReflectionOrder(reflectionOrder);
+		ImageSourceDSPList = createImageSourceDSP();
 		break;
 	case '1': //enable/disable wall number 1 
 		if (mainRoom.getWalls().at(0).isActive())  //Old way
@@ -787,5 +794,26 @@ void ofApp::toggleWall(int wallIndex)
 		ISMHandler.enableWall(wallIndex);
 		activeWalls[wallIndex] = true;
 	}
+	ImageSourceDSPList = createImageSourceDSP();
 
+}
+
+std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
+{
+	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
+	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler.getImageSourceLocations();
+	for (int i = 0; i < imageSourceLocationList.size(); i++)
+	{
+		shared_ptr<Binaural::CSingleSourceDSP> tempSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
+		Common::CTransform sourcePosition;
+		sourcePosition.SetPosition(imageSourceLocationList.at(i));
+		tempSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
+		tempSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+		tempSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+		tempSourceDSP->EnablePropagationDelay();
+		tempImageSourceDSPList.push_back(tempSourceDSP);
+	}
+	return tempImageSourceDSPList;
 }

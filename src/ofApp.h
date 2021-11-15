@@ -62,15 +62,14 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
-		std::vector<ImageSourceData>	sourceImageDataList;
 		SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
-		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> listOfImageSourceDSP;			// Vector of pointers to all image source DSPs
+		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ImageSourceDSPList;			// Vector of pointers to all image source DSPs
 
 		float scale = 20;			//visualization scale
-		int reflectionOrder = 0;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
+		int reflectionOrder = 2;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
 
 									
 		/// Methods to handle Audio
@@ -95,4 +94,5 @@ class ofApp : public ofBaseApp{
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
 		void toggleWall(int wallIndex);
+		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
 };

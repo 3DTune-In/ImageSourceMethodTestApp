@@ -50,14 +50,14 @@ std::vector<Common::CVector3> ISM::getImageSourceLocations()
 	return imageSourceList;
 }
 
-/*
-std::vector<ImageSourceData> ISM::getImageSourceData()
+
+std::vector<ImageSourceData> ISM::getImageSourceData(Common::CVector3 listenerLocation)
 {
 	std::vector<ImageSourceData> imageSourceList;
-	originalSource.getImageData(imageSourceList, reflectionOrder);
+	originalSource.getImageData(imageSourceList, listenerLocation, reflectionOrder);
 	return imageSourceList;
 }
-*/
+
 
 
 

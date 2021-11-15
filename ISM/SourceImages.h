@@ -23,7 +23,15 @@
 #include "Room.h"
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <Common/Vector3.h>
-//#include "ISM.h"
+
+
+struct ImageSourceData
+{
+	Common::CVector3 location;
+	bool visible;
+};
+
+
 
 class SourceImages
 {
@@ -68,7 +76,7 @@ class SourceImages
 	*	\param [out] ImageSourceData: Vector containing the data of the image sources
 	*   \param [in] reflectionOrder: needed to trim the recursive tree
 	*/
-//	void getImageData(std::vector<ImageSourceData> &imageSourceDataList, int reflectionOrder);
+	void getImageData(std::vector<ImageSourceData> &imageSourceDataList, Common::CVector3 listenerLocation, int reflectionOrder);
 
 	/** \brief Returns the  wall where the reflecion produced this image
 	*   \param [out] Reflection wall.

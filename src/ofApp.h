@@ -62,7 +62,7 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
-//		std::vector<ImageSourceData>	sourceImageDataList;
+		std::vector<ImageSourceData>	sourceImageDataList;
 		SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		SoundSource source1Wav;
 

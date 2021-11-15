@@ -438,11 +438,12 @@ void ofApp::keyPressed(int key){
 
 		break;
 	case 't': //Test
-		std::vector<Common::CVector3> location = ISMHandler.getImageSourceLocations();
+		std::vector<ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
 		cout << "--------------------------------------------------\n";
-		for (int i = 0; i < location.size(); i++)
+		for (int i = 0; i < data.size(); i++)
 		{
-			cout << location.at(i).x << ", " << location.at(i).y << ", " << location.at(i).z << "\n";
+			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
+			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
  		}
 	}
 }
@@ -729,7 +730,6 @@ void ofApp::drawRaysToListener(SourceImages source, Common::CVector3 _listenerLo
 				{
 					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
 					ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
-					drawRaysToListener(images.at(i), _listenerLocation, _reflectionOrder);
 				}
 				else
 				{
@@ -740,6 +740,7 @@ void ofApp::drawRaysToListener(SourceImages source, Common::CVector3 _listenerLo
 					ofPopStyle();
 				}
 			}
+			drawRaysToListener(images.at(i), _listenerLocation, _reflectionOrder);
 		}
 	}
 }

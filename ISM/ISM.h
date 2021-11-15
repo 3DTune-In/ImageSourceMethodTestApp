@@ -23,13 +23,6 @@
 #include "SourceImages.h"
 #include <Common/Vector3.h>
 
-/*
-struct ImageSourceData
-{
-	Common::CVector3 location;
-	bool visible;
-};
-*/
 
 class ISM
 {
@@ -94,7 +87,7 @@ public:
 		original source (direct path). 
 	*	\param [out] ImageSourceData: Vector containing the data of the image sources
 	*/
-//	std::vector<ImageSourceData> getImageSourceData();
+	std::vector<ImageSourceData> getImageSourceData(Common::CVector3 listenerLocation);
 
 	/** \brief process image sources
 	*	\details This method prcess all all image sources which are active (visible), not including the

@@ -50,9 +50,8 @@ int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3
 			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
 			{
 				subtotal++;
-				subtotal+=images.at(i).getNumberOfVisibleImages(reflectionOrder, listenerLocation);
 			}
-
+			subtotal += images.at(i).getNumberOfVisibleImages(reflectionOrder, listenerLocation);
 		}
 		return subtotal;
 	}
@@ -100,8 +99,8 @@ void SourceImages::getImageLocations(std::vector<Common::CVector3> &imageSourceL
 
 }
 
-/*
-void SourceImages::getImageData(std::vector<ImageSourceData> &imageSourceDataList, int reflectionOrder)
+
+void SourceImages::getImageData(std::vector<ImageSourceData> &imageSourceDataList, Common::CVector3 listenerLocation, int reflectionOrder)
 {
 	if (reflectionOrder > 0)
 	{
@@ -112,18 +111,28 @@ void SourceImages::getImageData(std::vector<ImageSourceData> &imageSourceDataLis
 			{
 				ImageSourceData temp;
 				temp.location = images.at(i).getLocation();
+				Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images.at(i).getLocation(), listenerLocation);
+				float distanceToBorder, sharpness;
+				if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
+				{
+					temp.visible = true;
+				}
+				else
+				{
+					temp.visible = false;
+				}
 				imageSourceDataList.push_back(temp);
-//				imageSourceDataList.push_back(images.at(i).getLocation());
+
 				if (reflectionOrder > 0)
 				{
-					images.at(i).getImageData(imageSourceDataList, reflectionOrder);
+					images.at(i).getImageData(imageSourceDataList, listenerLocation, reflectionOrder);
 				}
 			}
 		}
 	}
 
 }
-*/
+
 
 void SourceImages::setReflectionWall(Wall _reflectionWall)
 {

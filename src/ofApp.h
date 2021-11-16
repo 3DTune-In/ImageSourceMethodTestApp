@@ -66,7 +66,7 @@ class ofApp : public ofBaseApp{
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
-		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ImageSourceDSPList;			// Vector of pointers to all image source DSPs
+		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
 		float scale = 20;			//visualization scale
 		int reflectionOrder = 2;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
@@ -81,6 +81,7 @@ class ofApp : public ofBaseApp{
 
 		/// Methods to render audio
 		void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
+		void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms, walls, sources, etc. 
 		void drawRoom(Room room);

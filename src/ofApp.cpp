@@ -104,7 +104,7 @@ void ofApp::setup(){
 	anechoicSourceDSP->EnablePropagationDelay();
 	
 	// setup of the image sources
-	ImageSourceDSPList = createImageSourceDSP();
+	imageSourceDSPList = createImageSourceDSP();
 	
 	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
@@ -186,7 +186,7 @@ void ofApp::draw(){
 	char numberOfImagesStr[255];
 	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerPosition));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
-	sprintf(numberOfImagesStr, "Number of source DSPs: %d", ImageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
+	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
 
 
@@ -320,13 +320,13 @@ void ofApp::keyPressed(int key){
 		reflectionOrder++;
 		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
 		ISMHandler.setReflectionOrder(reflectionOrder);
-		ImageSourceDSPList = createImageSourceDSP();
+		imageSourceDSPList = createImageSourceDSP();
 		break;
 	case '-': //decreases the reflection order 
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
 		ISMHandler.setReflectionOrder(reflectionOrder);
-		ImageSourceDSPList = createImageSourceDSP();
+		imageSourceDSPList = createImageSourceDSP();
 		break;
 	case '1': //enable/disable wall number 1 
 		if (mainRoom.getWalls().at(0).isActive())  //Old way
@@ -505,7 +505,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
-/// Read de audio the list of devices of the user computer, allowing the user to select which device to use. Configure the Audio using openFramework
+/// Read the list of devices of the user computer, allowing the user to select which device to use. Configure the Audio using openFramework
 void ofApp::SetDeviceAndAudio(Common::TAudioStateStruct audioState) {
 	// This call could block the app when the motu audio interface is unplugged
 	// It gives the message: 
@@ -629,7 +629,8 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	processAnechoic(source1, bufferOutput);
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
-	sourceImages.processImages(source1, bufferOutput, lisenerPosition, reflectionOrder);
+
+	processImages(source1, bufferOutput);
 }
 
 void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
@@ -653,6 +654,29 @@ void ofApp::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CM
 
 	bufferOutput.left += bufferProcessed.left;
 	bufferOutput.right += bufferProcessed.right;
+}
+
+void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
+{
+	Common::CTransform listenerTransform = listener->GetListenerTransform();
+	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
+	std::vector<ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
+
+	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+	{
+//		if (data.at(i).visible) //FIXME: sometimes data and DSPs are not of the same size. they must be
+		{
+			Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
+
+			imageSourceDSPList.at(i)->SetBuffer(bufferInput);
+			imageSourceDSPList.at(i)->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
+
+			bufferOutput.left += bufferProcessed.left;
+			bufferOutput.right += bufferProcessed.right;
+		}
+	}
 }
 
 
@@ -794,7 +818,7 @@ void ofApp::toggleWall(int wallIndex)
 		ISMHandler.enableWall(wallIndex);
 		activeWalls[wallIndex] = true;
 	}
-	ImageSourceDSPList = createImageSourceDSP();
+	imageSourceDSPList = createImageSourceDSP();
 
 }
 

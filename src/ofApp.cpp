@@ -74,11 +74,11 @@ void ofApp::setup(){
 	mainRoom.insertWall(ceiling);
 */
 
-	mainRoom.setupShoebox(7, 10, 3); //old way
+	mainRoom.setupShoebox(7, 10, 3); //Room to be drawn
 	mainRoom.disableWall(4);         //
 	mainRoom.disableWall(5);         //
 
-	ISMHandler.SetupShoeBoxRoom(7, 10, 3, myCore); //new way (el core debe desaparecer)
+	ISMHandler.SetupShoeBoxRoom(7, 10, 3); //Room to render audio
 	ISMHandler.setReflectionOrder(reflectionOrder);
 	ISMHandler.disableWall(4);
 	activeWalls[4] = false;
@@ -87,12 +87,12 @@ void ofApp::setup(){
 
 
 	// Source  setup
-	sourceImages.setup(myCore, Common::CVector3(-0.5, -1, 1));						//Old way
+	sourceImages.setLocation(Common::CVector3(-0.5, -1, 1));						// Source to be drawn
 	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);		//
 
 	// setup of the anechoic source
 	Common::CVector3 initialLocation(-0.5, -1, 1);
-	ISMHandler.setSourceLocation(initialLocation);									//New way
+	ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(initialLocation);

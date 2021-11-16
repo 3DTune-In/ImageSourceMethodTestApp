@@ -4,37 +4,7 @@
 //#define THRESHOLD_BORDER 0.2f
 //#endif
 
-void SourceImages::setup(Binaural::CCore &_core, Common::CVector3 _location)
-{
-	core = &_core;
-	sourceLocation = _location;
-	sourceDSP = _core.CreateSingleSourceDSP();						// Creating audio source
-	Common::CTransform sourcePosition;
-	sourcePosition.SetPosition(_location);											 
-	sourceDSP->SetSourceTransform(sourcePosition);					//Set source position
-	sourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-	sourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	sourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-	sourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-	sourceDSP->EnablePropagationDelay();
-}
 
-shared_ptr<Binaural::CSingleSourceDSP> SourceImages::getSourceDSP()
-{
-	return sourceDSP;
-}
-
-//FIXME: returns only the first reflections and should return all reflectons uo to a reflection order
-std::vector<shared_ptr<Binaural::CSingleSourceDSP>> SourceImages::getImageSourceDSPs()
-{
-	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageDSPList;
-	for (int i = 0; i < images.size(); i++)
-	{
-		shared_ptr<Binaural::CSingleSourceDSP> tempDSP = images[i].getSourceDSP();
-		imageDSPList.push_back(tempDSP);
-	}
-	return imageDSPList;
-}
 
 //FIXME: the condition of visibility is wrong and should be fixed only the first reflection after the source is checked 
 int SourceImages::getNumberOfVisibleImages(int reflectionOrder, Common::CVector3 listenerLocation)
@@ -159,7 +129,7 @@ void SourceImages::createImages(Room _room, Common::CVector3 listenerLocation, i
 			// this is equivalent to determine wether source and listener are on the same side of the wall or not
 			if ((listenerLocation - sourceLocation).GetDistance() < (listenerLocation - tempImageLocation).GetDistance())
 			{
-				tempSourceImage.setup(*core, tempImageLocation);
+				tempSourceImage.setLocation(tempImageLocation);
 				tempSourceImage.setReflectionWall(walls.at(i));
 
 				if (reflectionOrder > 0)
@@ -187,11 +157,6 @@ void SourceImages::updateImages()
 	{
 		//FIXME: When some images disappear or reappear, this has to be done differently
 		images[i].setLocation(images.at(i).getReflectionWall().getImagePoint(sourceLocation));
-		// Moves Images
-		Common::CTransform sourceImagePosition;
-		sourceImagePosition.SetPosition(images.at(i).getLocation());
-		images[i].getSourceDSP()->SetSourceTransform(sourceImagePosition);
-
 	}
 }
 
@@ -202,33 +167,3 @@ void SourceImages::refreshImages(Room _room, Common::CVector3 listenerLocation, 
 }
 
 
-
-
-void SourceImages::processImages(CMonoBuffer<float> &bufferInput, 
-								 Common::CEarPair<CMonoBuffer<float>> & bufferOutput, 
-								 Common::CVector3 _listenerLocation, 
-								 int reflectionOrder)
-{
-	if (reflectionOrder > 0)
-	{
-		reflectionOrder--;
-		for (int i = 0; i < images.size(); i++)
-		{
-			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-			float distanceToBorder, sharpness;
-			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0 )
-			{
-				Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
-
-				images.at(i).getSourceDSP()->SetBuffer(bufferInput);
-				images.at(i).getSourceDSP()->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-
-				bufferOutput.left += bufferProcessed.left;
-				bufferOutput.right += bufferProcessed.right;
-
-				images.at(i).processImages(bufferInput, bufferOutput, _listenerLocation, reflectionOrder);
-			}
-
-		}
-	}
-}

@@ -21,7 +21,6 @@
 */
 #pragma once
 #include "Room.h"
-#include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <Common/Vector3.h>
 
 
@@ -39,13 +38,6 @@ class SourceImages
 	////////////
 	// Methods
 	////////////
-
-	/** \brief Initializes the object with one original source
-	*	\details creates the original source at a given initial location keeping a link to the Toolkit core.
-	*	\param [in] _Core: pointer to the 3DTI binaural core
-	*   \param [in] _location: initial location for the original source.
-	*/
-	void setup(Binaural::CCore &_core, Common::CVector3 _location);
 
 	/** \brief changes the location of the original source
 	*	\details Sets a new location for the original source and updates all images accordingly.
@@ -83,16 +75,6 @@ class SourceImages
 	*/
 	Wall getReflectionWall();
 
-	/** \brief Returns the 3DTI single source DSP of the original source
-	*   \param [out] SingleSourceDSP: 3DTI single source DSP of the original source.
-	*/
-	shared_ptr<Binaural::CSingleSourceDSP> getSourceDSP();
-
-	/** \brief Returns a vector with DTI single source DSP of the first reflection images sources.
-	*   \param [out] SingleSourceDSPVector: vector of 3DTI single source DSP of image sources.
-	*/
-	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> getImageSourceDSPs();
-
 	/** \brief Returns the number of images whcih are visible to teh listener (real reflections) 
 	*	\details Given a location of the listener, this method computes how many images are active because they are visible to the listener
 				 To do so it iterates the whole recursive tree up to a given order checking it the sources are visible or not
@@ -124,13 +106,6 @@ class SourceImages
 	*/
 	void refreshImages(Room _room, Common::CVector3 listenerLocation, int reflectionOrder);
 
-	/** \brief
-	*	\details
-	*	\param [in]
-	*   \param [in]
-	*/
-	void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput, Common::CVector3 _listenerLocation, int _reflectionOrder);
-
 private:
 
 ///////////////////
@@ -154,11 +129,9 @@ private:
 	Wall reflectionWall;									//Wall which produced current image as a reflection
 	Room surroundingRoom;									//Room to generate further images reflectin in its walls
 	Common::CVector3 sourceLocation;						//Original source location
-	shared_ptr<Binaural::CSingleSourceDSP>	sourceDSP;		//Pointer to the original source interface
 
 	std::vector<SourceImages> images;						//recursive list of images
 
-	Binaural::CCore *core;                                  //Core
 
 	float diffraction = 1.0f;
 };

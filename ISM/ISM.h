@@ -38,7 +38,7 @@ public:
 	*	\param [in] length: extension of the room along the X axis.
 	*	\param [in] height: extension of the room along the Z axis
 	*/
-	void SetupShoeBoxRoom(float length, float width, float height, Binaural::CCore &core); //FIXME: el paramwetro core debe desaparecer
+	void SetupShoeBoxRoom(float length, float width, float height); 
 
 	/** \brief Makes one of the room's walls active
 	*	\details Sets the i-th wall of the room as active and therefore reflective.
@@ -88,14 +88,6 @@ public:
 	*	\param [out] ImageSourceData: Vector containing the data of the image sources
 	*/
 	std::vector<ImageSourceData> getImageSourceData(Common::CVector3 listenerLocation);
-
-	/** \brief process image sources
-	*	\details This method prcess all all image sources which are active (visible), not including the
-		original source (direct path). The process consists in applying wall absortion 
-		TODO: Clarify what happens with indices when some images are not active
-	*	\param [in] ImageSourcelocations: Vector containing the location of the image sources
-	*/
-	void proccess(CMonoBuffer<float> &bufferInput, std::vector<CMonoBuffer<float>> & bufferOutput, Common::CVector3 listenerLocation);
 
 private:
 	////////////

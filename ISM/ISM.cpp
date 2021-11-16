@@ -1,9 +1,8 @@
 #include "ISM.h"
 
-void ISM::SetupShoeBoxRoom(float length, float width, float height, Binaural::CCore &core) //FIXME: el paramwetro core debe desaparecer
+void ISM::SetupShoeBoxRoom(float length, float width, float height) 
 {
 	mainRoom.setupShoebox(length, width, height);
-	originalSource.setup(core, Common::CVector3(0, 0, 0)); //FIXME: no debería ser necesario hacer setup de la fuente cuando no tenga el core
 	originalSource.setLocation(Common::CVector3(1, 0, 0));
 	originalSource.createImages(mainRoom,Common::CVector3(0,0,0),reflectionOrder); //FIXME:the listener location is fake
 }

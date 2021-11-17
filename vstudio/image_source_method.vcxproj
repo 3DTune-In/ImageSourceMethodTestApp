@@ -181,19 +181,11 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\ISM\ISM.cpp" />
-    <ClCompile Include="..\ISM\Room.cpp" />
-    <ClCompile Include="..\ISM\SourceImages.cpp" />
-    <ClCompile Include="..\ISM\Wall.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\ofApp.cpp" />
     <ClCompile Include="..\src\SoundSource.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ISM\ISM.h" />
-    <ClInclude Include="..\ISM\Room.h" />
-    <ClInclude Include="..\ISM\SourceImages.h" />
-    <ClInclude Include="..\ISM\Wall.h" />
     <ClInclude Include="..\src\ofApp.h" />
     <ClInclude Include="..\src\SoundSource.h" />
   </ItemGroup>

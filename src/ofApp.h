@@ -25,7 +25,7 @@
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>
 #include "SoundSource.h"
-#include "../ISM/ISM.h"
+#include "ISM/ISM.h"
 
 
 class ofApp : public ofBaseApp{

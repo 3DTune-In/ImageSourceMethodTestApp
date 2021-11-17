@@ -74,10 +74,6 @@ void ofApp::setup(){
 	mainRoom.insertWall(ceiling);
 */
 
-	mainRoom.setupShoebox(7, 10, 3); //Room to be drawn
-	mainRoom.disableWall(4);         //
-	mainRoom.disableWall(5);         //
-
 	ISMHandler.SetupShoeBoxRoom(7, 10, 3); //Room to render audio
 	ISMHandler.setReflectionOrder(reflectionOrder);
 	ISMHandler.disableWall(4);
@@ -85,6 +81,7 @@ void ofApp::setup(){
 	ISMHandler.disableWall(5);
 	activeWalls[5] = false;
 
+	mainRoom = ISMHandler.getRoom();
 
 	// Source  setup
 	sourceImages.setLocation(Common::CVector3(-0.5, -1, 1));						// Source to be drawn

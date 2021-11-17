@@ -7,6 +7,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{b4adb658-f179-45d8-be4b-9280880ed87d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ISM">
+      <UniqueIdentifier>{8f237a24-a678-4dc1-95f1-cb725bfa537b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\BinauralSpatializer\3DTI_BinauralSpatializer.h">
@@ -123,6 +126,18 @@
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Waveguide.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISM.h">
+      <Filter>ISM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Room.h">
+      <Filter>ISM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\SourceImages.h">
+      <Filter>ISM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Wall.h">
+      <Filter>ISM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\BinauralSpatializer\BRIR.cpp">
@@ -217,6 +232,18 @@
     </ClCompile>
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Waveguide.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISM.cpp">
+      <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Room.cpp">
+      <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\SourceImages.cpp">
+      <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Wall.cpp">
+      <Filter>ISM</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

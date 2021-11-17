@@ -57,6 +57,10 @@
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\UPCEnvironment.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Vector3.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Waveguide.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISM.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Room.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\SourceImages.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Wall.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\BinauralSpatializer\BRIR.cpp" />
@@ -90,6 +94,10 @@
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\UPCEnvironment.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Vector3.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Waveguide.cpp" />
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISM.cpp" />
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Room.cpp" />
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\SourceImages.cpp" />
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Wall.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

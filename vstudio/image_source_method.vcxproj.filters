@@ -10,25 +10,10 @@
     <ClCompile Include="..\src\SoundSource.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\ISM\ISM.cpp">
-      <Filter>ISM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ISM\Room.cpp">
-      <Filter>ISM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ISM\Wall.cpp">
-      <Filter>ISM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ISM\SourceImages.cpp">
-      <Filter>ISM</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
       <UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ISM">
-      <UniqueIdentifier>{9841b588-7d38-44e1-b70f-c65aff7adf32}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,18 +22,6 @@
     </ClInclude>
     <ClInclude Include="..\src\SoundSource.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ISM\ISM.h">
-      <Filter>ISM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ISM\Room.h">
-      <Filter>ISM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ISM\Wall.h">
-      <Filter>ISM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ISM\SourceImages.h">
-      <Filter>ISM</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -51,12 +51,13 @@ class ofApp : public ofBaseApp{
 		
 	private:	
 		ofTrueTypeFont textFont;
-		ISM ISMHandler;
-		std::vector<bool> activeWalls = { true, true, true, true, true, true };
-		Room mainRoom;//////////////////////////////////////////////////////////////////////////////////////To be moved into the ISM API
-		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;//////////////////////////////////////To be moved into the ISM API
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
+
+		ISM ISMHandler;
+		std::vector<bool> activeWalls = { true, true, true, true, true, true };
+		Room mainRoom;
+//		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;//////////////////////////////////////To be moved into the ISM API
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
@@ -89,8 +90,6 @@ class ofApp : public ofBaseApp{
 		void drawRoom(Room room);
 		void drawWall(Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
 		void drawWallNormal(Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
-		void drawSource(SourceImages source);
-		void drawImages(SourceImages source, int reflectionOrder);
 		void drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int reflectionOrder);
 		void drawFirstReflectionRays(SourceImages source, Common::CVector3 _listenerLocation);
 

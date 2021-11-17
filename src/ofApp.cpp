@@ -158,19 +158,31 @@ void ofApp::draw(){
 
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
-	Common::CVector3 listenerPosition = listenerTransform.GetPosition();
-	ofSphere(listenerPosition.x, listenerPosition.y, listenerPosition.z, 0.09);
-	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
+	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
+	ofSphere(listenerLocation.x, listenerLocation.y, listenerLocation.z, 0.09);						//draw listener
 
 	//draw sources
 	ofPushStyle();
 	ofSetColor(255, 50, 200,50);
-	drawSource(sourceImages);
-	ofSetColor(255, 150, 200,50);
-	drawImages(sourceImages, reflectionOrder);
+	Common::CVector3 sourceLocation = ISMHandler.getSourceLocation();
+	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
+	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, 
+		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechic source
+
+	std::vector<ImageSourceData> imageSourceDataList = ISMHandler.getImageSourceData(listenerLocation);
+	for (int i = 0; i < imageSourceDataList.size(); i++)
+	{
+		if (imageSourceDataList.at(i).visible)
+		{
+			ofSetColor(255, 150, 200, 50);
+			ofBox(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z, 0.2);
+		}
+	}
+
+//	drawImages(sourceImages, reflectionOrder);
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
-	drawRaysToListener(sourceImages, listenerPosition, reflectionOrder);
+	drawRaysToListener(sourceImages, listenerLocation, reflectionOrder);
 
 	ofPopMatrix();
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
@@ -181,7 +193,7 @@ void ofApp::draw(){
 	ofRect(ofGetWidth() - 300, 30, 270, 65);
 	ofPopStyle();
 	char numberOfImagesStr[255];
-	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerPosition));
+	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerLocation));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
@@ -722,22 +734,6 @@ void ofApp::drawWallNormal(Wall wall, float length)
 		normalEnd.x, normalEnd.y, normalEnd.z);
 }
 
-void ofApp::drawSource(SourceImages source)
-{
-	Common::CVector3 sourceLocation = source.getLocation();
-	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);
-
-}
-
-void ofApp::drawImages(SourceImages source, int reflectionOrder)
-{
-	std::vector<Common::CVector3> imageLocations;
-	source.getImageLocations(imageLocations, reflectionOrder);
-	for (int i = 0; i < imageLocations.size(); i++)
-	{
-		ofBox(imageLocations[i].x, imageLocations[i].y, imageLocations[i].z, 0.2);
-	}
-}
 
 void ofApp::drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int _reflectionOrder)
 {

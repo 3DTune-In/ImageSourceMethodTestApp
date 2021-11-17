@@ -27,6 +27,8 @@
 #include "SoundSource.h"
 #include "ISM/ISM.h"
 
+# define LENGTH_OF_NORMALS 0.2
+
 
 class ofApp : public ofBaseApp{
 

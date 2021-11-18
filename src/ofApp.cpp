@@ -459,6 +459,7 @@ void ofApp::keyPressed(int key){
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
+			cout << "- " << data.at(i).reflectionWalls.size() << " reflections - ";
 			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
  		}
 	}

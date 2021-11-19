@@ -54,9 +54,9 @@ class ofApp : public ofBaseApp{
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
 
-		ISM ISMHandler;
+		ISM::ISM ISMHandler;
 		std::vector<bool> activeWalls = { true, true, true, true, true, true };
-		Room mainRoom;
+		ISM::Room mainRoom;
 //		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;//////////////////////////////////////To be moved into the ISM API
 
 		Binaural::CCore							myCore;												 // Core interface
@@ -65,7 +65,7 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
-		SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
+		ISM::SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
@@ -87,11 +87,11 @@ class ofApp : public ofBaseApp{
 		void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms, walls, sources, etc. 
-		void drawRoom(Room room);
-		void drawWall(Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
-		void drawWallNormal(Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
-		void drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int reflectionOrder);
-		void drawFirstReflectionRays(SourceImages source, Common::CVector3 _listenerLocation);
+		void drawRoom(ISM::Room room);
+		void drawWall(ISM::Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
+		void drawWallNormal(ISM::Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		void drawRaysToListener(ISM::SourceImages source, Common::CVector3 _listenerLocation, int reflectionOrder);
+		void drawFirstReflectionRays(ISM::SourceImages source, Common::CVector3 _listenerLocation);
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);

@@ -136,7 +136,7 @@ void ofApp::draw(){
 		drawRoom(mainRoom);
 		if (reflectionOrder > 1)
 		{
-			std::vector<Room> roomImages = mainRoom.getImageRooms();
+			std::vector<ISM::Room> roomImages = mainRoom.getImageRooms();
 			ofPushStyle();
 			ofSetColor(255, 50);									//image rooms are drawn semi-transparent
 			for (int i = 0; i < roomImages.size(); i++) drawRoom(roomImages.at(i));
@@ -145,7 +145,7 @@ void ofApp::draw(){
 				ofSetColor(255, 10);									//second image rooms are drawn almost transparent
 				for (int i = 0; i < roomImages.size(); i++)
 				{
-					std::vector<Room> roomSecondImages = roomImages.at(i).getImageRooms();
+					std::vector<ISM::Room> roomSecondImages = roomImages.at(i).getImageRooms();
 					for (int j = 0; j < roomSecondImages.size(); j++)
 					{
 						drawRoom(roomSecondImages.at(j));
@@ -169,7 +169,7 @@ void ofApp::draw(){
 	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, 
 		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechic source
 
-	std::vector<ImageSourceData> imageSourceDataList = ISMHandler.getImageSourceData(listenerLocation);
+	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler.getImageSourceData(listenerLocation);
 	for (int i = 0; i < imageSourceDataList.size(); i++)
 	{
 		if (imageSourceDataList.at(i).visible)
@@ -454,7 +454,7 @@ void ofApp::keyPressed(int key){
 
 		break;
 	case 't': //Test
-		std::vector<ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
+		std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
 		cout << "--------------------------------------------------\n";
 		for (int i = 0; i < data.size(); i++)
 		{
@@ -670,7 +670,7 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 {
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	std::vector<ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
+	std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 
@@ -693,9 +693,9 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 ////////////////////////////////////////////////////////////////////////////////////////
 //Methods for drawing 
 ////////////////////////////////////////////////////////////////////////////////////////
-void ofApp::drawRoom(Room room)
+void ofApp::drawRoom(ISM::Room room)
 {
-	std::vector<Wall> walls = room.getWalls();
+	std::vector<ISM::Wall> walls = room.getWalls();
 	for (int i = 0; i < walls.size(); i++)
 	{
 		if (walls.at(i).isActive())
@@ -706,7 +706,7 @@ void ofApp::drawRoom(Room room)
 	}
 }
 
-void ofApp::drawWall(Wall wall)
+void ofApp::drawWall(ISM::Wall wall)
 {
 	std::vector<Common::CVector3> polygon = wall.getCorners();
 	int numberVertex = polygon.size();
@@ -719,7 +719,7 @@ void ofApp::drawWall(Wall wall)
 		polygon[numberVertex - 1].x, polygon[numberVertex - 1].y, polygon[numberVertex - 1].z);
 }
 
-void ofApp::drawWallNormal(Wall wall, float length)
+void ofApp::drawWallNormal(ISM::Wall wall, float length)
 {
 	Common::CVector3 center;
 	Common::CVector3 normalEnd;
@@ -736,10 +736,10 @@ void ofApp::drawWallNormal(Wall wall, float length)
 }
 
 
-void ofApp::drawRaysToListener(SourceImages source, Common::CVector3 _listenerLocation, int _reflectionOrder)
+void ofApp::drawRaysToListener(ISM::SourceImages source, Common::CVector3 _listenerLocation, int _reflectionOrder)
 {
 //	float distanceToBorder;
-	std::vector<SourceImages> images = source.getImages();
+	std::vector<ISM::SourceImages> images = source.getImages();
 	if (_reflectionOrder > 0)
 	{
 		_reflectionOrder--;
@@ -770,9 +770,9 @@ void ofApp::drawRaysToListener(SourceImages source, Common::CVector3 _listenerLo
 	}
 }
 
-void ofApp::drawFirstReflectionRays(SourceImages source, Common::CVector3 _listenerLocation)
+void ofApp::drawFirstReflectionRays(ISM::SourceImages source, Common::CVector3 _listenerLocation)
 {
-	std::vector<SourceImages> images = source.getImages();
+	std::vector<ISM::SourceImages> images = source.getImages();
 	Common::CVector3 sourceLocation = source.getLocation();
 	for (int i = 0; i < images.size(); i++)
 	{

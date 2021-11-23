@@ -78,10 +78,10 @@ void ofApp::setup(){
 	shoeboxHeight = 3;
 	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight); //Room to render audio
 	ISMHandler.setReflectionOrder(reflectionOrder);
-	ISMHandler.disableWall(4);
-	activeWalls[4] = false;
-	ISMHandler.disableWall(5);
-	activeWalls[5] = false;
+//	ISMHandler.disableWall(4);
+//	activeWalls[4] = false;
+//	ISMHandler.disableWall(5);
+//	activeWalls[5] = false;
 
 	mainRoom = ISMHandler.getRoom();
 
@@ -330,16 +330,20 @@ void ofApp::keyPressed(int key){
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case '+': //increases the reflection order 
+		systemSoundStream.stop();
 		reflectionOrder++;
 		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
 		ISMHandler.setReflectionOrder(reflectionOrder);
 		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
 		break;
 	case '-': //decreases the reflection order 
+		systemSoundStream.stop();
 		reflectionOrder--;
 		if (reflectionOrder <0) reflectionOrder = 0;
 		ISMHandler.setReflectionOrder(reflectionOrder);
 		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
 		break;
 	case '1': //enable/disable wall number 1 
 		if (mainRoom.getWalls().at(0).isActive())  //Old way
@@ -457,6 +461,48 @@ void ofApp::keyPressed(int key){
 		toggleWall(5);        //New way
 
 		break;
+	case 'y': //increase room's length
+		systemSoundStream.stop();
+		shoeboxLength += 0.2;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
+	case 'b': //decrease room's length
+		systemSoundStream.stop();
+		shoeboxLength -= 0.2;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
+	case 'g': //decrease room's width
+		systemSoundStream.stop();
+		shoeboxWidth -= 0.2;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
+	case 'h': //increase room's width
+		systemSoundStream.stop();
+		shoeboxWidth += 0.2;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
+	case 'v': //decrease room's height
+		systemSoundStream.stop();
+		shoeboxHeight -= 0.2;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
+	case 'n': //increase room's height
+		systemSoundStream.stop();
+		shoeboxHeight += 0.2;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
 	case 't': //Test
 		std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
 		cout << "--------------------------------------------------\n";
@@ -465,7 +511,8 @@ void ofApp::keyPressed(int key){
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
 			cout << "- " << data.at(i).reflectionWalls.size() << " reflections - ";
 			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
- 		}
+		}
+		break;
 	}
 }
 

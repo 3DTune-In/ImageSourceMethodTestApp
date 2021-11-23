@@ -53,6 +53,9 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont textFont;
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
+		float shoeboxLength;
+		float shoeboxWidth;
+		float shoeboxHeight;
 
 		ISM::ISM ISMHandler;
 		std::vector<bool> activeWalls = { true, true, true, true, true, true };

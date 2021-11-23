@@ -73,8 +73,10 @@ void ofApp::setup(){
 
 	mainRoom.insertWall(ceiling);
 */
-
-	ISMHandler.SetupShoeBoxRoom(7, 10, 3); //Room to render audio
+	shoeboxLength = 7;
+	shoeboxWidth = 10;
+	shoeboxHeight = 3;
+	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight); //Room to render audio
 	ISMHandler.setReflectionOrder(reflectionOrder);
 	ISMHandler.disableWall(4);
 	activeWalls[4] = false;
@@ -197,6 +199,8 @@ void ofApp::draw(){
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
+
+
 
 
 /*
@@ -342,14 +346,14 @@ void ofApp::keyPressed(int key){
 		{
 			mainRoom.disableWall(0);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);			
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);			
 			systemSoundStream.start();
 		}
 		else
 		{
 			mainRoom.enableWall(0);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 
 		}
@@ -362,14 +366,14 @@ void ofApp::keyPressed(int key){
 		{
 			mainRoom.disableWall(1);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 		else
 		{
 			mainRoom.enableWall(1);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 
@@ -382,14 +386,14 @@ void ofApp::keyPressed(int key){
 		{
 			mainRoom.disableWall(2);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 		else
 		{
 			mainRoom.enableWall(2);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 
@@ -401,14 +405,14 @@ void ofApp::keyPressed(int key){
 		{
 			mainRoom.disableWall(3);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 		else
 		{
 			mainRoom.enableWall(3);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 
@@ -420,14 +424,14 @@ void ofApp::keyPressed(int key){
 		{
 			mainRoom.disableWall(4);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 		else
 		{
 			mainRoom.enableWall(4);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 
@@ -439,14 +443,14 @@ void ofApp::keyPressed(int key){
 		{
 			mainRoom.disableWall(5);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 		else
 		{
 			mainRoom.enableWall(5);
 			systemSoundStream.stop();
-			sourceImages.refreshImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
+			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
 			systemSoundStream.start();
 		}
 

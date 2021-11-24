@@ -163,14 +163,15 @@ void ofApp::draw(){
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 	ofSphere(listenerLocation.x, listenerLocation.y, listenerLocation.z, 0.09);						//draw listener
 
-	//draw sources
+	//draw anechoic source
 	ofPushStyle();
 	ofSetColor(255, 50, 200,50);
 	Common::CVector3 sourceLocation = ISMHandler.getSourceLocation();
 	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
 	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, 
-		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechic source
+		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 
+	//draw image sources 
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler.getImageSourceData(listenerLocation);
 	for (int i = 0; i < imageSourceDataList.size(); i++)
 	{
@@ -178,13 +179,20 @@ void ofApp::draw(){
 		{
 			ofSetColor(255, 150, 200, 50);
 			ofBox(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z, 0.2);
+			ofLine(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z,
+				listenerLocation.x, listenerLocation.y, listenerLocation.z);
+			for (int j = 0; j < imageSourceDataList.at(i).reflectionWalls.size(); j++)
+			{
+				Common::CVector3 reflectionPoint = imageSourceDataList.at(i).reflectionWalls.at(j).getIntersectionPointWithLine(imageSourceDataList.at(i).location, listenerLocation);
+				ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+			}
 		}
 	}
 
 //	drawImages(sourceImages, reflectionOrder);
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
-	drawRaysToListener(sourceImages, listenerLocation, reflectionOrder);
+	//drawRaysToListener(sourceImages, listenerLocation, reflectionOrder);
 
 	ofPopMatrix();
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
@@ -509,7 +517,8 @@ void ofApp::keyPressed(int key){
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
-			cout << "- " << data.at(i).reflectionWalls.size() << " reflections - ";
+			cout << data.at(i).visibility;
+			cout << " - " << data.at(i).reflectionWalls.size() << " reflections - ";
 			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
 		}
 		break;

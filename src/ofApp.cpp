@@ -172,11 +172,13 @@ void ofApp::draw() {
 		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 
 	//draw image sources 
+	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler.getImageSourceData(listenerLocation);
 	for (int i = 0; i < imageSourceDataList.size(); i++)
 	{
 		if (imageSourceDataList.at(i).visible)
 		{
+			numberOfVisibleImages++;
 			ofSetColor(255, 150, 200, imageSourceDataList.at(i).visibility * 255);
 			ofBox(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z, 0.2);
 			ofLine(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z,
@@ -209,7 +211,7 @@ void ofApp::draw() {
 	ofRect(ofGetWidth() - 300, 30, 270, 65);
 	ofPopStyle();
 	char numberOfImagesStr[255];
-	sprintf(numberOfImagesStr, "Number of visible images: %d", sourceImages.getNumberOfVisibleImages(reflectionOrder, listenerLocation));
+	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
@@ -801,57 +803,6 @@ void ofApp::drawWallNormal(ISM::Wall wall, float length)
 		normalEnd.x, normalEnd.y, normalEnd.z);
 }
 
-
-void ofApp::drawRaysToListener(ISM::SourceImages source, Common::CVector3 _listenerLocation, int _reflectionOrder)
-{
-//	float distanceToBorder;
-	std::vector<ISM::SourceImages> images = source.getImages();
-	if (_reflectionOrder > 0)
-	{
-		_reflectionOrder--;
-		for (int i = 0; i < images.size(); i++)
-		{
-			Common::CVector3 tempImageLocation = images.at(i).getLocation();
-			Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(tempImageLocation, _listenerLocation);
-			float distanceToBorder, sharpness;
-			if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) > 0)
-			{
-				//if (fabs(distanceToBorder) > THRESHOLD_BORDER)
-				if (sharpness >= 1.0f)
-				{
-					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
-					ofLine(tempImageLocation.x, tempImageLocation.y, tempImageLocation.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
-				}
-				else
-				{
-					//float sharpness = 0.5 + distanceToBorder / (2.0 * THRESHOLD_BORDER);
-					ofPushStyle();
-					ofSetColor(0, 0, 255, int(200.0*sharpness));
-					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.2);
-					ofPopStyle();
-				}
-			}
-			drawRaysToListener(images.at(i), _listenerLocation, _reflectionOrder);
-		}
-	}
-}
-
-void ofApp::drawFirstReflectionRays(ISM::SourceImages source, Common::CVector3 _listenerLocation)
-{
-	std::vector<ISM::SourceImages> images = source.getImages();
-	Common::CVector3 sourceLocation = source.getLocation();
-	for (int i = 0; i < images.size(); i++)
-	{
-		Common::CVector3 reflectionPoint = images.at(i).getReflectionWall().getIntersectionPointWithLine(images[i].getLocation(), _listenerLocation);
-		float distanceToBorder, sharpness;
-		if (images.at(i).getReflectionWall().checkPointInsideWall(reflectionPoint, distanceToBorder, sharpness) == 1)
-		{
-			ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
-			ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z, reflectionPoint.x, reflectionPoint.y, reflectionPoint.z);
-			ofLine(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, _listenerLocation.x, _listenerLocation.y, _listenerLocation.z);
-		}
-	}
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //Methods for managing sources 

@@ -89,12 +89,10 @@ class ofApp : public ofBaseApp{
 		void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 		void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
-		/// Methods to draw rooms, walls, sources, etc. 
+		/// Methods to draw rooms. 
 		void drawRoom(ISM::Room room);
 		void drawWall(ISM::Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
 		void drawWallNormal(ISM::Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
-		void drawRaysToListener(ISM::SourceImages source, Common::CVector3 _listenerLocation, int reflectionOrder);
-		void drawFirstReflectionRays(ISM::SourceImages source, Common::CVector3 _listenerLocation);
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);

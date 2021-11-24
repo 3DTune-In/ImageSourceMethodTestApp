@@ -68,7 +68,6 @@ class ofApp : public ofBaseApp{
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
 
-		ISM::SourceImages sourceImages;//////////////////////////////////////////////////////////////////////////To be moved into the ISM API
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP

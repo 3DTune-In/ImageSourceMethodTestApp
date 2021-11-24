@@ -85,10 +85,6 @@ void ofApp::setup(){
 
 	mainRoom = ISMHandler.getRoom();
 
-// Source  setup
-sourceImages.setLocation(Common::CVector3(-0.5, -1, 1));						// Source to be drawn
-sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);		//
-
 // setup of the anechoic source
 Common::CVector3 initialLocation(-0.5, -1, 1);
 ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
@@ -168,7 +164,7 @@ void ofApp::draw() {
 	ofSetColor(255, 50, 200, 50);
 	Common::CVector3 sourceLocation = ISMHandler.getSourceLocation();
 	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
-	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z,
+	ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z,
 		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 
 	//draw image sources 
@@ -298,27 +294,21 @@ void ofApp::keyPressed(int key){
 		scale*=1.1;
 		break;
 	case 'k': //Moves the source left (-X)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(-SOURCE_STEP, 0, 0));			//Old way
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
 	case 'i': //Moves the source right (+X)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(SOURCE_STEP, 0, 0));				//Old way
 		moveSource(Common::CVector3(SOURCE_STEP, 0, 0));
 		break;
 	case 'j': //Moves the source up (+Y)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, SOURCE_STEP, 0));				//Old way
 		moveSource(Common::CVector3(0, SOURCE_STEP, 0));
 		break;
 	case 'l': //Moves the source down (-Y)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, -SOURCE_STEP, 0));			//Old way
 		moveSource(Common::CVector3(0, -SOURCE_STEP, 0));
 		break;
 	case 'u': //Moves the source up (Z)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, SOURCE_STEP));				//Old way
 		moveSource(Common::CVector3(0, 0, SOURCE_STEP));
 		break;
 	case 'm': //Moves the source down (-Z)
-		sourceImages.setLocation(sourceImages.getLocation() + Common::CVector3(0, 0, -SOURCE_STEP));			//Old way
 		moveSource(Common::CVector3(0, 0, -SOURCE_STEP));
 		break;
 	case 's': //Moves the listener left (-X)
@@ -362,120 +352,22 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	case '1': //enable/disable wall number 1 
-		if (mainRoom.getWalls().at(0).isActive())  //Old way
-		{
-			mainRoom.disableWall(0);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);			
-			systemSoundStream.start();
-		}
-		else
-		{
-			mainRoom.enableWall(0);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-
-		}
-
-		toggleWall(0);        //New way
-
+		toggleWall(0);        
 		break;
 	case '2': //enable/disable wall number 2 
-		if (mainRoom.getWalls().at(1).isActive())
-		{
-			mainRoom.disableWall(1);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-		else
-		{
-			mainRoom.enableWall(1);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-
-		toggleWall(1);        //New way
-
+		toggleWall(1);    
 		break;
-
-	case '3': //enable/disable wall number 2 
-		if (mainRoom.getWalls().at(2).isActive())
-		{
-			mainRoom.disableWall(2);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-		else
-		{
-			mainRoom.enableWall(2);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-
-		toggleWall(2);        //New way
-
+	case '3': //enable/disable wall number 3 
+		toggleWall(2);      
 		break;
-	case '4': //enable/disable wall number 2 
-		if (mainRoom.getWalls().at(3).isActive())
-		{
-			mainRoom.disableWall(3);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-		else
-		{
-			mainRoom.enableWall(3);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-
-		toggleWall(3);        //New way
-
+	case '4': //enable/disable wall number 4 
+		toggleWall(3);     
 		break;
-	case '5': //enable/disable wall number 2 
-		if (mainRoom.getWalls().at(4).isActive())
-		{
-			mainRoom.disableWall(4);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-		else
-		{
-			mainRoom.enableWall(4);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-
-		toggleWall(4);        //New way
-
+	case '5': //enable/disable wall number 5 
+		toggleWall(4);      
 		break;
-	case '6': //enable/disable wall number 2 
-		if (mainRoom.getWalls().at(5).isActive())
-		{
-			mainRoom.disableWall(5);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-		else
-		{
-			mainRoom.enableWall(5);
-			systemSoundStream.stop();
-			sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);
-			systemSoundStream.start();
-		}
-
-		toggleWall(5);        //New way
-
+	case '6': //enable/disable wall number 6 
+		toggleWall(5);        
 		break;
 	case 'y': //increase room's length
 		systemSoundStream.stop();
@@ -829,6 +721,7 @@ void ofApp::toggleWall(int wallIndex)
 		ISMHandler.enableWall(wallIndex);
 		activeWalls[wallIndex] = true;
 	}
+	mainRoom = ISMHandler.getRoom();
 	imageSourceDSPList = createImageSourceDSP();
 
 }

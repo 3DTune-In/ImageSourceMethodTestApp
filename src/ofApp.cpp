@@ -85,43 +85,43 @@ void ofApp::setup(){
 
 	mainRoom = ISMHandler.getRoom();
 
-	// Source  setup
-	sourceImages.setLocation(Common::CVector3(-0.5, -1, 1));						// Source to be drawn
-	sourceImages.createImages(mainRoom,listenerLocation, MAX_REFLECTION_ORDER);		//
+// Source  setup
+sourceImages.setLocation(Common::CVector3(-0.5, -1, 1));						// Source to be drawn
+sourceImages.createImages(mainRoom, listenerLocation, MAX_REFLECTION_ORDER);		//
 
-	// setup of the anechoic source
-	Common::CVector3 initialLocation(-0.5, -1, 1);
-	ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
-	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
-	Common::CTransform sourcePosition;
-	sourcePosition.SetPosition(initialLocation);
-	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
-	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	anechoicSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-	anechoicSourceDSP->EnablePropagationDelay();
-	
-	// setup of the image sources
-	imageSourceDSPList = createImageSourceDSP();
-	
-	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
+// setup of the anechoic source
+Common::CVector3 initialLocation(-0.5, -1, 1);
+ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
+anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
+Common::CTransform sourcePosition;
+sourcePosition.SetPosition(initialLocation);
+anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
+anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+anechoicSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+anechoicSourceDSP->EnablePropagationDelay();
 
-	//AudioDevice Setup
-	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
-	//// the app crashes when systemSoundStream.start(); or stop() are called.
-	systemSoundStream.close();
-	SetDeviceAndAudio(audioState);
+// setup of the image sources
+imageSourceDSPList = createImageSourceDSP();
 
-}
+LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
-//--------------------------------------------------------------
-void ofApp::update(){
+//AudioDevice Setup
+//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
+//// the app crashes when systemSoundStream.start(); or stop() are called.
+systemSoundStream.close();
+SetDeviceAndAudio(audioState);
 
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::update() {
+
+}
+
+//--------------------------------------------------------------
+void ofApp::draw() {
 	//////////////////////////////////////begin of 3D drawing//////////////////////////////////////
 	ofPushMatrix();
 	ofScale(scale);
@@ -132,7 +132,7 @@ void ofApp::draw(){
 	ofRotateZ(azimuth);
 
 	ofSetColor(255, 250);									// deault drawing color is white 
-		
+
 	if (reflectionOrder > 0)
 	{
 		drawRoom(mainRoom);
@@ -165,10 +165,10 @@ void ofApp::draw(){
 
 	//draw anechoic source
 	ofPushStyle();
-	ofSetColor(255, 50, 200,50);
+	ofSetColor(255, 50, 200, 50);
 	Common::CVector3 sourceLocation = ISMHandler.getSourceLocation();
 	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
-	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z, 
+	ofLine(sourceImages.getLocation().x, sourceImages.getLocation().y, sourceImages.getLocation().z,
 		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 
 	//draw image sources 
@@ -177,14 +177,20 @@ void ofApp::draw(){
 	{
 		if (imageSourceDataList.at(i).visible)
 		{
-			ofSetColor(255, 150, 200, 50);
+			ofSetColor(255, 150, 200, imageSourceDataList.at(i).visibility * 255);
 			ofBox(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z, 0.2);
 			ofLine(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z,
 				listenerLocation.x, listenerLocation.y, listenerLocation.z);
 			for (int j = 0; j < imageSourceDataList.at(i).reflectionWalls.size(); j++)
 			{
+				ofPushStyle();
+				if (imageSourceDataList.at(i).visibility < 1)
+				{
+					ofSetColor(150, 255, 200, imageSourceDataList.at(i).visibility * 255);
+				}
 				Common::CVector3 reflectionPoint = imageSourceDataList.at(i).reflectionWalls.at(j).getIntersectionPointWithLine(imageSourceDataList.at(i).location, listenerLocation);
 				ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+				ofPopStyle();
 			}
 		}
 	}

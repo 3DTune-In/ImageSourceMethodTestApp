@@ -20,7 +20,7 @@ void ofApp::setup(){
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(-0.5, 0, 1);
+	Common::CVector3 listenerLocation(0, 0, 0);
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -33,60 +33,28 @@ void ofApp::setup(){
 	}
 
 	// Room setup
-/*
-	wall_1.insertCorner(1, 2, 0);
-	wall_1.insertCorner(1, -2, 0);
-	wall_1.insertCorner(1, -2, 2);
-	wall_1.insertCorner(1, 2, 2);
-	mainRoom.insertWall(wall_1);
-	
-	wall_2.insertCorner( 1, -2, 0);
-	wall_2.insertCorner(-1, -3, 0);
-	wall_2.insertCorner(-1, -3, 2);
-	wall_2.insertCorner(1, -2, 2);
-	mainRoom.insertWall(wall_2);
+	ISM::RoomGeometry trapezoidal;
+	trapezoidal.corners = { Common::CVector3(2,2,-1),
+							Common::CVector3(2,-2,-1),
+							Common::CVector3(2,-2,1),
+							Common::CVector3(2,2,1),
+							Common::CVector3(-1,-3,-1),
+							Common::CVector3(-2,2,-1),
+							Common::CVector3(-2,2,1),
+							Common::CVector3(-1,-3,1),
+							};
+	trapezoidal.walls = { {0,1,2,3},{1,4,7,2},{4,5,6,7},{5,0,3,6},{0,5,4,1},{3,2,7,6} };
+	ISMHandler.setupArbitraryRoom(trapezoidal);
 
-	wall_3.insertCorner(-1, 2, 0);
-	wall_3.insertCorner(1, 2, 0);
-	wall_3.insertCorner(1, 2, 2);
-	wall_3.insertCorner(-1, 2, 2);
-	mainRoom.insertWall(wall_3);
+	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
+//	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
-	wall_4.insertCorner(-1, -3, 0);
-	wall_4.insertCorner(-1, 2, 0);
-	wall_4.insertCorner(-1, 2, 2);
-	wall_4.insertCorner(-1, -3, 2);
-	mainRoom.insertWall(wall_4);
-
-	floor.insertCorner(1, -2, 0);
-	floor.insertCorner(1, 2, 0);
-	floor.insertCorner(-1, 2, 0);
-	//floor.insertCorner(-1, -3, 0); 
-	floor.insertCorner(-1, -3, 1);      // error coord. Z	
-
-	mainRoom.insertWall(floor);
-
-	ceiling.insertCorner(1, 2, 2); 
-	ceiling.insertCorner(1, -2, 2);
-	ceiling.insertCorner(-1, -3, 2);
-	ceiling.insertCorner(-1, 2, 2);
-
-	mainRoom.insertWall(ceiling);
-*/
-	shoeboxLength = 7;
-	shoeboxWidth = 10;
-	shoeboxHeight = 3;
-	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight); //Room to render audio
 	ISMHandler.setReflectionOrder(reflectionOrder);
-//	ISMHandler.disableWall(4);
-//	activeWalls[4] = false;
-//	ISMHandler.disableWall(5);
-//	activeWalls[5] = false;
 
 	mainRoom = ISMHandler.getRoom();
 
 // setup of the anechoic source
-Common::CVector3 initialLocation(-0.5, -1, 1);
+Common::CVector3 initialLocation(1, 0, 0);
 ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
 anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 Common::CTransform sourcePosition;

@@ -74,7 +74,7 @@ class ofApp : public ofBaseApp{
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
 		float scale = 20;			//visualization scale
-		int reflectionOrder = 2;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
+		int reflectionOrder = 1;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
 
 									
 		/// Methods to handle Audio

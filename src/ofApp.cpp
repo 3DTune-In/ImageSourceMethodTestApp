@@ -181,58 +181,6 @@ void ofApp::draw() {
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
 
 
-
-
-/*
-	//Common::CVector3 P(-0.5, 0.5, 0.5);
-
-	Common::CVector3 sourceLocation = sourceImages.getLocation();
-
-	Common::CVector3 P(sourceLocation.x, sourceLocation.y, sourceLocation.z);
-
-	Common::CVector3 R(0, 0, 0), Q(0,0,0);
-		
-	Q = wall_1.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_1.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	bool proof = FALSE;
-	proof = wall_1.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-	Q = wall_2.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_2.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	proof = FALSE;
-	proof = wall_2.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-	Q = wall_3.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_3.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	proof = FALSE;
-	proof = wall_3.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-	Q = wall_4.getImagePoint(P);
-	ofLine(P.x, P.y, P.z, Q.x, Q.y, Q.z);
-	R = wall_4.getIntersectionPointWithLine(Q, lisenerPosition);
-	ofLine(Q.x, Q.y, Q.z, R.x, R.y, R.z);
-	ofLine(R.x, R.y, R.z, lisenerPosition.x, lisenerPosition.y, lisenerPosition.z);
-	//proof R is in wall
-	proof = FALSE;
-	proof = wall_4.checkPointInsideWall(R);
-	if (proof) ofBox(R.x, R.y, R.z, 0.03);
-
-*/
 }
 
 //--------------------------------------------------------------
@@ -320,22 +268,34 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	case '1': //enable/disable wall number 1 
-		toggleWall(0);        
+		systemSoundStream.stop();
+		toggleWall(0);
+		systemSoundStream.start();
 		break;
 	case '2': //enable/disable wall number 2 
-		toggleWall(1);    
+		systemSoundStream.stop();
+		toggleWall(1);
+		systemSoundStream.start();
 		break;
 	case '3': //enable/disable wall number 3 
-		toggleWall(2);      
+		systemSoundStream.stop();
+		toggleWall(2);
+		systemSoundStream.start();
 		break;
 	case '4': //enable/disable wall number 4 
-		toggleWall(3);     
+		systemSoundStream.stop();
+		toggleWall(3);
+		systemSoundStream.start();
 		break;
 	case '5': //enable/disable wall number 5 
-		toggleWall(4);      
+		systemSoundStream.stop();
+		toggleWall(4);
+		systemSoundStream.start();
 		break;
 	case '6': //enable/disable wall number 6 
-		toggleWall(5);        
+		systemSoundStream.stop();
+		toggleWall(5);
+		systemSoundStream.start();
 		break;
 	case 'y': //increase room's length
 		systemSoundStream.stop();
@@ -604,7 +564,7 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 	{
-//		if (data.at(i).visible) //FIXME: sometimes data and DSPs are not of the same size. they must be
+		if (data.at(i).visible) 
 		{
 			Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 

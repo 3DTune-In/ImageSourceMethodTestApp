@@ -50,7 +50,9 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 	private:	
-		ofTrueTypeFont textFont;
+		ofTrueTypeFont titleFont;
+		ofImage logoUMA;
+
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
 		float shoeboxLength;

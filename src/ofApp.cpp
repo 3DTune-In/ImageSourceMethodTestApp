@@ -36,7 +36,8 @@ void ofApp::setup(){
 	ISM::RoomGeometry trapezoidal;
 	trapezoidal.corners = { Common::CVector3(2,2,-1),
 							Common::CVector3(2,-2,-1),
-							Common::CVector3(2,-2,1),
+			
+		Common::CVector3(2,-2,1),
 							Common::CVector3(2,2,1),
 							Common::CVector3(-1,-3,-1),
 							Common::CVector3(-2,2,-1),
@@ -76,6 +77,11 @@ LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file
 //// the app crashes when systemSoundStream.start(); or stop() are called.
 systemSoundStream.close();
 SetDeviceAndAudio(audioState);
+
+//GUI setup
+logoUMA.loadImage("UMA.png");
+logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
+titleFont.load("Verdana.ttf", 32);
 
 }
 
@@ -169,16 +175,29 @@ void ofApp::draw() {
 	ofPopMatrix();
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
 
+	/// Logo of The University of Malaga and Title
+	logoUMA.draw(20, 20);
+	char title[40];
+	if (ofGetWidth() > 1500)
+	{
+		sprintf(title, "Image Source Method Simulator");
+	}
+	else
+	{
+		sprintf(title, "ISM Simulator");
+	}
+	titleFont.drawString(title, ofGetWidth() / 2 - titleFont.stringWidth(title) / 2, 85);
+
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, 30, 270, 65);
+	ofRect(ofGetWidth() - 300, 35, 270, 75);
 	ofPopStyle();
 	char numberOfImagesStr[255];
 	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 50);
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 55);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 80);
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 85);
 
 
 }

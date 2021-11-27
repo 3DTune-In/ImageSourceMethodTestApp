@@ -26,9 +26,11 @@
 #include <HRTF/HRTFCereal.h>
 #include "SoundSource.h"
 #include "ISM/ISM.h"
+#include "ofxGui\src\ofxGui.h"
+
 
 # define LENGTH_OF_NORMALS 0.2
-
+# define DEFAULT_SCALE 20
 
 class ofApp : public ofBaseApp{
 
@@ -48,10 +50,14 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
-	private:	
+
+private:
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
+
+		ofxPanel leftPanel;
+		ofxIntSlider zoom;
+		ofParameter<int> reflectionOrderControl;
 
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
@@ -62,7 +68,6 @@ class ofApp : public ofBaseApp{
 		ISM::ISM ISMHandler;
 		std::vector<bool> activeWalls = { true, true, true, true, true, true };
 		ISM::Room mainRoom;
-//		Wall wall_1, wall_2, wall_3, wall_4, floor, ceiling;//////////////////////////////////////To be moved into the ISM API
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
@@ -75,7 +80,7 @@ class ofApp : public ofBaseApp{
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
-		float scale = 20;			//visualization scale
+		float scale = DEFAULT_SCALE;			//visualization scale
 		int reflectionOrder = 1;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
 
 									
@@ -99,4 +104,8 @@ class ofApp : public ofBaseApp{
 		void moveSource(Common::CVector3 movement);
 		void toggleWall(int wallIndex);
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
+
+		/// Methods to manage GUI
+		void changeZoom(int &zoom);
+		void changeReflectionOrder(int &reflectionOrder);
 };

@@ -83,6 +83,13 @@ logoUMA.loadImage("UMA.png");
 logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
 titleFont.load("Verdana.ttf", 32);
 
+zoom.addListener(this, &ofApp::changeZoom);
+reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
+
+leftPanel.setup("Controls","config.xml",20,150);
+leftPanel.setWidthElements(200);
+leftPanel.add(zoom.setup("Zoom",0,-20,20,50,15));
+leftPanel.add(reflectionOrderControl.set("Order", reflectionOrder,0,4));
 }
 
 //--------------------------------------------------------------
@@ -103,16 +110,16 @@ void ofApp::draw() {
 
 	ofSetColor(255, 250);									// deault drawing color is white 
 
-	if (reflectionOrder > 0)
+	if (reflectionOrderControl > 0)
 	{
 		drawRoom(mainRoom);
-		if (reflectionOrder > 1)
+		if (reflectionOrderControl > 1)
 		{
 			std::vector<ISM::Room> roomImages = mainRoom.getImageRooms();
 			ofPushStyle();
 			ofSetColor(255, 50);									//image rooms are drawn semi-transparent
 			for (int i = 0; i < roomImages.size(); i++) drawRoom(roomImages.at(i));
-			if (reflectionOrder > 2)
+			if (reflectionOrderControl > 2)
 			{
 				ofSetColor(255, 10);									//second image rooms are drawn almost transparent
 				for (int i = 0; i < roomImages.size(); i++)
@@ -199,7 +206,7 @@ void ofApp::draw() {
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 85);
 
-
+	leftPanel.draw();
 }
 
 //--------------------------------------------------------------
@@ -222,12 +229,12 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_DOWN:
 		elevation--;
 		break;
-	case OF_KEY_PAGE_UP:
-		scale*=0.9;
-		break;
-	case OF_KEY_PAGE_DOWN:
-		scale*=1.1;
-		break;
+//	case OF_KEY_PAGE_UP:
+//		scale*=0.9;
+//		break;
+//	case OF_KEY_PAGE_DOWN:
+//		scale*=1.1;
+//		break;
 	case 'k': //Moves the source left (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
@@ -271,20 +278,23 @@ void ofApp::keyPressed(int key){
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case '+': //increases the reflection order 
-		systemSoundStream.stop();
-		reflectionOrder++;
-		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
-		ISMHandler.setReflectionOrder(reflectionOrder);
-		imageSourceDSPList = createImageSourceDSP();
-		systemSoundStream.start();
+		if(reflectionOrderControl<MAX_REFLECTION_ORDER) reflectionOrderControl++;
+//		systemSoundStream.stop();
+//		reflectionOrder++;
+//		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
+//		ISMHandler.setReflectionOrder(reflectionOrder);
+//		imageSourceDSPList = createImageSourceDSP();
+//		systemSoundStream.start();
 		break;
 	case '-': //decreases the reflection order 
-		systemSoundStream.stop();
-		reflectionOrder--;
-		if (reflectionOrder <0) reflectionOrder = 0;
-		ISMHandler.setReflectionOrder(reflectionOrder);
-		imageSourceDSPList = createImageSourceDSP();
-		systemSoundStream.start();
+		if (reflectionOrderControl > 0) reflectionOrderControl--;
+//		reflectionOrderControl--;
+//		systemSoundStream.stop();
+//		reflectionOrder--;
+//		if (reflectionOrder <0) reflectionOrder = 0;
+//		ISMHandler.setReflectionOrder(reflectionOrder);
+//		imageSourceDSPList = createImageSourceDSP();
+//		systemSoundStream.start();
 		break;
 	case '1': //enable/disable wall number 1 
 		systemSoundStream.stop();
@@ -691,4 +701,21 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		tempImageSourceDSPList.push_back(tempSourceDSP);
 	}
 	return tempImageSourceDSPList;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+//Methods for managing GUI 
+////////////////////////////////////////////////////////////////////////////////////////
+
+void ofApp::changeZoom(int &zoom) 
+{
+	scale = DEFAULT_SCALE * pow(1.1, zoom);
+}
+
+void ofApp::changeReflectionOrder(int &_reflectionOrder)
+{
+	systemSoundStream.stop();
+	ISMHandler.setReflectionOrder(_reflectionOrder);
+	imageSourceDSPList = createImageSourceDSP();
+	systemSoundStream.start();
 }

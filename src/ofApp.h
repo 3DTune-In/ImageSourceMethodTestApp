@@ -31,6 +31,7 @@
 
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
+# define INITIAL_REFLECTION_ORDER 2
 
 class ofApp : public ofBaseApp{
 
@@ -58,6 +59,8 @@ private:
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;
 		ofParameter<int> reflectionOrderControl;
+		std::vector<ofParameter<bool>> activeWalls;
+		std::vector<string> wallNames = { "Front", "Left", "Right", "Back", "Floor", "Ceiling" };
 
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
@@ -66,7 +69,6 @@ private:
 		float shoeboxHeight;
 
 		ISM::ISM ISMHandler;
-		std::vector<bool> activeWalls = { true, true, true, true, true, true };
 		ISM::Room mainRoom;
 
 		Binaural::CCore							myCore;												 // Core interface
@@ -81,7 +83,6 @@ private:
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
 		float scale = DEFAULT_SCALE;			//visualization scale
-		int reflectionOrder = 1;	//number of simulated reflections   //////////////////////////////////////To be moved into the ISM API
 
 									
 		/// Methods to handle Audio
@@ -102,10 +103,11 @@ private:
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
-		void toggleWall(int wallIndex);
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
 
 		/// Methods to manage GUI
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
+		void toggleWall(bool &active);
+		void refreshActiveWalls();
 };

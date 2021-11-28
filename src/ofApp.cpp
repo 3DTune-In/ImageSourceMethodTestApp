@@ -6,9 +6,10 @@
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 4
+#define NUMBER_OF_WALLS 6
 
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup() {
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
@@ -36,61 +37,67 @@ void ofApp::setup(){
 	ISM::RoomGeometry trapezoidal;
 	trapezoidal.corners = { Common::CVector3(2,2,-1),
 							Common::CVector3(2,-2,-1),
-			
-		Common::CVector3(2,-2,1),
+							Common::CVector3(2,-2,1),
 							Common::CVector3(2,2,1),
 							Common::CVector3(-1,-3,-1),
 							Common::CVector3(-2,2,-1),
 							Common::CVector3(-2,2,1),
 							Common::CVector3(-1,-3,1),
-							};
-	trapezoidal.walls = { {0,1,2,3},{1,4,7,2},{4,5,6,7},{5,0,3,6},{0,5,4,1},{3,2,7,6} };
+	};
+	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
 	ISMHandler.setupArbitraryRoom(trapezoidal);
 
 	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
-//	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+	//	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
-	ISMHandler.setReflectionOrder(reflectionOrder);
+	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
 	mainRoom = ISMHandler.getRoom();
 
-// setup of the anechoic source
-Common::CVector3 initialLocation(1, 0, 0);
-ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
-anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
-Common::CTransform sourcePosition;
-sourcePosition.SetPosition(initialLocation);
-anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
-anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-anechoicSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-anechoicSourceDSP->EnablePropagationDelay();
+	// setup of the anechoic source
+	Common::CVector3 initialLocation(1, 0, 0);
+	ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
+	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
+	Common::CTransform sourcePosition;
+	sourcePosition.SetPosition(initialLocation);
+	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
+	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+	anechoicSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	anechoicSourceDSP->EnablePropagationDelay();
 
-// setup of the image sources
-imageSourceDSPList = createImageSourceDSP();
+	// setup of the image sources
+	imageSourceDSPList = createImageSourceDSP();
 
-LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
+	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
 
-//AudioDevice Setup
-//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
-//// the app crashes when systemSoundStream.start(); or stop() are called.
-systemSoundStream.close();
-SetDeviceAndAudio(audioState);
+	//AudioDevice Setup
+	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
+	//// the app crashes when systemSoundStream.start(); or stop() are called.
+	systemSoundStream.close();
+	SetDeviceAndAudio(audioState);
 
-//GUI setup
-logoUMA.loadImage("UMA.png");
-logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
-titleFont.load("Verdana.ttf", 32);
+	//GUI setup
+	logoUMA.loadImage("UMA.png");
+	logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
+	titleFont.load("Verdana.ttf", 32);
 
-zoom.addListener(this, &ofApp::changeZoom);
-reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
-
-leftPanel.setup("Controls","config.xml",20,150);
-leftPanel.setWidthElements(200);
-leftPanel.add(zoom.setup("Zoom",0,-20,20,50,15));
-leftPanel.add(reflectionOrderControl.set("Order", reflectionOrder,0,4));
+	leftPanel.setup("Controls", "config.xml", 20, 150);
+	leftPanel.setWidthElements(200);
+	zoom.addListener(this, &ofApp::changeZoom);
+	leftPanel.add(zoom.setup("Zoom", 0, -20, 20, 50, 15));
+	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
+	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
+	for (int i = 0; i < NUMBER_OF_WALLS; i++)
+	{
+		ofParameter<bool> tempWall;
+		activeWalls.push_back(tempWall);
+		activeWalls.at(i).addListener(this, &ofApp::toggleWall);
+		leftPanel.add(activeWalls.at(i).set(wallNames.at(i), true));
+	}
 }
+
 
 //--------------------------------------------------------------
 void ofApp::update() {
@@ -279,52 +286,33 @@ void ofApp::keyPressed(int key){
 		break;
 	case '+': //increases the reflection order 
 		if(reflectionOrderControl<MAX_REFLECTION_ORDER) reflectionOrderControl++;
-//		systemSoundStream.stop();
-//		reflectionOrder++;
-//		if (reflectionOrder > MAX_REFLECTION_ORDER) reflectionOrder = MAX_REFLECTION_ORDER;
-//		ISMHandler.setReflectionOrder(reflectionOrder);
-//		imageSourceDSPList = createImageSourceDSP();
-//		systemSoundStream.start();
 		break;
 	case '-': //decreases the reflection order 
 		if (reflectionOrderControl > 0) reflectionOrderControl--;
-//		reflectionOrderControl--;
-//		systemSoundStream.stop();
-//		reflectionOrder--;
-//		if (reflectionOrder <0) reflectionOrder = 0;
-//		ISMHandler.setReflectionOrder(reflectionOrder);
-//		imageSourceDSPList = createImageSourceDSP();
-//		systemSoundStream.start();
 		break;
 	case '1': //enable/disable wall number 1 
-		systemSoundStream.stop();
-		toggleWall(0);
-		systemSoundStream.start();
+		activeWalls.at(0) = !activeWalls.at(0);
+		refreshActiveWalls();
 		break;
 	case '2': //enable/disable wall number 2 
-		systemSoundStream.stop();
-		toggleWall(1);
-		systemSoundStream.start();
+		activeWalls.at(1) = !activeWalls.at(1);
+		refreshActiveWalls();
 		break;
 	case '3': //enable/disable wall number 3 
-		systemSoundStream.stop();
-		toggleWall(2);
-		systemSoundStream.start();
+		activeWalls.at(2) = !activeWalls.at(2);
+		refreshActiveWalls();
 		break;
 	case '4': //enable/disable wall number 4 
-		systemSoundStream.stop();
-		toggleWall(3);
-		systemSoundStream.start();
+		activeWalls.at(3) = !activeWalls.at(3);
+		refreshActiveWalls();
 		break;
 	case '5': //enable/disable wall number 5 
-		systemSoundStream.stop();
-		toggleWall(4);
-		systemSoundStream.start();
+		activeWalls.at(4) = !activeWalls.at(4);
+		refreshActiveWalls();
 		break;
 	case '6': //enable/disable wall number 6 
-		systemSoundStream.stop();
-		toggleWall(5);
-		systemSoundStream.start();
+		activeWalls.at(5) = !activeWalls.at(5);
+		refreshActiveWalls();
 		break;
 	case 'y': //increase room's length
 		systemSoundStream.stop();
@@ -667,22 +655,6 @@ void ofApp::moveSource(Common::CVector3 movement)
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);		
 }
 
-void ofApp::toggleWall(int wallIndex)
-{
-	if (activeWalls[wallIndex])
-	{
-		ISMHandler.disableWall(wallIndex);
-		activeWalls[wallIndex] = false;
-	} else
-	{
-		ISMHandler.enableWall(wallIndex);
-		activeWalls[wallIndex] = true;
-	}
-	mainRoom = ISMHandler.getRoom();
-	imageSourceDSPList = createImageSourceDSP();
-
-}
-
 std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
 {
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
@@ -716,6 +688,29 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 {
 	systemSoundStream.stop();
 	ISMHandler.setReflectionOrder(_reflectionOrder);
+	imageSourceDSPList = createImageSourceDSP();
+	systemSoundStream.start();
+}
+
+void ofApp::toggleWall(bool &_active)
+{
+	refreshActiveWalls();
+}
+void ofApp::refreshActiveWalls()
+{
+	systemSoundStream.stop();
+	for (int i = 0; i < activeWalls.size(); i++)
+	{
+		if (activeWalls.at(i))
+		{
+			ISMHandler.enableWall(i);
+		}
+		else
+		{
+			ISMHandler.disableWall(i);
+		}
+	}
+	mainRoom = ISMHandler.getRoom();
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }

@@ -367,3 +367,9 @@ FodyWeavers.xsd
 *.sofa
 *.dll
 !resources/*
+
+# Necessary bin/data files
+!bin
+bin/*
+!bin/data/
+bin/data/*.csv

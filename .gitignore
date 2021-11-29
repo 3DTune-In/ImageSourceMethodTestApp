@@ -1,18 +1,14 @@
-/third_party_libraries/portaudio/*.*
-example_1_basic_spatialisation_rtaudio/projects/linux/bin/
+# Audio resources
+*.wav
+*.sofa
+*.3dti-hrtf
+*.sofa
+*.dll
+!resources/*
 
-example_1_basic_spatialisation_rtaudio/projects/linux/build/
-
-example_1_basic_spatialisation_rtaudio/projects/linux/README.md
-
-example_1_basic_spatialisation_rtaudio/projects/linux/example
-
-example_2_basic_spatialisation_portAudio/src/libportaudio.a
-
-example_2_basic_spatialisation_portAudio/src/libportaudio.la
-
-example_2_basic_spatialisation_portAudio/src/pa_asio.h
-
-example_2_basic_spatialisation_portAudio/src/pa_linux_alsa.h
-
-example_2_basic_spatialisation_portAudio/src/portaudio.h
+# Necessary bin/data files
+!bin
+bin/*
+!bin/*.dll
+!bin/data/
+bin/data/*.csv

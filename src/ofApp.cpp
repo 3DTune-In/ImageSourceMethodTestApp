@@ -46,6 +46,8 @@ void ofApp::setup() {
 	};
 	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
 	ISMHandler.setupArbitraryRoom(trapezoidal);
+	ISMHandler.setAbsortion({ 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
+
 
 	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
 	//	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -358,12 +360,14 @@ void ofApp::keyPressed(int key){
 		break;
 	case 't': //Test
 		std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
+		auto w = std::setw(6);
 		cout << "--------------------------------------------------\n";
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
-			cout << data.at(i).visibility;
+			cout << w << std::setprecision(4) << data.at(i).visibility;
 			cout << " - " << data.at(i).reflectionWalls.size() << " reflections - ";
+			cout << "attenuation: " << std::setprecision(4) << data.at(i).reflection << " - ";
 			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
 		}
 		break;

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include <iomanip>
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>

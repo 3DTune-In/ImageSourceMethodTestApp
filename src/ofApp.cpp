@@ -117,32 +117,8 @@ void ofApp::draw() {
 	ofRotateY(elevation);
 	ofRotateZ(azimuth);
 
-	ofSetColor(255, 250);									// deault drawing color is white 
-
-	if (reflectionOrderControl > 0)
-	{
-		drawRoom(mainRoom);
-		if (reflectionOrderControl > 1)
-		{
-			std::vector<ISM::Room> roomImages = mainRoom.getImageRooms();
-			ofPushStyle();
-			ofSetColor(255, 50);									//image rooms are drawn semi-transparent
-			for (int i = 0; i < roomImages.size(); i++) drawRoom(roomImages.at(i));
-			if (reflectionOrderControl > 2)
-			{
-				ofSetColor(255, 10);									//second image rooms are drawn almost transparent
-				for (int i = 0; i < roomImages.size(); i++)
-				{
-					std::vector<ISM::Room> roomSecondImages = roomImages.at(i).getImageRooms();
-					for (int j = 0; j < roomSecondImages.size(); j++)
-					{
-						drawRoom(roomSecondImages.at(j));
-					}
-				}
-			}
-		}
-	}
-	ofPopStyle();
+	//draw room and room images
+	drawRoom(mainRoom, reflectionOrderControl,255);
 
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
@@ -183,10 +159,8 @@ void ofApp::draw() {
 		}
 	}
 
-//	drawImages(sourceImages, reflectionOrder);
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
-	//drawRaysToListener(sourceImages, listenerLocation, reflectionOrder);
 
 	ofPopMatrix();
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
@@ -605,16 +579,28 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 ////////////////////////////////////////////////////////////////////////////////////////
 //Methods for drawing 
 ////////////////////////////////////////////////////////////////////////////////////////
-void ofApp::drawRoom(ISM::Room room)
+void ofApp::drawRoom(ISM::Room room, int reflectionOrder,int transparency)
 {
-	std::vector<ISM::Wall> walls = room.getWalls();
-	for (int i = 0; i < walls.size(); i++)
+	if (reflectionOrder > 0)
 	{
-		if (walls.at(i).isActive())
+		ofPushStyle();
+		ofSetColor(200, transparency);
+		reflectionOrder--;
+		std::vector<ISM::Wall> walls = room.getWalls();
+		for (int i = 0; i < walls.size(); i++)
 		{
-			drawWall(walls[i]);
-			drawWallNormal(walls[i]);
+			if (walls.at(i).isActive())
+			{
+				drawWall(walls[i]);
+				drawWallNormal(walls[i]);
+			}
 		}
+		std::vector<ISM::Room> roomImages = room.getImageRooms();
+		for (int i = 0; i < roomImages.size(); i++)
+		{
+			drawRoom(roomImages.at(i), reflectionOrder, transparency/2);
+		}
+		ofPopStyle();
 	}
 }
 

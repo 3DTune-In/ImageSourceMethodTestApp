@@ -98,7 +98,7 @@ private:
 		void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms. 
-		void drawRoom(ISM::Room room);
+		void drawRoom(ISM::Room room, int reflectionOrder, int transparency); //Draws recursively rooms
 		void drawWall(ISM::Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
 		void drawWallNormal(ISM::Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
 

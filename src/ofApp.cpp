@@ -46,7 +46,7 @@ void ofApp::setup() {
 	};
 	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
 	ISMHandler.setupArbitraryRoom(trapezoidal);
-	ISMHandler.setAbsortion({ 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
+	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 
 
 	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
@@ -583,13 +583,16 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 
+	std::vector<CMonoBuffer<float>> bufferAbsortion(data.size(), CMonoBuffer<float>(bufferInput.size(), 0.0));
+	ISMHandler.proccess(bufferInput, bufferAbsortion, listenerLocation);
+
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 	{
 		if (data.at(i).visible) 
 		{
 			Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
-			imageSourceDSPList.at(i)->SetBuffer(bufferInput);
+			imageSourceDSPList.at(i)->SetBuffer(bufferAbsortion.at(i));
 			imageSourceDSPList.at(i)->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
 
 			bufferOutput.left += bufferProcessed.left;

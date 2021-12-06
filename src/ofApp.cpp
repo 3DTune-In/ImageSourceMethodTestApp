@@ -198,6 +198,9 @@ void ofApp::keyPressed(int key){
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 
+	float distanceNearestWall;
+	bool state;
+
 	switch (key)
 	{
 	case OF_KEY_LEFT:
@@ -239,6 +242,7 @@ void ofApp::keyPressed(int key){
 	case 's': //Moves the listener left (-X)
 		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
 		listener->SetListenerTransform(listenerTransform);
+				listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
 		break;
 	case 'w': //Moves the listener right (X)
 		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
@@ -247,10 +251,30 @@ void ofApp::keyPressed(int key){
 	case 'a': //Moves the listener up (Y)
 		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
 		listener->SetListenerTransform(listenerTransform);
+		/////
+		listenerTransform = listener->GetListenerTransform();
+		listenerLocation = listenerTransform.GetPosition();
+		mainRoom = ISMHandler.getRoom();
+		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
+		if (state==false)
+		{
+			listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
+			listener->SetListenerTransform(listenerTransform);
+		}
 		break;
 	case 'd': //Moves the listener down (-Y)
 		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
 		listener->SetListenerTransform(listenerTransform);
+		/////
+		listenerTransform = listener->GetListenerTransform();
+		listenerLocation = listenerTransform.GetPosition();
+		mainRoom = ISMHandler.getRoom();
+		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
+		if (state == false)
+		{
+			listenerTransform.Translate(Common::CVector3(0, +LISTENER_STEP, 0));
+			listener->SetListenerTransform(listenerTransform);
+		}
 		break;
 	case 'e': //Moves the listener up (Z)
 		listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
@@ -602,6 +626,13 @@ void ofApp::drawRoom(ISM::Room room, int reflectionOrder,int transparency)
 		}
 		ofPopStyle();
 	}
+	/*
+	float distanceNearestWall;
+	bool state;
+	Common::CVector3 point = Common::CVector3::ZERO;
+	point.x = 5.2; point.y = 5.2; point.z = 5.2;
+	state = room.checkPointInsideRoom(point, distanceNearestWall);
+	*/
 }
 
 void ofApp::drawWall(ISM::Wall wall)
@@ -645,7 +676,7 @@ void ofApp::moveSource(Common::CVector3 movement)
 	ISMHandler.setSourceLocation(newLocation);	
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(newLocation);
-	anechoicSourceDSP->SetSourceTransform(sourcePosition);		
+	anechoicSourceDSP->SetSourceTransform(sourcePosition);	
 }
 
 std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()

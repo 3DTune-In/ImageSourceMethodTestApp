@@ -84,6 +84,8 @@ void ofApp::setup() {
 	logoUMA.loadImage("UMA.png");
 	logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
 	titleFont.load("Verdana.ttf", 32);
+	logoSAVLab.loadImage("SAVLab.png");
+	logoSAVLab.resize(logoSAVLab.getWidth() / 10, logoSAVLab.getHeight() / 10);
 
 	leftPanel.setup("Controls", "config.xml", 20, 150);
 	leftPanel.setWidthElements(200);
@@ -178,16 +180,25 @@ void ofApp::draw() {
 	}
 	titleFont.drawString(title, ofGetWidth() / 2 - titleFont.stringWidth(title) / 2, 85);
 
+	/// Logo of the SAVLab project
+	logoSAVLab.draw(ofGetWidth() - 300, 20);
+	/// This work has been partially funded by the Spanish project Spatial Audio Virtual Laboratory (SAVLab) - PID2019-107854GB-I00, Ministerio de Ciencia e Innovación
+	ofDrawBitmapString("This work has been partially", ofGetWidth() - 280, 140);
+	ofDrawBitmapString("funded by the Spanish project", ofGetWidth() - 280, 155);
+	ofDrawBitmapString("Spatial Audio Virtual Laboratory", ofGetWidth() - 280, 170);
+	ofDrawBitmapString("(SAVLab) - PID2019-107854GB-I00", ofGetWidth() - 280, 185);
+	ofDrawBitmapString("Ministerio de Ciencia e Innovacion", ofGetWidth() - 280, 200);
+
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, 35, 270, 75);
+	ofRect(ofGetWidth() - 300, ofGetHeight()- 110, 270, 75);
 	ofPopStyle();
 	char numberOfImagesStr[255];
 	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 55);
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, ofGetHeight() - 85);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, 85);
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, ofGetHeight()-55);
 
 	leftPanel.draw();
 }

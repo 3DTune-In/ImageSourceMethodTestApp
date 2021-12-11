@@ -56,6 +56,7 @@ class ofApp : public ofBaseApp{
 private:
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
+		ofImage logoSAVLab;
 
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;

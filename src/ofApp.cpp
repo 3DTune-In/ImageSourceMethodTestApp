@@ -53,7 +53,7 @@ void ofApp::setup() {
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0,3}  });
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
     //////
 	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
 	//	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);

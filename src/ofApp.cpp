@@ -56,7 +56,7 @@ void ofApp::setup() {
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
     //////
 	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
-	//	ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
@@ -335,6 +335,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxLength += 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -342,6 +350,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxLength -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -349,6 +365,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxWidth -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -356,6 +380,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxWidth += 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -363,6 +395,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxHeight -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -370,6 +410,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxHeight += 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;

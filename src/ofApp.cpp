@@ -259,7 +259,6 @@ void ofApp::keyPressed(int key){
 	case 's': //Moves the listener left (-X)
 		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
 		listener->SetListenerTransform(listenerTransform);
-				listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
 		break;
 	case 'w': //Moves the listener right (X)
 		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
@@ -348,7 +347,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case 'b': //decrease room's length
 		systemSoundStream.stop();
-		shoeboxLength -= 0.5;
+		if (shoeboxLength > 2.5)  shoeboxLength -= 0.5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -363,7 +362,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case 'g': //decrease room's width
 		systemSoundStream.stop();
-		shoeboxWidth -= 0.2;
+		if (shoeboxWidth > 2.2) shoeboxWidth -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -393,7 +392,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case 'v': //decrease room's height
 		systemSoundStream.stop();
-		shoeboxHeight -= 0.2;
+		if (shoeboxHeight > 2.2) shoeboxHeight -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},

@@ -46,6 +46,9 @@ void ofApp::setup() {
 	};
 	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
 	ISMHandler.setupArbitraryRoom(trapezoidal);
+	shoeboxLength = 68; shoeboxWidth = 17; shoeboxHeight = 4.25;
+	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+
 	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 	//////
 	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -55,9 +58,6 @@ void ofApp::setup() {
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
     //////
-	shoeboxLength = 7; shoeboxWidth = 10; shoeboxHeight = 3;
-	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
 	mainRoom = ISMHandler.getRoom();
@@ -333,7 +333,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case 'y': //increase room's length
 		systemSoundStream.stop();
-		shoeboxLength += 0.2;
+		shoeboxLength += 0.5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -342,13 +342,13 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	case 'b': //decrease room's length
 		systemSoundStream.stop();
-		shoeboxLength -= 0.2;
+		shoeboxLength -= 0.5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -357,7 +357,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -372,7 +372,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -387,7 +387,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -402,7 +402,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -417,7 +417,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
@@ -433,6 +433,8 @@ void ofApp::keyPressed(int key){
 			cout << "attenuation: " << std::setprecision(4) << data.at(i).reflection << " - ";
 			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
 		}
+		cout << "Shoebox \n";
+		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
 		break;
 	}
 }

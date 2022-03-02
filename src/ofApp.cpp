@@ -217,7 +217,7 @@ void ofApp::keyPressed(int key){
 
 	float distanceNearestWall;
 	bool state;
-
+		
 	switch (key)
 	{
 	case OF_KEY_LEFT:
@@ -238,6 +238,56 @@ void ofApp::keyPressed(int key){
 //	case OF_KEY_PAGE_DOWN:
 //		scale*=1.1;
 //		break;
+
+	case 'o': // setup Room=10x10x5, Absortion=0, Listener in (0,0,0), source in (5,5,0) --> corner top-left corner 
+	{
+		systemSoundStream.stop();
+		//ROOM
+		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
+		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
+		mainRoom = ISMHandler.getRoom();
+		//LISTENER
+		Common::CVector3 listenerLocation(0, 0, 0);
+		Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
+		listenerPosition.SetPosition(listenerLocation);
+		listener->SetListenerTransform(listenerPosition);
+
+		//SOURCE
+		// Set the original anechoic source to corner
+		Common::CVector3 newLocation(4.95, 4.95, 0);
+		ISMHandler.setSourceLocation(newLocation);
+		Common::CTransform sourcePosition;
+		sourcePosition.SetPosition(newLocation);
+		anechoicSourceDSP->SetSourceTransform(sourcePosition);
+	
+		systemSoundStream.start();
+	}
+	break;
+
+	case 'p': //toggles between enabled and disabled AnechoicProcess 
+	{
+		// Disable<-->Enable AnechoicProcess 
+		
+		if (anechoicSourceDSP->IsAnechoicProcessEnabled())
+		{
+			anechoicSourceDSP->DisableAnechoicProcess();
+			stateAnechoicProcess = false;
+		}
+		else
+		{
+			anechoicSourceDSP->EnableAnechoicProcess();
+			stateAnechoicProcess = true;
+		}
+	}
+		break;
+
 	case 'k': //Moves the source left (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
@@ -434,6 +484,10 @@ void ofApp::keyPressed(int key){
 		}
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
+		if (stateAnechoicProcess) 
+			cout << "AnechoicProcess Enabled";
+		else 
+			cout << "AnechoicProcess Disabled";
 		break;
 	}
 }
@@ -610,6 +664,7 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	source1Wav.FillBuffer(source1);
 
 	processAnechoic(source1, bufferOutput);
+
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 
@@ -631,10 +686,10 @@ void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
 void ofApp::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
 {
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
-
+	
 	anechoicSourceDSP->SetBuffer(bufferInput);
 	anechoicSourceDSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
-
+	
 	bufferOutput.left += bufferProcessed.left;
 	bufferOutput.right += bufferProcessed.right;
 }

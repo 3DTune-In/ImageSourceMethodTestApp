@@ -82,6 +82,8 @@ private:
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
+		bool stateAnechoicProcess = true;                                                      //Enabled o Disabled
+
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
 		float scale = DEFAULT_SCALE;			//visualization scale

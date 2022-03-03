@@ -266,6 +266,9 @@ void ofApp::keyPressed(int key){
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
 		anechoicSourceDSP->SetSourceTransform(sourcePosition);
+
+		//SOURCES DSP
+		imageSourceDSPList = createImageSourceDSP();
 	
 		systemSoundStream.start();
 	}
@@ -393,6 +396,8 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+
 		systemSoundStream.start();
 		break;
 	case 'b': //decrease room's length
@@ -408,6 +413,8 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+
 		systemSoundStream.start();
 		break;
 	case 'g': //decrease room's width
@@ -423,6 +430,8 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+
 		systemSoundStream.start();
 		break;
 	case 'h': //increase room's width
@@ -438,6 +447,8 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+
 		systemSoundStream.start();
 		break;
 	case 'v': //decrease room's height
@@ -453,6 +464,8 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+
 		systemSoundStream.start();
 		break;
 	case 'n': //increase room's height
@@ -468,6 +481,8 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+
 		systemSoundStream.start();
 		break;
 	case 't': //Test

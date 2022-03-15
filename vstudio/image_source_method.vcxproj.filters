@@ -10,10 +10,46 @@
     <ClCompile Include="..\src\SoundSource.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxBaseGui.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxButton.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxColorPicker.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxGuiGroup.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxInputField.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxLabel.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxPanel.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxSlider.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxSliderGroup.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addons\ofxGui\src\ofxToggle.cpp">
+      <Filter>addon\ofxGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
       <UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addon">
+      <UniqueIdentifier>{8c74eb63-fd9f-4ba5-90c7-0ca08435c0f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addon\ofxGui">
+      <UniqueIdentifier>{5c120f53-5950-4fc9-ac4c-859165dd0d68}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -22,6 +58,42 @@
     </ClInclude>
     <ClInclude Include="..\src\SoundSource.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxBaseGui.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxButton.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxColorPicker.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxGui.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxGuiGroup.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxGuiUtils.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxInputField.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxLabel.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxPanel.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxSlider.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxSliderGroup.h">
+      <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addons\ofxGui\src\ofxToggle.h">
+      <Filter>addon\ofxGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

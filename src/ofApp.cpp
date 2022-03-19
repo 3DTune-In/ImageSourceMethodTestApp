@@ -125,6 +125,16 @@ void ofApp::draw() {
 	ofRotateY(elevation);
 	ofRotateZ(azimuth);
 
+	//draw reference axis
+	ofPushStyle();
+	ofSetColor(255, 150, 150);
+	ofLine(0, 0, 0, 1, 0, 0);
+	ofSetColor(150, 255, 150);
+	ofLine(0, 0, 0, 0, 1, 0);
+	ofSetColor(150, 150, 255);
+	ofLine(0, 0, 0, 0, 0, 1);
+	ofPopStyle();
+
 	//draw room and room images
 	drawRoom(mainRoom, reflectionOrderControl,255);
 

@@ -51,12 +51,12 @@ void ofApp::setup() {
 
 	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 	//////
-	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.8},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.8} });
     //////
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
@@ -487,22 +487,41 @@ void ofApp::keyPressed(int key){
 		break;
 	case 't': //Test
 		std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
-		auto w = std::setw(6);
-		cout << "--------------------------------------------------\n";
+		auto w2 = std::setw(2);
+		auto w5 = std::setw(5);
+		auto w7 = std::setw(7);
+		cout << "-------------------------------List of Source Images ------------------------------------\n";
+		cout << "  Visibility  | Refl. |        Reflection coeficients        |          Location  \n";
+		cout << "              | order | ";
+		int freq = 125;
+		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
+		{
+			if(freq < 1000) { cout << freq << "Hz "; }
+			else { cout << w2 << freq / 1000 << "kHz "; }
+			freq *= 2;
+		}
+		cout << " |      X        Y        Z    \n";
+		cout << "--------------+-------+--------------------------------------+---------------------------\n";
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
-			cout << w << std::setprecision(4) << data.at(i).visibility;
-			cout << " - " << data.at(i).reflectionWalls.size() << " reflections - ";
-			cout << "attenuation: " << std::setprecision(4) << data.at(i).reflection << " - ";
-			cout << data.at(i).location.x << ", " << data.at(i).location.y << ", " << data.at(i).location.z << "\n";
+			cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;
+			cout << " |   " << data.at(i).reflectionWalls.size();
+			cout << "   | ";
+			for (int j = 0; j < NUM_BAND_ABSORTION; j++)
+			{ 
+				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";
+			}
+			cout << " | " << w7 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";
+			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
+			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.z << "\n";
 		}
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
 		if (stateAnechoicProcess) 
-			cout << "AnechoicProcess Enabled";
+			cout << "AnechoicProcess Enabled" << "\n";
 		else 
-			cout << "AnechoicProcess Disabled";
+			cout << "AnechoicProcess Disabled" << "\n";
 		break;
 	}
 }

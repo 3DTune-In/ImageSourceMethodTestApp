@@ -57,7 +57,24 @@ void ofApp::setup() {
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.8},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.8} });
-    //////
+	/*
+	ISMHandler.setAbsortion({ {0, 1, 1, 1, 1, 1},
+								{0, 1, 1, 1, 1, 1},
+								{0, 1, 1, 1, 1, 1} ,
+								{0, 1, 1, 1, 1, 1} ,
+								{0, 1, 1, 1, 1, 1} ,
+								{0, 1, 1, 1, 1, 1} });
+	*/
+	/*
+	ISMHandler.setAbsortion({ {1, 1, 1, 1, 1, 0},
+								{1, 1, 1, 1, 1, 0},
+								{1, 1, 1, 1, 1, 0} ,
+								{1, 1, 1, 1, 1, 0} ,
+								{1, 1, 1, 1, 1, 0} ,
+								{1, 1, 1, 1, 1, 0} });
+	*/
+	
+	/////
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
 	mainRoom = ISMHandler.getRoom();
@@ -746,7 +763,7 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 
-	std::vector<CMonoBuffer<float>> bufferAbsortion(data.size(), CMonoBuffer<float>(bufferInput.size(), 0.0));
+	std::vector<CMonoBuffer<float>> bufferAbsortion;
 	ISMHandler.proccess(bufferInput, bufferAbsortion, listenerLocation);
 
 	for (int i = 0; i < imageSourceDSPList.size(); i++)

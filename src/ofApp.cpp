@@ -81,7 +81,7 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	Common::CVector3 initialLocation(1, 0, 0);
-	ISMHandler.setSourceLocation(initialLocation);									// Source to be rendered
+	ISMHandler.setSourceLocation(initialLocation,listenerLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(initialLocation);
@@ -289,7 +289,7 @@ void ofApp::keyPressed(int key){
 		//SOURCE
 		// Set the original anechoic source to corner
 		Common::CVector3 newLocation(4.95, 4.95, 0);
-		ISMHandler.setSourceLocation(newLocation);
+		ISMHandler.setSourceLocation(newLocation,listenerLocation);
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
 		anechoicSourceDSP->SetSourceTransform(sourcePosition);
@@ -855,7 +855,9 @@ void ofApp::moveSource(Common::CVector3 movement)
 {
 	/// Moving the original anechoic source
 	Common::CVector3 newLocation = ISMHandler.getSourceLocation() + movement;
-	ISMHandler.setSourceLocation(newLocation);	
+	Common::CTransform listenerTransform = listener->GetListenerTransform();
+	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
+	ISMHandler.setSourceLocation(newLocation,listenerLocation);
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(newLocation);
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);	

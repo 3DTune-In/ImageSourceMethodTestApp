@@ -49,29 +49,42 @@ void ofApp::setup() {
 	shoeboxLength = 68; shoeboxWidth = 17; shoeboxHeight = 4.25;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
-	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+	
+	//Paso Bajo
+	//ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 });
+
+	//Paso Alto
+	//ISMHandler.setAbsortion({ 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 });
+
+    //Paso Banda
+	//ISMHandler.setAbsortion({ 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0 });
+
+	//Paso Eliminada
+	//ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 });
+
 	//////
-	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.8},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.8} });
+	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.8},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.8} });
 	/*
-	ISMHandler.setAbsortion({ {0, 1, 1, 1, 1, 1},
-								{0, 1, 1, 1, 1, 1},
-								{0, 1, 1, 1, 1, 1} ,
-								{0, 1, 1, 1, 1, 1} ,
-								{0, 1, 1, 1, 1, 1} ,
-								{0, 1, 1, 1, 1, 1} });
+	ISMHandler.setAbsortion({ {0, 1, 1, 1, 1, 1, 1 },
+								{0, 1, 1, 1, 1, 1, 1},
+								{0, 1, 1, 1, 1, 1, 1} ,
+								{0, 1, 1, 1, 1, 1, 1} ,
+								{0, 1, 1, 1, 1, 1, 1} ,
+								{0, 1, 1, 1, 1, 1, 1} });
 	*/
 	/*
-	ISMHandler.setAbsortion({ {1, 1, 1, 1, 1, 0},
-								{1, 1, 1, 1, 1, 0},
-								{1, 1, 1, 1, 1, 0} ,
-								{1, 1, 1, 1, 1, 0} ,
-								{1, 1, 1, 1, 1, 0} ,
-								{1, 1, 1, 1, 1, 0} });
+	ISMHandler.setAbsortion({ {1, 1, 1, 1, 1, 1, 0},
+							  {1, 1, 1, 1, 1, 1, 0},
+							  {1, 1, 1, 1, 1, 1, 0} ,
+							  {1, 1, 1, 1, 1, 1, 0} ,
+							  {1, 1, 1, 1, 1, 1, 0} ,
+							  {1, 1, 1, 1, 1, 1, 0} });
 	*/
 	
 	/////
@@ -95,7 +108,8 @@ void ofApp::setup() {
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
 
-	LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
+	//LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
+	LoadWavFile(source1Wav, "sweep.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
@@ -272,13 +286,13 @@ void ofApp::keyPressed(int key){
 		//ROOM
 		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
-		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
+		ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
 		mainRoom = ISMHandler.getRoom();
 		//LISTENER
 		Common::CVector3 listenerLocation(0, 0, 0);
@@ -414,13 +428,13 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setAbsortion({  0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		imageSourceDSPList = createImageSourceDSP();
@@ -431,13 +445,13 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		if (shoeboxLength > 2.5)  shoeboxLength -= 0.5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setAbsortion({  0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		imageSourceDSPList = createImageSourceDSP();
@@ -448,13 +462,13 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		if (shoeboxWidth > 2.2) shoeboxWidth -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setAbsortion({  0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		imageSourceDSPList = createImageSourceDSP();
@@ -465,13 +479,13 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxWidth += 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setAbsortion({  0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		imageSourceDSPList = createImageSourceDSP();
@@ -482,13 +496,13 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		if (shoeboxHeight > 2.2) shoeboxHeight -= 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setAbsortion({  0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		imageSourceDSPList = createImageSourceDSP();
@@ -499,13 +513,13 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxHeight += 0.2;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+		ISMHandler.setAbsortion({  0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler.getRoom();
 		imageSourceDSPList = createImageSourceDSP();

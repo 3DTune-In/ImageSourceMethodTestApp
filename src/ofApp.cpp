@@ -777,8 +777,8 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 
-	std::vector<CMonoBuffer<float>> bufferAbsortion;
-	ISMHandler.proccess(bufferInput, bufferAbsortion, listenerLocation);
+	std::vector<CMonoBuffer<float>> bufferImages;
+	ISMHandler.proccess(bufferInput, bufferImages, listenerLocation);
 
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 	{
@@ -786,7 +786,7 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 		{
 			Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
 
-			imageSourceDSPList.at(i)->SetBuffer(bufferAbsortion.at(i));
+			imageSourceDSPList.at(i)->SetBuffer(bufferImages.at(i));
 			imageSourceDSPList.at(i)->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
 
 			bufferOutput.left += bufferProcessed.left;

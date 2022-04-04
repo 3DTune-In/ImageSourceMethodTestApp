@@ -32,7 +32,7 @@
 
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
-# define INITIAL_REFLECTION_ORDER 2
+# define INITIAL_REFLECTION_ORDER 1
 
 class ofApp : public ofBaseApp{
 

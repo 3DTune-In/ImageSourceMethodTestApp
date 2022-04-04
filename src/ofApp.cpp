@@ -28,7 +28,8 @@ void ofApp::setup() {
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
 	bool specifiedDelays;
-	bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);
+	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);
+	bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);
 	if (!sofaLoadResult) {
 		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
 	}
@@ -46,48 +47,35 @@ void ofApp::setup() {
 	};
 	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
 	ISMHandler.setupArbitraryRoom(trapezoidal);
-	shoeboxLength = 68; shoeboxWidth = 17; shoeboxHeight = 4.25;
+	shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-	
-	//Paso Bajo
-	//ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 });
-
-	//Paso Alto
-	//ISMHandler.setAbsortion({ 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 });
-
-    //Paso Banda
-	//ISMHandler.setAbsortion({ 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0 });
-
-	//Paso Eliminada
-	//ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 });
-
-	//////
-	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.5},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.8},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.8} });
+	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+    /*
+	ISMHandler.setAbsortion({ 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0 });
+	ISMHandler.setAbsortion({ {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
+	 */
 	/*
-	ISMHandler.setAbsortion({ {0, 1, 1, 1, 1, 1, 1 },
-								{0, 1, 1, 1, 1, 1, 1},
-								{0, 1, 1, 1, 1, 1, 1} ,
-								{0, 1, 1, 1, 1, 1, 1} ,
-								{0, 1, 1, 1, 1, 1, 1} ,
-								{0, 1, 1, 1, 1, 1, 1} });
-	*/
-	/*
-	ISMHandler.setAbsortion({ {1, 1, 1, 1, 1, 1, 0},
-							  {1, 1, 1, 1, 1, 1, 0},
-							  {1, 1, 1, 1, 1, 1, 0} ,
-							  {1, 1, 1, 1, 1, 1, 0} ,
-							  {1, 1, 1, 1, 1, 1, 0} ,
-							  {1, 1, 1, 1, 1, 1, 0} });
-	*/
-	
-	/////
+	ISMHandler.setAbsortion({ 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 });
+	ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+							  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+							  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+							  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+							  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+							  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0} });
+	//*/
+		/////
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
 	mainRoom = ISMHandler.getRoom();
@@ -101,15 +89,17 @@ void ofApp::setup() {
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
 	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	anechoicSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
+	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
+	//stateAnechoicProcess = false;
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 	anechoicSourceDSP->EnablePropagationDelay();
 
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
 
-	//LoadWavFile(source1Wav, "speech_female.wav");											// Loading .wav file										   
-	LoadWavFile(source1Wav, "sweep.wav");											// Loading .wav file										   
+	//LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
+	LoadWavFile(source1Wav, "sweep0_5.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
@@ -280,7 +270,7 @@ void ofApp::keyPressed(int key){
 //		scale*=1.1;
 //		break;
 
-	case 'o': // setup Room=10x10x5, Absortion=0, Listener in (0,0,0), source in (5,5,0) --> corner top-left corner 
+	case 'o': // setup Room=10x10x5, Absortion=0, Listener in (0,0,0), source in (5,0,0) --> top 
 	{
 		systemSoundStream.stop();
 		//ROOM
@@ -293,7 +283,14 @@ void ofApp::keyPressed(int key){
 								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
 								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
 								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
-		mainRoom = ISMHandler.getRoom();
+		reflectionOrderControl = INITIAL_REFLECTION_ORDER;
+		//mainRoom = ISMHandler.getRoom();
+
+		for (int i=1;i<6;i++) 
+		  activeWalls.at(i) = FALSE;
+		refreshActiveWalls();
+		
+		
 		//LISTENER
 		Common::CVector3 listenerLocation(0, 0, 0);
 		Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
@@ -302,7 +299,7 @@ void ofApp::keyPressed(int key){
 
 		//SOURCE
 		// Set the original anechoic source to corner
-		Common::CVector3 newLocation(4.95, 4.95, 0);
+		Common::CVector3 newLocation(4.9, 0, 0);
 		ISMHandler.setSourceLocation(newLocation,listenerLocation);
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
@@ -310,7 +307,15 @@ void ofApp::keyPressed(int key){
 
 		//SOURCES DSP
 		imageSourceDSPList = createImageSourceDSP();
-	
+
+		// Disable AnechoicProcess 
+
+		if (anechoicSourceDSP->IsAnechoicProcessEnabled())
+		{
+			anechoicSourceDSP->DisableAnechoicProcess();
+			stateAnechoicProcess = false;
+		}
+
 		systemSoundStream.start();
 	}
 	break;
@@ -424,6 +429,102 @@ void ofApp::keyPressed(int key){
 		activeWalls.at(5) = !activeWalls.at(5);
 		refreshActiveWalls();
 		break;
+	case OF_KEY_F1://ABSORTION -- null
+	{
+
+	    systemSoundStream.stop();
+		ISMHandler.setAbsortion({  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
+		//mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
+		break;
+	}
+	case OF_KEY_F2://ABSORTION -- total
+	{
+		systemSoundStream.stop();
+		ISMHandler.setAbsortion({  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 });
+		ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
+		//mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
+		break;
+	}
+	case OF_KEY_F3://ABSORTION -- LP
+	{
+		systemSoundStream.stop();	
+		ISMHandler.setAbsortion({  0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0 });
+		ISMHandler.setAbsortion({ {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
+		
+		//mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
+		break;
+	}
+	case OF_KEY_F4://ABSORTION -- HP
+	{
+		systemSoundStream.stop();
+		ISMHandler.setAbsortion({  1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 });
+		ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0} });
+		
+		//mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
+		break;
+	}
+	case OF_KEY_F5://ABSORTION -- BP
+	{
+		systemSoundStream.stop();
+		ISMHandler.setAbsortion({  1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0 });
+		ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0} });
+		
+		//mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
+		break;
+	}
+	case OF_KEY_F6://ABSORTION STOPB
+	{
+		systemSoundStream.stop();
+		ISMHandler.setAbsortion({  0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 });
+		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0} });
+		
+		//mainRoom = ISMHandler.getRoom();
+		imageSourceDSPList = createImageSourceDSP();
+		systemSoundStream.start();
+		break;
+	}
+
 	case 'y': //increase room's length
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;

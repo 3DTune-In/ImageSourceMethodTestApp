@@ -49,15 +49,34 @@ void ofApp::setup() {
 	ISMHandler.setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-    /*
+	
+	
+	ISMHandler.setAbsortion({   1, 1, 0, 1, 1, 1, 0 });
+	ISMHandler.setAbsortion({ { 1, 1, 0, 1, 1, 1, 0 },
+							  { 1, 1, 0, 1, 1, 1, 0 },
+							  { 1, 1, 0, 1, 1, 1, 0 },
+							  { 1, 1, 0, 1, 1, 1, 0 },
+							  { 1, 1, 0, 1, 1, 1, 0 },
+							  { 1, 1, 0, 1, 1, 1, 0 } });
+    
+	/*ISMHandler.setAbsortion({  1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0 });
+	ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+							  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+							  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+							  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+							  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
+							  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0} });
+	*/
+	/*
+	ISMHandler.setAbsortion({  0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 });
+	ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0} });
+	*/
+	/*
 	ISMHandler.setAbsortion({ 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0 });
 	ISMHandler.setAbsortion({ {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
@@ -65,7 +84,8 @@ void ofApp::setup() {
 							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
-	 */
+	*/
+
 	/*
 	ISMHandler.setAbsortion({ 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 });
 	ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
@@ -440,8 +460,9 @@ void ofApp::keyPressed(int key){
 								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
 								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
 								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
-		//mainRoom = ISMHandler.getRoom();
+		
 		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
@@ -455,8 +476,9 @@ void ofApp::keyPressed(int key){
 								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
-		//mainRoom = ISMHandler.getRoom();
+		
 		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
@@ -471,8 +493,9 @@ void ofApp::keyPressed(int key){
 								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
 		
-		//mainRoom = ISMHandler.getRoom();
+		
 		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
@@ -487,8 +510,9 @@ void ofApp::keyPressed(int key){
 								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
 								  {1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0} });
 		
-		//mainRoom = ISMHandler.getRoom();
+		
 		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
@@ -502,9 +526,9 @@ void ofApp::keyPressed(int key){
 								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
 								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0},
 								  {1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0} });
-		
-		//mainRoom = ISMHandler.getRoom();
+			
 		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
@@ -518,9 +542,9 @@ void ofApp::keyPressed(int key){
 								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
 								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
 								  {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0} });
-		
-		//mainRoom = ISMHandler.getRoom();
+				
 		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}

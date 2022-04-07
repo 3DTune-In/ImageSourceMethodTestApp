@@ -50,6 +50,14 @@ void ofApp::setup() {
 	shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 	
+	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
+	
 	/*
 	ISMHandler.setAbsortion(  { 1, 1, 0, 1, 1, 1, 1, 1, 0});
 	ISMHandler.setAbsortion({ { 1, 1, 0, 1, 1, 1, 1, 1, 0},
@@ -59,14 +67,14 @@ void ofApp::setup() {
 							  { 1, 1, 0, 1, 1, 1, 1, 1, 0},
 							  { 1, 1, 0, 1, 1, 1, 1, 1, 0} });
     */
-	ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
-	ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-							  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-							  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-							  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-							  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-							  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0} });
-	
+	/*ISMHandler.setAbsortion({  0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 });
+	ISMHandler.setAbsortion({ {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0} });
+	*/
 	/*
 	ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0});
 	ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
@@ -118,8 +126,8 @@ void ofApp::setup() {
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
 
-	//LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
-	LoadWavFile(source1Wav, "sweep0_5.wav");											// Loading .wav file										   
+	LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
+	//LoadWavFile(source1Wav, "sweep0_5.wav");											// Loading .wav file										   
 
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
@@ -482,16 +490,16 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F3://ABSORTION -- LP
+	case OF_KEY_F3://ABSORTION -- LP + HP
 	{
 		systemSoundStream.stop();	
-		ISMHandler.setAbsortion(  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-		ISMHandler.setAbsortion({ {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
+		ISMHandler.setAbsortion(  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
+		ISMHandler.setAbsortion({ {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
+								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0} });
 		
 		
 		imageSourceDSPList = createImageSourceDSP();
@@ -502,13 +510,13 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F4://ABSORTION -- HP
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0});
-		ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0} });
+		ISMHandler.setAbsortion(  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+		ISMHandler.setAbsortion({ {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0} });
 		
 		
 		imageSourceDSPList = createImageSourceDSP();

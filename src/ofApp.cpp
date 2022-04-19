@@ -8,6 +8,7 @@
 #define MAX_REFLECTION_ORDER 4
 #define NUMBER_OF_WALLS 6
 
+
 //--------------------------------------------------------------
 void ofApp::setup() {
 
@@ -28,14 +29,59 @@ void ofApp::setup() {
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
 	bool specifiedDelays;
-	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);
-	bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);
+	bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);
+	//bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);
 	if (!sofaLoadResult) {
 		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
 	}
 
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
+
+	////////////////////////////////////////////////
+	string pathData = ofToDataPath("", true);
+	string fileName = pathData + "\\myroom2.xml";
+	if (!xml.load(pathData+"\\myroom2.xml"))
+	{
+		ofLogError() << "Couldn't load file";
+	}
+	//auto geometryTag = xml.getChild("ROOMGEOMETRY");
+	//auto cornerTag = xml.getChild("CORNERS");
+	// select all corners and iterate through them
+	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
+	for (auto & currentCorner : cornersXml) {
+		// for each corner in the room insert a new vertex in the vector
+		//auto cornertemp = currentCorner.getChild("CORNER");
+		auto cornersInFile = currentCorner.getChildren("CORNER");
+		for (auto aux : cornersInFile) {
+			std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
+			std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
+			Common::CVector3 tempP3d;
+			tempP3d.x = p3Dfloat[0];
+			tempP3d.y = p3Dfloat[1];
+			tempP3d.z = p3Dfloat[2];
+			trapezoidal.corners.push_back(tempP3d);
+		}		
+	}
+	// select all walls and iterate through them
+	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+	for (auto & currentWall : wallsXml) {
+		// for each corner in the room insert a new vertex in the vector
+		//auto cornertemp = currentCorner.getChild("CORNER");
+		auto wallsInFile = currentWall.getChildren("WALL");
+
+		for (auto aux : wallsInFile) {
+			std::string strVectInt = aux.getAttribute("corner").getValue();
+			std::vector<int> tempCornersWall  = parserStToVectInt(strVectInt);
+			trapezoidal.walls.push_back(tempCornersWall);
+
+			std::string strVectFloat = aux.getAttribute("absor").getValue();
+			std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
+			absortionsWalls.push_back(tempAbsorsWall);
+		}
+	}
+	////////////////////////////////////////////////
+#if 0
 	trapezoidal.corners = { Common::CVector3(2,2,-1),
 							Common::CVector3(2,-2,-1),
 							Common::CVector3(2,-2,1),
@@ -46,18 +92,24 @@ void ofApp::setup() {
 							Common::CVector3(-1,-3,1),
 	};
 	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
+#endif
 	ISMHandler.setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-	
+
+	//Absortion as escalar
 	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+	//Absortion as vector
+	ISMHandler.setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
+
+	/*
 	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-	
+	*/
 	/*
 	ISMHandler.setAbsortion(  { 1, 1, 0, 1, 1, 1, 1, 1, 0});
 	ISMHandler.setAbsortion({ { 1, 1, 0, 1, 1, 1, 1, 1, 0},
@@ -1068,4 +1120,44 @@ void ofApp::refreshActiveWalls()
 	mainRoom = ISMHandler.getRoom();
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
+}
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+std::vector<float> ofApp::parserStToFloat(const std::string & _st)
+{
+	std::vector<float> aux;
+	if (_st.empty()) return aux;
+
+	std::string st = _st;
+
+	auto pos = st.find(",");
+	while (pos != string::npos) {
+		float val = std::stof(st.substr(0, pos));
+		aux.push_back(val);
+		st.erase(0, pos+1);
+		pos = st.find(",");
+	}
+	float val = std::stof(st);
+	aux.push_back(val);
+	return aux;
+}
+
+std::vector<int> ofApp::parserStToVectInt(const std::string & _st)
+{
+	std::vector<int> aux;
+	if (_st.empty()) return aux;
+
+	std::string st = _st;
+
+	auto pos = st.find(",");
+	while (pos != string::npos) {
+		int val = std::stoi(st.substr(0, pos));
+		aux.push_back(val);
+		st.erase(0, pos + 1);
+		pos = st.find(",");
+	}
+	int val = std::stoi(st);
+	aux.push_back(val);
+	return aux;
 }

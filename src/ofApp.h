@@ -28,6 +28,7 @@
 #include "SoundSource.h"
 #include "ISM/ISM.h"
 #include "ofxGui\src\ofxGui.h"
+//#include "ofxXmlSettings\src\ofxXmlSettings.h"
 
 
 # define LENGTH_OF_NORMALS 0.2
@@ -53,6 +54,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
+
 private:
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
@@ -73,6 +75,16 @@ private:
 		ISM::ISM ISMHandler;
 		ISM::Room mainRoom;
 
+		////////////////////
+		ofXml xml;
+		std::vector<Common::CVector3> corners;
+		ofXml currentWall;
+		std::vector<std::vector<int>> walls;
+				
+		std::vector<std::vector<float>> absortionsWalls;
+
+		/////////////////////
+
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
 
@@ -88,6 +100,7 @@ private:
 
 		float scale = DEFAULT_SCALE;			//visualization scale
 
+		
 									
 		/// Methods to handle Audio
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
@@ -114,4 +127,8 @@ private:
 		void changeReflectionOrder(int &reflectionOrder);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
+
+		/// Methods to manage XML
+		std::vector<float> parserStToFloat(const std::string & st);
+		std::vector<int> parserStToVectInt(const std::string & st);
 };

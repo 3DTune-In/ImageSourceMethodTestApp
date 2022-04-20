@@ -559,17 +559,68 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F7://Normal absortion 
+	case OF_KEY_F7://Initial Room
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 
-		int numWalls = ISMHandler.getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 };
+		ISM::RoomGeometry InitialRoom;
+		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
+		string pathData = ofToDataPath("", true);
+		string fileName = pathData + "\\myroom3.xml";
+		if (!xml.load(pathData + "\\myroom3.xml"))
+		{
+			ofLogError() << "Couldn't load file";
 		}
+
+		// select all corners and iterate through them
+		auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
+		for (auto & currentCorner : cornersXml) {
+			// for each corner in the room insert its coordinates
+			auto cornersInFile = currentCorner.getChildren("CORNER");
+
+			for (auto aux : cornersInFile) {
+				std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
+				std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
+				Common::CVector3 tempP3d;
+				tempP3d.x = p3Dfloat[0];
+				tempP3d.y = p3Dfloat[1];
+				tempP3d.z = p3Dfloat[2];
+				InitialRoom.corners.push_back(tempP3d);
+			}
+		}
+
+		/***********************/
+		absortionsWalls.clear();
+		/***********************/
+
+		// select all walls and iterate through them
+		auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+
+
+		for (auto & currentWall : wallsXml) {
+			// for each wall in the room insert corners its and absortions
+			auto wallsInFile = currentWall.getChildren("WALL");
+			for (auto aux : wallsInFile) {
+				std::string strVectInt = aux.getAttribute("corner").getValue();
+				std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
+				InitialRoom.walls.push_back(tempCornersWall);
+
+				std::string strVectFloat = aux.getAttribute("absor").getValue();
+				std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
+				absortionsWalls.push_back(tempAbsorsWall);
+			}
+		}
+		////////////////////////////////////////////////
+
+		ISMHandler.setupArbitraryRoom(InitialRoom);
+		
+		//Absortion as escalar
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		//Absortion as vector
+		//
 		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
+		//////////////////////////////////
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();

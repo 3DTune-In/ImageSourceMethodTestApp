@@ -79,10 +79,8 @@ private:
 		ofXml xml;
 		std::vector<Common::CVector3> corners;
 		ofXml currentWall;
-		std::vector<std::vector<int>> walls;
-				
+		std::vector<std::vector<int>> walls;		
 		std::vector<std::vector<float>> absortionsWalls;
-
 		/////////////////////
 
 		Binaural::CCore							myCore;												 // Core interface

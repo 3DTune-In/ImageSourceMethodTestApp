@@ -40,8 +40,8 @@ void ofApp::setup() {
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 	string pathData = ofToDataPath("", true);
-	string fileName = pathData + "\\myroom2.xml";
-	if (!xml.load(pathData+"\\myroom2.xml"))
+	string fileName = pathData + "\\myroom3.xml";
+	if (!xml.load(pathData+"\\myroom3.xml"))
 	{
 		ofLogError() << "Couldn't load file";
 	}
@@ -64,10 +64,10 @@ void ofApp::setup() {
 	}
 	// select all walls and iterate through them
 	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+	
 	for (auto & currentWall : wallsXml) {
 		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
-
 		for (auto aux : wallsInFile) {
 			std::string strVectInt = aux.getAttribute("corner").getValue();
 			std::vector<int> tempCornersWall  = parserStToVectInt(strVectInt);
@@ -311,12 +311,13 @@ void ofApp::keyPressed(int key){
 		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
 		reflectionOrderControl = INITIAL_REFLECTION_ORDER;
 		//mainRoom = ISMHandler.getRoom();
 
@@ -465,15 +466,13 @@ void ofApp::keyPressed(int key){
 		break;
 	case OF_KEY_F1://ABSORTION -- null
 	{
-
 	    systemSoundStream.stop();
 		ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
@@ -484,13 +483,13 @@ void ofApp::keyPressed(int key){
 	{
 		systemSoundStream.stop();
 		ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-		ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
-		
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
@@ -500,30 +499,28 @@ void ofApp::keyPressed(int key){
 	{
 		systemSoundStream.stop();	
 		ISMHandler.setAbsortion(  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
-		ISMHandler.setAbsortion({ {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-								  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0} });
-		
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F4://ABSORTION -- HP
+	case OF_KEY_F4://ABSORTION -- BP
 	{
 		systemSoundStream.stop();
 		ISMHandler.setAbsortion(  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0});
-		ISMHandler.setAbsortion({ {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
-								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
-								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
-								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
-								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
-								  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0} });
-		
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
@@ -534,13 +531,13 @@ void ofApp::keyPressed(int key){
 	{
 		systemSoundStream.stop();
 		ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
-		ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0},
-								  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0} });
-			
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
@@ -550,19 +547,34 @@ void ofApp::keyPressed(int key){
 	{
 		systemSoundStream.stop();
 		ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0});
-		ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0} });
-				
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
 		systemSoundStream.start();
 		break;
 	}
+	case OF_KEY_F7://Normal absortion 
+	{
+		systemSoundStream.stop();
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 };
+		}
+		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler.getRoom();
+		systemSoundStream.start();
+		break;
+	}
 	case 'y': //increase room's length
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;

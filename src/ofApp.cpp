@@ -38,21 +38,20 @@ void ofApp::setup() {
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
-	////////////////////////////////////////////////
+	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 	string pathData = ofToDataPath("", true);
 	string fileName = pathData + "\\myroom2.xml";
 	if (!xml.load(pathData+"\\myroom2.xml"))
 	{
 		ofLogError() << "Couldn't load file";
 	}
-	//auto geometryTag = xml.getChild("ROOMGEOMETRY");
-	//auto cornerTag = xml.getChild("CORNERS");
+	
 	// select all corners and iterate through them
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	for (auto & currentCorner : cornersXml) {
-		// for each corner in the room insert a new vertex in the vector
-		//auto cornertemp = currentCorner.getChild("CORNER");
+		// for each corner in the room insert its coordinates
 		auto cornersInFile = currentCorner.getChildren("CORNER");
+
 		for (auto aux : cornersInFile) {
 			std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
 			std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
@@ -66,8 +65,7 @@ void ofApp::setup() {
 	// select all walls and iterate through them
 	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
 	for (auto & currentWall : wallsXml) {
-		// for each corner in the room insert a new vertex in the vector
-		//auto cornertemp = currentCorner.getChild("CORNER");
+		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
 
 		for (auto aux : wallsInFile) {
@@ -110,51 +108,7 @@ void ofApp::setup() {
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 	*/
-	/*
-	ISMHandler.setAbsortion(  { 1, 1, 0, 1, 1, 1, 1, 1, 0});
-	ISMHandler.setAbsortion({ { 1, 1, 0, 1, 1, 1, 1, 1, 0},
-							  { 1, 1, 0, 1, 1, 1, 1, 1, 0},
-							  { 1, 1, 0, 1, 1, 1, 1, 1, 0},
-							  { 1, 1, 0, 1, 1, 1, 1, 1, 0},
-							  { 1, 1, 0, 1, 1, 1, 1, 1, 0},
-							  { 1, 1, 0, 1, 1, 1, 1, 1, 0} });
-    */
-	/*ISMHandler.setAbsortion({  0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 });
-	ISMHandler.setAbsortion({ {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0},
-							  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0} });
-	*/
-	/*
-	ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0});
-	ISMHandler.setAbsortion({ {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-							  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-							  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-							  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-							  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-							  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0} });
-	*/
-	/*
-	ISMHandler.setAbsortion(  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-	ISMHandler.setAbsortion({ {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-							  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} });
-	*/
-
-	/*
-	ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0});
-	ISMHandler.setAbsortion({ {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-							  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-							  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-							  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-							  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-							  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0} });
-	//*/
+	
 		/////
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
@@ -719,11 +673,12 @@ void ofApp::keyPressed(int key){
 		cout << "-------------------------------List of Source Images ------------------------------------\n";
 		cout << "  Visibility  | Refl. |        Reflection coeficients        |          Location  \n";
 		cout << "              | order | ";
-		int freq = 125;
+		float freq = 62.5;
 		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
 		{
-			if(freq < 1000) { cout << freq << "Hz "; }
-			else { cout << w2 << freq / 1000 << "kHz "; }
+			if(freq < 100) { cout << ' '; }
+			if(freq < 1000) { cout << ((int) freq) << "Hz "; }
+			else { cout << w2 << ((int) (freq / 1000)) << "kHz "; }
 			freq *= 2;
 		}
 		cout << " |      X        Y        Z    \n";

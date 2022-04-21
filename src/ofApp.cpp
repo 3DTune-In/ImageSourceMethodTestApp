@@ -40,8 +40,8 @@ void ofApp::setup() {
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 	string pathData = ofToDataPath("", true);
-	string fileName = pathData + "\\myroom3.xml";
-	if (!xml.load(pathData+"\\myroom3.xml"))
+	string fileName = pathData + "\\theater_room.xml";
+	if (!xml.load(pathData+"\\theater_room.xml"))
 	{
 		ofLogError() << "Couldn't load file";
 	}
@@ -154,7 +154,9 @@ void ofApp::setup() {
 	leftPanel.add(zoom.setup("Zoom", 0, -20, 20, 50, 15));
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
-	for (int i = 0; i < NUMBER_OF_WALLS; i++)
+	//for (int i = 0; i < NUMBER_OF_WALLS; i++)
+	int numWalls = ISMHandler.getRoom().getWalls().size();
+	for (int i = 0; i < numWalls; i++)
 	{
 		ofParameter<bool> tempWall;
 		activeWalls.push_back(tempWall);
@@ -304,37 +306,38 @@ void ofApp::keyPressed(int key){
 //		scale*=1.1;
 //		break;
 
-	case 'o': // setup Room=10x10x5, Absortion=0, Listener in (0,0,0), source in (5,0,0) --> top 
+	case 'o': // setup Room=10x10x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
 		systemSoundStream.stop();
 		//ROOM
+						
 		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-
+		
 		int numWalls = ISMHandler.getRoom().getWalls().size();
+		absortionsWalls.resize(numWalls);
+		activeWalls.resize(numWalls);
+
+		for (int i = 1; i < numWalls; i++)
+			activeWalls.at(i) = FALSE;
+		ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		}
 		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		reflectionOrderControl = INITIAL_REFLECTION_ORDER;
-		//mainRoom = ISMHandler.getRoom();
-
-		for (int i=1;i<6;i++) 
-		  activeWalls.at(i) = FALSE;
-		refreshActiveWalls();
-		
-		
+		mainRoom = ISMHandler.getRoom();
+						
 		//LISTENER
-		Common::CVector3 listenerLocation(0, 0, 0);
-		Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
+		Common::CVector3 listenerLocation(1, 1, 1);
+		Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (1,1,1)
 		listenerPosition.SetPosition(listenerLocation);
 		listener->SetListenerTransform(listenerPosition);
 
 		//SOURCE
 		// Set the original anechoic source to corner
-		Common::CVector3 newLocation(4.9, 0, 0);
+		Common::CVector3 newLocation(4, 0, 0);
 		ISMHandler.setSourceLocation(newLocation,listenerLocation);
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
@@ -350,7 +353,6 @@ void ofApp::keyPressed(int key){
 			anechoicSourceDSP->DisableAnechoicProcess();
 			stateAnechoicProcess = false;
 		}
-
 		systemSoundStream.start();
 	}
 	break;
@@ -566,8 +568,8 @@ void ofApp::keyPressed(int key){
 		ISM::RoomGeometry InitialRoom;
 		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 		string pathData = ofToDataPath("", true);
-		string fileName = pathData + "\\myroom3.xml";
-		if (!xml.load(pathData + "\\myroom3.xml"))
+		string fileName = pathData + "\\theater_room.xml";
+		if (!xml.load(pathData + "\\theater_room.xml"))
 		{
 			ofLogError() << "Couldn't load file";
 		}

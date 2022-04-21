@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOMGEOMETRY>
+   <CORNERS>
+        <CORNER _3Dpoint=" 20.0, 8.0,-4.0"/>
+		<CORNER _3Dpoint=" 20.0,-8.0,-4.0"/>
+		<CORNER _3Dpoint=" 20.0,-8.0, 4.0"/>
+		<CORNER _3Dpoint=" 20.0, 8.0, 4.0"/>
+		<CORNER _3Dpoint=" 12.0, 10.0,-4.0"/>
+		<CORNER _3Dpoint=" 12.0,-10.0,-4.0"/>
+		<CORNER _3Dpoint="-10.0, 15.0,-2.0"/>
+		<CORNER _3Dpoint="-10.0,-15.0,-2.0"/>
+		<CORNER _3Dpoint="-10.0,-15.0, 4.0"/>
+		<CORNER _3Dpoint="-10.0, 15.0, 4.0"/> 
+    </CORNERS>
+	
+    <WALLS>
+        <WALL corner="0,  1,  2,  3"        absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="0,  3,  9,  6,  4"    absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="7,  8,  2,  1,  5"    absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+        <WALL corner="0,  4,  5,  1"        absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="4,  6,  7,  5"        absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="6,  9,  8,  7"        absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="3,  2,  8,  9"        absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+        
+    </WALLS>
+</ROOMGEOMETRY>

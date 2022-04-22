@@ -12,3 +12,7 @@ bin/*
 !bin/*.dll
 !bin/data/
 bin/data/*.csv
+bin/hdf*.dll
+bin/libcurl.dll
+bin/zlib1.dll
+bin/netcdf.dll

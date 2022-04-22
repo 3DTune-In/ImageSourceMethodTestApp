@@ -78,19 +78,7 @@ void ofApp::setup() {
 			absortionsWalls.push_back(tempAbsorsWall);
 		}
 	}
-	////////////////////////////////////////////////
-#if 0
-	trapezoidal.corners = { Common::CVector3(2,2,-1),
-							Common::CVector3(2,-2,-1),
-							Common::CVector3(2,-2,1),
-							Common::CVector3(2,2,1),
-							Common::CVector3(-1,-3,-1),
-							Common::CVector3(-2,2,-1),
-							Common::CVector3(-2,2,1),
-							Common::CVector3(-1,-3,1),
-	};
-	trapezoidal.walls = { {0,1,2,3},{5,0,3,6},{1,4,7,2},{4,5,6,7},{0,5,4,1},{3,2,7,6} };
-#endif
+	
 	ISMHandler.setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -100,22 +88,12 @@ void ofApp::setup() {
 	//Absortion as vector
 	ISMHandler.setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
 
-	/*
-	ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-							  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-	*/
-	
-		/////
 	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
 	mainRoom = ISMHandler.getRoom();
 
 	// setup of the anechoic source
-	Common::CVector3 initialLocation(1, 0, 0);
+	Common::CVector3 initialLocation(13, 0, -4);
 	ISMHandler.setSourceLocation(initialLocation,listenerLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 	Common::CTransform sourcePosition;
@@ -359,8 +337,6 @@ void ofApp::keyPressed(int key){
 
 	case 'p': //toggles between enabled and disabled AnechoicProcess 
 	{
-		// Disable<-->Enable AnechoicProcess 
-		
 		if (anechoicSourceDSP->IsAnechoicProcessEnabled())
 		{
 			anechoicSourceDSP->DisableAnechoicProcess();
@@ -500,11 +476,11 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F3://ABSORTION -- LP + HP
 	{
 		systemSoundStream.stop();	
-		ISMHandler.setAbsortion(  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
+		ISMHandler.setAbsortion(  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0});
 
 		int numWalls = ISMHandler.getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 };
+			absortionsWalls.at(i) = { 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 };
 		}
 		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
@@ -513,14 +489,14 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F4://ABSORTION -- BP
+	case OF_KEY_F4://ABSORTION -- BP-250-4000
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+		ISMHandler.setAbsortion(  {1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0});
 
 		int numWalls = ISMHandler.getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
+			absortionsWalls.at(i) = { 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
 		}
 		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
@@ -529,7 +505,7 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F5://ABSORTION -- BP
+	case OF_KEY_F5://ABSORTION -- BP-Narrow-1000
 	{
 		systemSoundStream.stop();
 		ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
@@ -613,13 +589,11 @@ void ofApp::keyPressed(int key){
 			}
 		}
 		////////////////////////////////////////////////
-
 		ISMHandler.setupArbitraryRoom(InitialRoom);
 		
 		//Absortion as escalar
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		//Absortion as vector
-		//
 		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		//////////////////////////////////

@@ -709,8 +709,8 @@ void ofApp::keyPressed(int key){
 		auto w2 = std::setw(2);
 		auto w5 = std::setw(5);
 		auto w7 = std::setw(7);
-		cout << "-------------------------------List of Source Images ------------------------------------\n";
-		cout << "  Visibility  | Refl. |        Reflection coeficients        |          Location  \n";
+		cout << "------------------------------------------------List of Source Images -------------------------------------\n";
+		cout << "  Visibility  | Refl. |                Reflection coeficients                  |          Location  \n";
 		cout << "              | order | ";
 		float freq = 62.5;
 		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
@@ -720,8 +720,8 @@ void ofApp::keyPressed(int key){
 			else { cout << w2 << ((int) (freq / 1000)) << "kHz "; }
 			freq *= 2;
 		}
-		cout << " |      X        Y        Z    \n";
-		cout << "--------------+-------+--------------------------------------+---------------------------\n";
+		cout << " |     X        Y        Z    \n";
+		cout << "--------------+-------+--------------------------------------------------------+---------------------------\n";
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";

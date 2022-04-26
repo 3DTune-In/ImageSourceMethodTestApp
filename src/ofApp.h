@@ -63,9 +63,10 @@ private:
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;
 		ofParameter<int> reflectionOrderControl;
-		std::vector<ofParameter<bool>> activeWalls;
+		std::vector<ofParameter<bool>> guiActiveWalls;
 		//std::vector<string> wallNames = { "Front", "Left", "Right", "Back", "Floor", "Ceiling" };
-		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8" };
+		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
+		
 
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation

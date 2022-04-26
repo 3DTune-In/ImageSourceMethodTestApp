@@ -80,7 +80,7 @@ void ofApp::setup() {
 	}
 	
 	ISMHandler.setupArbitraryRoom(trapezoidal);
-	shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
+	shoeboxLength = 20; shoeboxWidth = 20; shoeboxHeight = 10;
 	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 	//Absortion as escalar
@@ -137,9 +137,9 @@ void ofApp::setup() {
 	for (int i = 0; i < numWalls; i++)
 	{
 		ofParameter<bool> tempWall;
-		activeWalls.push_back(tempWall);
-		activeWalls.at(i).addListener(this, &ofApp::toggleWall);
-		leftPanel.add(activeWalls.at(i).set(wallNames.at(i), true));
+		guiActiveWalls.push_back(tempWall);
+		guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
+		leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
 	}
 }
 
@@ -284,7 +284,7 @@ void ofApp::keyPressed(int key){
 //		scale*=1.1;
 //		break;
 
-	case 'o': // setup Room=10x10x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
+	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
 		systemSoundStream.stop();
 		//ROOM
@@ -292,12 +292,10 @@ void ofApp::keyPressed(int key){
 		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		
+		
 		int numWalls = ISMHandler.getRoom().getWalls().size();
 		absortionsWalls.resize(numWalls);
-		activeWalls.resize(numWalls);
-
-		for (int i = 1; i < numWalls; i++)
-			activeWalls.at(i) = FALSE;
+		
 		ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -313,6 +311,7 @@ void ofApp::keyPressed(int key){
 		listenerPosition.SetPosition(listenerLocation);
 		listener->SetListenerTransform(listenerPosition);
 
+				
 		//SOURCE
 		// Set the original anechoic source to corner
 		Common::CVector3 newLocation(4, 0, 0);
@@ -320,6 +319,11 @@ void ofApp::keyPressed(int key){
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
 		anechoicSourceDSP->SetSourceTransform(sourcePosition);
+
+		//WALLs
+		guiActiveWalls.resize(numWalls);
+		for (int i = 1; i < numWalls; i++)
+			guiActiveWalls.at(i) = FALSE;
 
 		//SOURCES DSP
 		imageSourceDSPList = createImageSourceDSP();
@@ -484,27 +488,27 @@ void ofApp::keyPressed(int key){
 		if (reflectionOrderControl > 0) reflectionOrderControl--;
 		break;
 	case '1': //enable/disable wall number 1 
-		activeWalls.at(0) = !activeWalls.at(0);
+		guiActiveWalls.at(0) = !guiActiveWalls.at(0);
 		refreshActiveWalls();
 		break;
 	case '2': //enable/disable wall number 2 
-		activeWalls.at(1) = !activeWalls.at(1);
+		guiActiveWalls.at(1) = !guiActiveWalls.at(1);
 		refreshActiveWalls();
 		break;
 	case '3': //enable/disable wall number 3 
-		activeWalls.at(2) = !activeWalls.at(2);
+		guiActiveWalls.at(2) = !guiActiveWalls.at(2);
 		refreshActiveWalls();
 		break;
 	case '4': //enable/disable wall number 4 
-		activeWalls.at(3) = !activeWalls.at(3);
+		guiActiveWalls.at(3) = !guiActiveWalls.at(3);
 		refreshActiveWalls();
 		break;
 	case '5': //enable/disable wall number 5 
-		activeWalls.at(4) = !activeWalls.at(4);
+		guiActiveWalls.at(4) = !guiActiveWalls.at(4);
 		refreshActiveWalls();
 		break;
 	case '6': //enable/disable wall number 6 
-		activeWalls.at(5) = !activeWalls.at(5);
+		guiActiveWalls.at(5) = !guiActiveWalls.at(5);
 		refreshActiveWalls();
 		break;
 	case OF_KEY_F1://ABSORTION -- null
@@ -655,7 +659,10 @@ void ofApp::keyPressed(int key){
 		}
 		////////////////////////////////////////////////
 		ISMHandler.setupArbitraryRoom(InitialRoom);
-		
+
+		int numWalls = ISMHandler.getRoom().getWalls().size();
+		guiActiveWalls.resize(numWalls);
+				
 		//Absortion as escalar
 		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		//Absortion as vector
@@ -664,6 +671,7 @@ void ofApp::keyPressed(int key){
 		//////////////////////////////////
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler.getRoom();
+
 		systemSoundStream.start();
 		break;
 	}
@@ -671,7 +679,8 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;
 		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+				
+		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1167,9 +1176,9 @@ void ofApp::refreshActiveWalls()
 	systemSoundStream.stop();
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	for (int i = 0; i < activeWalls.size(); i++)
+	for (int i = 0; i < guiActiveWalls.size(); i++)
 	{
-		if (activeWalls.at(i))
+		if (guiActiveWalls.at(i))
 		{
 			ISMHandler.enableWall(i, listenerLocation);
 		}

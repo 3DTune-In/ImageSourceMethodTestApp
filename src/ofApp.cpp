@@ -1165,15 +1165,17 @@ void ofApp::toggleWall(bool &_active)
 void ofApp::refreshActiveWalls()
 {
 	systemSoundStream.stop();
+	Common::CTransform listenerTransform = listener->GetListenerTransform();
+	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 	for (int i = 0; i < activeWalls.size(); i++)
 	{
 		if (activeWalls.at(i))
 		{
-			ISMHandler.enableWall(i);
+			ISMHandler.enableWall(i, listenerLocation);
 		}
 		else
 		{
-			ISMHandler.disableWall(i);
+			ISMHandler.disableWall(i, listenerLocation);
 		}
 	}
 	mainRoom = ISMHandler.getRoom();

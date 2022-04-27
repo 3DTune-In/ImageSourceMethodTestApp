@@ -488,28 +488,74 @@ void ofApp::keyPressed(int key){
 		if (reflectionOrderControl > 0) reflectionOrderControl--;
 		break;
 	case '1': //enable/disable wall number 1 
-		guiActiveWalls.at(0) = !guiActiveWalls.at(0);
-		refreshActiveWalls();
+		if (guiActiveWalls.size() > 0) 
+		{
+			guiActiveWalls.at(0) = !guiActiveWalls.at(0);
+			refreshActiveWalls();
+		}
 		break;
 	case '2': //enable/disable wall number 2 
-		guiActiveWalls.at(1) = !guiActiveWalls.at(1);
-		refreshActiveWalls();
+		if (guiActiveWalls.size() > 1)
+		{
+			guiActiveWalls.at(1) = !guiActiveWalls.at(1);
+			refreshActiveWalls();
+		}
 		break;
 	case '3': //enable/disable wall number 3 
-		guiActiveWalls.at(2) = !guiActiveWalls.at(2);
-		refreshActiveWalls();
+		if (guiActiveWalls.size() > 2)
+		{
+			guiActiveWalls.at(2) = !guiActiveWalls.at(2);
+			refreshActiveWalls();
+		}
 		break;
 	case '4': //enable/disable wall number 4 
-		guiActiveWalls.at(3) = !guiActiveWalls.at(3);
-		refreshActiveWalls();
+		if (guiActiveWalls.size() > 3)
+		{
+			guiActiveWalls.at(3) = !guiActiveWalls.at(3);
+			refreshActiveWalls();
+		}
 		break;
 	case '5': //enable/disable wall number 5 
-		guiActiveWalls.at(4) = !guiActiveWalls.at(4);
-		refreshActiveWalls();
+		if (guiActiveWalls.size() > 4)
+		{
+			guiActiveWalls.at(4) = !guiActiveWalls.at(4);
+			refreshActiveWalls();
+		}
 		break;
 	case '6': //enable/disable wall number 6 
-		guiActiveWalls.at(5) = !guiActiveWalls.at(5);
-		refreshActiveWalls();
+		if (guiActiveWalls.size() > 5)
+		{
+			guiActiveWalls.at(5) = !guiActiveWalls.at(5);
+			refreshActiveWalls();
+		}
+		break;
+	case '7': //enable/disable wall number 7
+		if (guiActiveWalls.size() > 6)
+		{
+			guiActiveWalls.at(6) = !guiActiveWalls.at(6);
+			refreshActiveWalls();
+		}
+		break;
+	case '8': //enable/disable wall number 8
+		if (guiActiveWalls.size() > 7)
+		{
+			guiActiveWalls.at(7) = !guiActiveWalls.at(7);
+			refreshActiveWalls();
+		}
+		break;
+	case '9': //enable/disable wall number 9
+		if (guiActiveWalls.size() > 8)
+		{
+			guiActiveWalls.at(8) = !guiActiveWalls.at(8);
+			refreshActiveWalls();
+		}
+		break;
+	case '0': //enable/disable wall number 10
+		if (guiActiveWalls.size() > 9)
+		{
+			guiActiveWalls.at(9) = !guiActiveWalls.at(9);
+			refreshActiveWalls();
+		}
 		break;
 	case OF_KEY_F1://ABSORTION -- null
 	{
@@ -659,7 +705,7 @@ void ofApp::keyPressed(int key){
 		}
 		////////////////////////////////////////////////
 		ISMHandler.setupArbitraryRoom(InitialRoom);
-
+		
 		int numWalls = ISMHandler.getRoom().getWalls().size();
 		guiActiveWalls.resize(numWalls);
 				

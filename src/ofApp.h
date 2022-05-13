@@ -25,6 +25,8 @@
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>
+#include <BRIR/BRIRFactory.h>
+#include <BRIR/BRIRCereal.h>
 #include "SoundSource.h"
 #include "ISM/ISM.h"
 #include "ofxGui\src\ofxGui.h"
@@ -87,6 +89,8 @@ private:
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
+		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
+		bool bEnableReverb = false;
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;

@@ -35,6 +35,13 @@ void ofApp::setup() {
 		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
 	}
 
+	/************************/
+	// Environment setup
+	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
+	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	BRIR::CreateFromSofa("brir.sofa", environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
+
+
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
@@ -283,6 +290,11 @@ void ofApp::keyPressed(int key){
 //	case OF_KEY_PAGE_DOWN:
 //		scale*=1.1;
 //		break;
+
+	case'r':
+		if (bEnableReverb) bEnableReverb=false;
+		else bEnableReverb = true;
+	break;
 
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
@@ -1039,10 +1051,21 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 
 	processAnechoic(source1, bufferOutput);
 
+	// Declaration and initialization of separate buffer needed for the reverb
+	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
+	// Reverberation processing of all sources
+	if (bEnableReverb) {
+		environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right);
+		// Adding reverberated sound to the output mix
+		bufferOutput.left += bufferReverb.left;
+		bufferOutput.right += bufferReverb.right;
+	}
+	
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 
 	processImages(source1, bufferOutput);
+	
 }
 
 void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
@@ -1066,6 +1089,7 @@ void ofApp::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CM
 	
 	bufferOutput.left += bufferProcessed.left;
 	bufferOutput.right += bufferProcessed.right;
+		
 }
 
 void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)

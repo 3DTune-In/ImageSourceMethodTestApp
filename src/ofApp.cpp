@@ -112,6 +112,7 @@ void ofApp::setup() {
 	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
 	//stateAnechoicProcess = false;
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	anechoicSourceDSP->EnableDistanceAttenuationReverb();
 	anechoicSourceDSP->EnablePropagationDelay();
 
 	// setup of the image sources
@@ -1102,9 +1103,9 @@ void ofApp::processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 
 	// Reverberation processing of direct path
 	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right);
-	// Adding reverberated sound to the output mix
-	bufferReverb.left.ApplyGain(0.125);
-	bufferReverb.right.ApplyGain(0.125);
+	// Adding reverberated sound to the direct path
+	bufferReverb.left.ApplyGain(0.25);
+	bufferReverb.right.ApplyGain(0.25);
 	bufferOutput.left += bufferReverb.left;
 	bufferOutput.right += bufferReverb.right;
 
@@ -1234,6 +1235,7 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
 		tempSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 		tempSourceDSP->EnablePropagationDelay();
+		tempSourceDSP->DisableReverbProcess();
 		tempImageSourceDSPList.push_back(tempSourceDSP);
 	}
 	return tempImageSourceDSPList;

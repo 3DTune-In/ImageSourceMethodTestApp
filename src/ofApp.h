@@ -116,6 +116,7 @@ private:
 		/// Methods to render audio
 		void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 		void processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
+		void processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms. 
 		void drawRoom(ISM::Room room, int reflectionOrder, int transparency); //Draws recursively rooms

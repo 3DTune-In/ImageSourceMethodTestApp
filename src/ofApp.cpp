@@ -874,7 +874,12 @@ void ofApp::keyPressed(int key){
 			cout << "AnechoicProcess Enabled" << "\n";
 		else 
 			cout << "AnechoicProcess Disabled" << "\n";
+		if (bEnableReverb)
+			cout << "Reverb Enabled" << "\n";
+		else
+			cout << "Reverb Disabled" << "\n";
 		break;
+		
 	}
 }
 
@@ -1047,20 +1052,18 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 {
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
+	
 	source1Wav.FillBuffer(source1);
+	CMonoBuffer<float> &bufferInput = source1;
+	anechoicSourceDSP->SetBuffer(bufferInput);
 
 	processAnechoic(source1, bufferOutput);
 
-	// Declaration and initialization of separate buffer needed for the reverb
-	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
-	// Reverberation processing of all sources
-	if (bEnableReverb) {
-		environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right);
-		// Adding reverberated sound to the output mix
-		bufferOutput.left += bufferReverb.left;
-		bufferOutput.right += bufferReverb.right;
+	if (bEnableReverb) 
+	{
+		processReverb(source1, bufferOutput);
 	}
-	
+
 	Common::CTransform lisenerTransform = listener->GetListenerTransform();
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 
@@ -1091,6 +1094,22 @@ void ofApp::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CM
 	bufferOutput.right += bufferProcessed.right;
 		
 }
+
+void ofApp::processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
+{
+	// Declaration and initialization of separate buffer needed for the reverb
+	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
+
+	// Reverberation processing of direct path
+	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right);
+	// Adding reverberated sound to the output mix
+	bufferReverb.left.ApplyGain(0.125);
+	bufferReverb.right.ApplyGain(0.125);
+	bufferOutput.left += bufferReverb.left;
+	bufferOutput.right += bufferReverb.right;
+
+}
+
 
 void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
 {

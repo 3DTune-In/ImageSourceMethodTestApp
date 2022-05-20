@@ -76,9 +76,10 @@ private:
 		float shoeboxWidth;
 		float shoeboxHeight;
 
-		ISM::ISM ISMHandler;
-		ISM::Room mainRoom;
-
+		//ISM::ISM ISMHandler;
+		shared_ptr<ISM::CISM> ISMHandler;
+		
+		ISM::Room mainRoom;		
 		////////////////////
 		ofXml xml;
 		std::vector<Common::CVector3> corners;
@@ -91,6 +92,7 @@ private:
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bEnableReverb = false;
+		
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;

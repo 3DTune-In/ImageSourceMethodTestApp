@@ -71,8 +71,7 @@ void ofApp::setup() {
 		}		
 	}
 	// select all walls and iterate through them
-	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
-	
+	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");	
 	for (auto & currentWall : wallsXml) {
 		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
@@ -86,23 +85,26 @@ void ofApp::setup() {
 			absortionsWalls.push_back(tempAbsorsWall);
 		}
 	}
-	
-	ISMHandler.setupArbitraryRoom(trapezoidal);
+			
+	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM		
+	ISMHandler->setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 20; shoeboxWidth = 20; shoeboxHeight = 10;
-	//ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		
+	
 
 	//Absortion as escalar
-	ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 	//Absortion as vector
-	ISMHandler.setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
+	ISMHandler->setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
 
-	ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 
-	mainRoom = ISMHandler.getRoom();
+	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic source
 	Common::CVector3 initialLocation(13, 0, -4);
-	ISMHandler.setSourceLocation(initialLocation,listenerLocation);					// Source to be rendered
+	ISMHandler->setSourceLocation(initialLocation,listenerLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(initialLocation);
@@ -142,7 +144,7 @@ void ofApp::setup() {
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
 	//for (int i = 0; i < NUMBER_OF_WALLS; i++)
-	int numWalls = ISMHandler.getRoom().getWalls().size();
+	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
 	{
 		ofParameter<bool> tempWall;
@@ -190,14 +192,14 @@ void ofApp::draw() {
 	//draw anechoic source
 	ofPushStyle();
 	ofSetColor(255, 50, 200, 50);
-	Common::CVector3 sourceLocation = ISMHandler.getSourceLocation();
+	Common::CVector3 sourceLocation = ISMHandler->getSourceLocation();
 	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
 	ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z,
 		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 
 	//draw image sources 
 	int numberOfVisibleImages = 0;
-	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler.getImageSourceData(listenerLocation);
+	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData(listenerLocation);
 	for (int i = 0; i < imageSourceDataList.size(); i++)
 	{
 		if (imageSourceDataList.at(i).visible)
@@ -320,20 +322,20 @@ void ofApp::keyPressed(int key){
 		//ROOM
 						
 		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		
 		
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		absortionsWalls.resize(numWalls);
 		
-		ISMHandler.setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+		ISMHandler->setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		reflectionOrderControl = INITIAL_REFLECTION_ORDER;
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 						
 		//LISTENER
 		Common::CVector3 listenerLocation(1, 1, 1);
@@ -345,7 +347,7 @@ void ofApp::keyPressed(int key){
 		//SOURCE
 		// Set the original anechoic source to corner
 		Common::CVector3 newLocation(4, 0, 0);
-		ISMHandler.setSourceLocation(newLocation,listenerLocation);
+		ISMHandler->setSourceLocation(newLocation,listenerLocation);
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
 		anechoicSourceDSP->SetSourceTransform(sourcePosition);
@@ -409,15 +411,15 @@ void ofApp::keyPressed(int key){
 		/////
 		listenerTransform = listener->GetListenerTransform();
 		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
 		if (state == false)
 		{
 			listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler.getSourceLocation();
-		ISMHandler.setSourceLocation(Location, listenerLocation);  //FIXME: when the listener is moved images should be updated
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation);  //FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'w': //Moves the listener right (X)
@@ -427,15 +429,15 @@ void ofApp::keyPressed(int key){
 		/////
 		listenerTransform = listener->GetListenerTransform();
 		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
 		if (state == false)
 		{
 			listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler.getSourceLocation();
-		ISMHandler.setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'a': //Moves the listener up (Y)
@@ -445,15 +447,15 @@ void ofApp::keyPressed(int key){
 		/////
 		listenerTransform = listener->GetListenerTransform();
 		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
 		if (state==false)
 		{
 			listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler.getSourceLocation();
-		ISMHandler.setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'd': //Moves the listener down (-Y)
@@ -463,15 +465,15 @@ void ofApp::keyPressed(int key){
 		/////
 		listenerTransform = listener->GetListenerTransform();
 		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
 		if (state == false)
 		{
 			listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler.getSourceLocation();
-		ISMHandler.setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'e': //Moves the listener up (Z)
@@ -481,15 +483,15 @@ void ofApp::keyPressed(int key){
 		/////
 		listenerTransform = listener->GetListenerTransform();
 		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
 		if (state == false)
 		{
 			listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler.getSourceLocation();	
-		ISMHandler.setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		Common::CVector3 Location = ISMHandler->getSourceLocation();	
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 
@@ -500,15 +502,15 @@ void ofApp::keyPressed(int key){
 		/////
 		listenerTransform = listener->GetListenerTransform();
 		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
 		if (state == false)
 		{
 			listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler.getSourceLocation();
-		ISMHandler.setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case '+': //increases the reflection order 
@@ -590,95 +592,95 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F1://ABSORTION -- null
 	{
 	    systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		ISMHandler->setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F2://ABSORTION -- total
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
+		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
 
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F3://ABSORTION -- LP + HP
 	{
 		systemSoundStream.stop();	
-		ISMHandler.setAbsortion(  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0});
+		ISMHandler->setAbsortion(  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0});
 
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F4://ABSORTION -- BP-250-4000
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0});
+		ISMHandler->setAbsortion(  {1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0});
 
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F5://ABSORTION -- BP-Narrow-1000
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
+		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
 
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F6://ABSORTION STOPB
 	{
 		systemSoundStream.stop();
-		ISMHandler.setAbsortion(  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0});
+		ISMHandler->setAbsortion(  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0});
 
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
 		}
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
 		break;
 	}
@@ -734,19 +736,19 @@ void ofApp::keyPressed(int key){
 			}
 		}
 		////////////////////////////////////////////////
-		ISMHandler.setupArbitraryRoom(InitialRoom);
+		ISMHandler->setupArbitraryRoom(InitialRoom);
 		
-		int numWalls = ISMHandler.getRoom().getWalls().size();
+		int numWalls = ISMHandler->getRoom().getWalls().size();
 		guiActiveWalls.resize(numWalls);
 				
 		//Absortion as escalar
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		//Absortion as vector
-		ISMHandler.setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		//////////////////////////////////
 		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler.getRoom();
+		mainRoom = ISMHandler->getRoom();
 
 		systemSoundStream.start();
 		break;
@@ -754,17 +756,17 @@ void ofApp::keyPressed(int key){
 	case 'y': //increase room's length
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 				
-		ISMHandler.setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+		ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
-		mainRoom = ISMHandler.getRoom();
+		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = createImageSourceDSP();
 
 		systemSoundStream.start();
@@ -772,16 +774,16 @@ void ofApp::keyPressed(int key){
 	case 'b': //decrease room's length
 		systemSoundStream.stop();
 		if (shoeboxLength > 2.5)  shoeboxLength -= 0.5;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
-		mainRoom = ISMHandler.getRoom();
+		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = createImageSourceDSP();
 
 		systemSoundStream.start();
@@ -789,16 +791,16 @@ void ofApp::keyPressed(int key){
 	case 'g': //decrease room's width
 		systemSoundStream.stop();
 		if (shoeboxWidth > 2.2) shoeboxWidth -= 0.2;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
-		mainRoom = ISMHandler.getRoom();
+		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = createImageSourceDSP();
 
 		systemSoundStream.start();
@@ -806,16 +808,16 @@ void ofApp::keyPressed(int key){
 	case 'h': //increase room's width
 		systemSoundStream.stop();
 		shoeboxWidth += 0.2;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
-		mainRoom = ISMHandler.getRoom();
+		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = createImageSourceDSP();
 
 		systemSoundStream.start();
@@ -823,16 +825,16 @@ void ofApp::keyPressed(int key){
 	case 'v': //decrease room's height
 		systemSoundStream.stop();
 		if (shoeboxHeight > 2.2) shoeboxHeight -= 0.2;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
-		mainRoom = ISMHandler.getRoom();
+		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = createImageSourceDSP();
 
 		systemSoundStream.start();
@@ -840,22 +842,22 @@ void ofApp::keyPressed(int key){
 	case 'n': //increase room's height
 		systemSoundStream.stop();
 		shoeboxHeight += 0.2;
-		ISMHandler.SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler.setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
-		ISMHandler.setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler.setReflectionOrder(INITIAL_REFLECTION_ORDER);
-		mainRoom = ISMHandler.getRoom();
+		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = createImageSourceDSP();
 
 		systemSoundStream.start();
 		break;
 	case 't': //Test
-		std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
+		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData(listenerLocation);
 		auto w2 = std::setw(2);
 		auto w5 = std::setw(5);
 		auto w7 = std::setw(7);
@@ -1137,12 +1139,12 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 {
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	std::vector<ISM::ImageSourceData> data = ISMHandler.getImageSourceData(listenerLocation);
+	std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData(listenerLocation);
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 
 	std::vector<CMonoBuffer<float>> bufferImages;
-	ISMHandler.proccess(bufferInput, bufferImages, listenerLocation);
+	ISMHandler->proccess(bufferInput, bufferImages, listenerLocation);
 
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 	{
@@ -1232,10 +1234,10 @@ void ofApp::drawWallNormal(ISM::Wall wall, float length)
 void ofApp::moveSource(Common::CVector3 movement)
 {
 	/// Moving the original anechoic source
-	Common::CVector3 newLocation = ISMHandler.getSourceLocation() + movement;
+	Common::CVector3 newLocation = ISMHandler->getSourceLocation() + movement;
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	ISMHandler.setSourceLocation(newLocation,listenerLocation);
+	ISMHandler->setSourceLocation(newLocation,listenerLocation);
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(newLocation);
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);	
@@ -1244,7 +1246,7 @@ void ofApp::moveSource(Common::CVector3 movement)
 std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
 {
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
-	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler.getImageSourceLocations();
+	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler->getImageSourceLocations();
 	for (int i = 0; i < imageSourceLocationList.size(); i++)
 	{
 		shared_ptr<Binaural::CSingleSourceDSP> tempSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
@@ -1274,7 +1276,7 @@ void ofApp::changeZoom(int &zoom)
 void ofApp::changeReflectionOrder(int &_reflectionOrder)
 {
 	systemSoundStream.stop();
-	ISMHandler.setReflectionOrder(_reflectionOrder);
+	ISMHandler->setReflectionOrder(_reflectionOrder);
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }
@@ -1292,14 +1294,14 @@ void ofApp::refreshActiveWalls()
 	{
 		if (guiActiveWalls.at(i))
 		{
-			ISMHandler.enableWall(i, listenerLocation);
+			ISMHandler->enableWall(i, listenerLocation);
 		}
 		else
 		{
-			ISMHandler.disableWall(i, listenerLocation);
+			ISMHandler->disableWall(i, listenerLocation);
 		}
 	}
-	mainRoom = ISMHandler.getRoom();
+	mainRoom = ISMHandler->getRoom();
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }

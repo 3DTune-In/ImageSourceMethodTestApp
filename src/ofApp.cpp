@@ -38,10 +38,11 @@ void ofApp::setup() {
 	/************************/
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	BRIR::CreateFromSofa("brir.sofa", environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
-
-
+	
+	environment->SetNumberOfSilencedFrames(9);
+	
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
@@ -291,6 +292,22 @@ void ofApp::keyPressed(int key){
 //	case OF_KEY_PAGE_DOWN:
 //		scale*=1.1;
 //		break;
+	case OF_KEY_PAGE_UP:
+	{
+		int numberOfSilencedFrames;
+		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
+		numberOfSilencedFrames++;
+		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);
+		break;
+	}
+	case OF_KEY_PAGE_DOWN:
+	{
+		int numberOfSilencedFrames;
+		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
+		numberOfSilencedFrames--;
+		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);
+		break;
+	}
 
 	case'r':
 		if (bEnableReverb) bEnableReverb=false;
@@ -879,7 +896,11 @@ void ofApp::keyPressed(int key){
 			cout << "Reverb Enabled" << "\n";
 		else
 			cout << "Reverb Disabled" << "\n";
+
+		cout << "NumberOfSilencedFrames = " << environment->GetNumberOfSilencedFrames() << "\n";
+		
 		break;
+		
 		
 	}
 }

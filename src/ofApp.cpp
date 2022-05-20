@@ -41,7 +41,7 @@ void ofApp::setup() {
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	BRIR::CreateFromSofa("brir.sofa", environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
 	
-	environment->SetNumberOfSilencedFrames(9);
+	//environment->SetNumberOfSilencedFrames(9);
 	
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
@@ -295,21 +295,23 @@ void ofApp::keyPressed(int key){
 //		scale*=1.1;
 //		break;
 	case OF_KEY_PAGE_UP:
-	{
-		int numberOfSilencedFrames;
+		numberOfSilencedFrames++;
+		if (numberOfSilencedFrames > 15) numberOfSilencedFrames = 15;
+		/*int numberOfSilencedFrames;
 		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
 		numberOfSilencedFrames++;
-		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);
+		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
-	}
+	
 	case OF_KEY_PAGE_DOWN:
-	{
-		int numberOfSilencedFrames;
+		numberOfSilencedFrames--;
+		if (numberOfSilencedFrames < 0) numberOfSilencedFrames = 0;
+		/*int numberOfSilencedFrames;
 		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
 		numberOfSilencedFrames--;
-		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);
+		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
-	}
+	
 
 	case'r':
 		if (bEnableReverb) bEnableReverb=false;
@@ -899,7 +901,7 @@ void ofApp::keyPressed(int key){
 		else
 			cout << "Reverb Disabled" << "\n";
 
-		cout << "NumberOfSilencedFrames = " << environment->GetNumberOfSilencedFrames() << "\n";
+		cout << "NumberOfSilencedFrames = " << numberOfSilencedFrames << "\n";
 		
 		break;
 		
@@ -1125,10 +1127,10 @@ void ofApp::processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
 
 	// Reverberation processing of direct path
-	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right);
+	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedFrames);
 	// Adding reverberated sound to the direct path
-	bufferReverb.left.ApplyGain(0.25);
-	bufferReverb.right.ApplyGain(0.25);
+	//bufferReverb.left.ApplyGain(0.25);
+	//bufferReverb.right.ApplyGain(0.25);
 	bufferOutput.left += bufferReverb.left;
 	bufferOutput.right += bufferReverb.right;
 

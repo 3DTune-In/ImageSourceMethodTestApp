@@ -92,7 +92,7 @@ private:
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bEnableReverb = false;
-		
+		int numberOfSilencedFrames = 7;
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;

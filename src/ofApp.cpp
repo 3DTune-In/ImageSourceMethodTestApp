@@ -48,8 +48,10 @@ void ofApp::setup() {
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 	string pathData = ofToDataPath("", true);
-	string fileName = pathData + "\\theater_room.xml";
-	if (!xml.load(pathData+"\\theater_room.xml"))
+	//string fileName = pathData + "\\theater_room.xml";
+	//if (!xml.load(pathData+"\\theater_room.xml"))
+	string fileName = pathData + "\\trapezoidal_2.xml";
+	if (!xml.load(pathData+"\\trapezoidal_2.xml"))
 	{
 		ofLogError() << "Couldn't load file";
 	}
@@ -103,7 +105,8 @@ void ofApp::setup() {
 	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic source
-	Common::CVector3 initialLocation(13, 0, -4);
+	//Common::CVector3 initialLocation(13, 0, -4);
+	Common::CVector3 initialLocation(2, 0, -1);
 	ISMHandler->setSourceLocation(initialLocation,listenerLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 	Common::CTransform sourcePosition;
@@ -1074,18 +1077,19 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 }
 
 /// Process audio using the 3DTI Toolkit methods
+
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
-	
 	source1Wav.FillBuffer(source1);
-	CMonoBuffer<float> &bufferInput = source1;
-	anechoicSourceDSP->SetBuffer(bufferInput);
+
+	//CMonoBuffer<float> &bufferInput = source1;
+	//anechoicSourceDSP->SetBuffer(bufferInput);
 
 	processAnechoic(source1, bufferOutput);
 
-	if (bEnableReverb) 
+	if (bEnableReverb)
 	{
 		processReverb(source1, bufferOutput);
 	}
@@ -1094,8 +1098,35 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 
 	processImages(source1, bufferOutput);
-	
+
 }
+
+/*
+void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
+{
+	// Declaration, initialization and filling mono buffers
+	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
+	source1Wav.FillBuffer(source1);
+
+	processAnechoic(source1, bufferOutput);
+
+	// Declaration and initialization of separate buffer needed for the reverb
+	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
+	// Reverberation processing of all sources
+	if (bEnableReverb) {
+		environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedFrames);
+		// Adding reverberated sound to the output mix
+		bufferOutput.left += bufferReverb.left;
+		bufferOutput.right += bufferReverb.right;
+	}
+
+	Common::CTransform lisenerTransform = listener->GetListenerTransform();
+	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
+
+	processImages(source1, bufferOutput);
+
+}
+*/
 
 void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
 {	

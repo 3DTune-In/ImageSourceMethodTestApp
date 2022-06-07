@@ -30,12 +30,12 @@
 #include "SoundSource.h"
 #include "ISM/ISM.h"
 #include "ofxGui\src\ofxGui.h"
-//#include "ofxXmlSettings\src\ofxXmlSettings.h"
-
+#include "WavWriter.h"
 
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
 # define INITIAL_REFLECTION_ORDER 1
+# define FRAME_RATE 60
 
 class ofApp : public ofBaseApp{
 
@@ -58,6 +58,17 @@ class ofApp : public ofBaseApp{
 
 
 private:
+	    // Record to WAV
+	    WavWriter wavWriter;
+	    bool recordingOffline=false;
+	    float recordingPercent;
+	    int offlineRecordIteration = 0;
+	    int offlineRecordBuffers = 0;
+		bool systemSoundStream_Started;
+		mutex audioMutex;
+		//bool readyToStop = false;
+		/////////////////////////
+
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
 		ofImage logoSAVLab;
@@ -93,9 +104,11 @@ private:
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bEnableReverb = false;
 		int numberOfSilencedFrames = 0;
+		float MaxDistanceSourcesToListener = 10.0;
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
+		//ofSoundBuffer lastBuffer; //ofSoundBuffer
 
 		SoundSource source1Wav;
 
@@ -112,6 +125,8 @@ private:
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
 		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);
 		void audioOut(float * output, int bufferSize, int nChannels);
+		//void audioOut(ofSoundBuffer &outBuffer); //ofSoundBuffer
+
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
 		void LoadWavFile(SoundSource & source, const char* filePath);
 
@@ -138,4 +153,18 @@ private:
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);
 		std::vector<int> parserStToVectInt(const std::string & st);
+
+		/// Record to WAV functions
+		void StartWavRecord(string filename, int bitspersample);
+		void EndWavRecord();
+		int OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds);
+		void OfflineWavRecordOneLoopIteration(int _bufferSize);
+		void OfflineWavRecordEndLoop();
+		void ShowRecordingMessage();
+		void Stop();
+
+		//
+		void StopSystemSoundStream();
+		void StartSystemSoundStream();
+
 };

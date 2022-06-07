@@ -64,3 +64,9 @@ void SoundSource::FillBuffer(CMonoBuffer<float> &output)
 			output[i] = 0.0f;							 // Fill with zeros if the end of the audio is met
 	}
 }
+
+void SoundSource::setInitialPosition() {
+	position = 0;
+	endFrame = 0;
+	endChunk = 0;
+}

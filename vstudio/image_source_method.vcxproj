@@ -197,6 +197,7 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\ofApp.cpp" />
     <ClCompile Include="..\src\SoundSource.cpp" />
+    <ClCompile Include="..\src\WavWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\addons\ofxGui\src\ofxBaseGui.h" />
@@ -213,6 +214,7 @@
     <ClInclude Include="..\..\addons\ofxGui\src\ofxToggle.h" />
     <ClInclude Include="..\src\ofApp.h" />
     <ClInclude Include="..\src\SoundSource.h" />
+    <ClInclude Include="..\src\WavWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

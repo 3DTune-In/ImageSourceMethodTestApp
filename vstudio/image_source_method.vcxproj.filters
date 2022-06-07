@@ -40,6 +40,9 @@
     <ClCompile Include="..\..\addons\ofxGui\src\ofxToggle.cpp">
       <Filter>addon\ofxGui</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\WavWriter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -94,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="..\..\addons\ofxGui\src\ofxToggle.h">
       <Filter>addon\ofxGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\WavWriter.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

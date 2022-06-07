@@ -50,8 +50,8 @@ void ofApp::setup() {
 	string pathData = ofToDataPath("", true);
 	//string fileName = pathData + "\\theater_room.xml";
 	//if (!xml.load(pathData+"\\theater_room.xml"))
-	string fileName = pathData + "\\trapezoidal_2.xml";
-	if (!xml.load(pathData+"\\trapezoidal_2.xml"))
+	string fileName = pathData + "\\trapezoidal_3.xml";
+	if (!xml.load(pathData+"\\trapezoidal_3.xml"))
 	{
 		ofLogError() << "Couldn't load file";
 	}
@@ -120,13 +120,16 @@ void ofApp::setup() {
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 	anechoicSourceDSP->EnableDistanceAttenuationReverb();
 	anechoicSourceDSP->EnablePropagationDelay();
-
+	
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
+	float MaxDistanceSourcesToListener = 11.0;
+	ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
 
+	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
+	//LoadWavFile(source1Wav, "3S_3Ch_4S.wav");                            // Loading .wav file
 	LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
-	//LoadWavFile(source1Wav, "sweep0_5.wav");											// Loading .wav file										   
-
+	//LoadWavFile(source1Wav, "sweep0_5.wav");										// Loading .wav file										   
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
 	//// the app crashes when systemSoundStream.start(); or stop() are called.
@@ -155,16 +158,86 @@ void ofApp::setup() {
 		guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
 		leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
 	}
+
+	// Offline WAV record
+	recordingOffline = false;
+	recordingPercent = 0.0f;
+	offlineRecordIteration = 0;
+	offlineRecordBuffers = 0;
 }
 
 
 //--------------------------------------------------------------
 void ofApp::update() {
-
+	
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+	
+	// OFFLINE WAV RECORD
+	//OF_KEY_F12
+	
+	if (recordingOffline)
+	{
+		uint64_t frameStart = ofGetElapsedTimeMillis();
+		int bufferSize = 512;
+
+		if (offlineRecordBuffers == 0) {
+			
+			string filename = "IR";
+			string auxFilemame;
+			if (stateAnechoicProcess) filename.append("An");
+			else filename.append("Nan");
+			filename += "Rord";
+			filename += std::to_string(reflectionOrderControl);
+			if (bEnableReverb) {
+				filename += "Revb";
+				filename += std::to_string(numberOfSilencedFrames);
+			}
+			else filename += "Nrev";
+			filename += ".WAV";
+            StartWavRecord(filename, 16);                             // Open wav file
+			//StartWavRecord(filename, 24);                               // Open wav file
+			//offlineRecordBuffers = OfflineWavRecordStartLoop(ConfRecording.duration_s * 1000);
+			offlineRecordBuffers = OfflineWavRecordStartLoop(100);      //offlineRecordIteration = 0;
+			
+			lock_guard < mutex > lock(audioMutex);	 // Avoids race conditions with audio thread when cleaning buffers
+			systemSoundStream.stop();
+			anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+			imageSourceDSPList = createImageSourceDSP();
+			for (int i = 0; i < imageSourceDSPList.size(); i++)
+				imageSourceDSPList.at(i)->ResetSourceBuffers();
+			environment->ResetReverbBuffers();
+			
+			source1Wav.setInitialPosition();
+		}
+				
+		
+		ofPushStyle();
+		ofBackground(80, 80, 80);
+		ShowRecordingMessage();
+
+		float frameDurationInMilliseconds = 1000.0f / FRAME_RATE;
+		float aux;
+		while ((aux = ofGetElapsedTimeMillis() - frameStart) < frameDurationInMilliseconds)		{
+			OfflineWavRecordOneLoopIteration(bufferSize);  //audioProcess + wavWriter_AppendToFile + offlineRecordBuffers++
+			offlineRecordIteration++;
+		}
+		if (offlineRecordBuffers != 0)
+			recordingPercent = 1 + (100 * offlineRecordIteration) / offlineRecordBuffers;
+
+		if (recordingPercent >= 100.0f){
+			OfflineWavRecordEndLoop();    // Stop & recordingOffline = false;
+			EndWavRecord();               // Close wav file
+
+			systemSoundStream.start();
+		}
+		ofPopStyle();
+
+		return;
+	}
+
 	//////////////////////////////////////begin of 3D drawing//////////////////////////////////////
 	ofPushMatrix();
 	ofScale(scale);
@@ -279,6 +352,15 @@ void ofApp::keyPressed(int key){
 		
 	switch (key)
 	{
+	case OF_KEY_F12: //recording
+	{
+		//systemSoundStream.stop();
+		recordingOffline = true;
+		offlineRecordBuffers = 0;
+		//systemSoundStream.close();
+	}
+		break;
+	
 	case OF_KEY_LEFT:
 		azimuth++;
 		break;
@@ -297,16 +379,17 @@ void ofApp::keyPressed(int key){
 //	case OF_KEY_PAGE_DOWN:
 //		scale*=1.1;
 //		break;
-	case OF_KEY_PAGE_UP:
+		
+	case OF_KEY_INSERT:
 		numberOfSilencedFrames++;
-		if (numberOfSilencedFrames > 15) numberOfSilencedFrames = 15;
+		if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 		/*int numberOfSilencedFrames;
 		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
 		numberOfSilencedFrames++;
 		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
-	
-	case OF_KEY_PAGE_DOWN:
+		
+	case OF_KEY_DEL:
 		numberOfSilencedFrames--;
 		if (numberOfSilencedFrames < 0) numberOfSilencedFrames = 0;
 		/*int numberOfSilencedFrames;
@@ -314,11 +397,45 @@ void ofApp::keyPressed(int key){
 		numberOfSilencedFrames--;
 		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
-	
 
+	case OF_KEY_PAGE_UP:
+	{
+		MaxDistanceSourcesToListener += 1.0;
+		if (MaxDistanceSourcesToListener >70.0) MaxDistanceSourcesToListener = 70.0;
+		ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
+
+		Common::CTransform listenerTransform = listener->GetListenerTransform();
+		Common::CVector3 listenerLocation = listenerTransform.GetPosition();
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		//imageSourceDSPList = createImageSourceDSP();
+	 }
+	break;
+
+	case OF_KEY_PAGE_DOWN:
+	{
+		MaxDistanceSourcesToListener -= 1.0;
+		if (MaxDistanceSourcesToListener < 6.0) MaxDistanceSourcesToListener = 6.0;
+		ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
+
+		Common::CTransform listenerTransform = listener->GetListenerTransform();
+		Common::CVector3 listenerLocation = listenerTransform.GetPosition();
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
+		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		//imageSourceDSPList = createImageSourceDSP();
+	}
+	break;
 	case'r':
 		if (bEnableReverb) bEnableReverb=false;
 		else bEnableReverb = true;
+		systemSoundStream.stop();
+		anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+		imageSourceDSPList = createImageSourceDSP();
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->ResetSourceBuffers();
+		environment->ResetReverbBuffers();
+		systemSoundStream.start();
+
 	break;
 
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
@@ -905,6 +1022,8 @@ void ofApp::keyPressed(int key){
 			cout << "Reverb Disabled" << "\n";
 
 		cout << "NumberOfSilencedFrames = " << numberOfSilencedFrames << "\n";
+
+		cout << "MaxDistanceSourcesToListener = " << MaxDistanceSourcesToListener << "\n";
 		
 		break;
 		
@@ -1000,10 +1119,16 @@ void ofApp::SetDeviceAndAudio(Common::TAudioStateStruct audioState) {
 		);
 		cout << "Device selected : " << "ID: " << dev.deviceID << "  Name: " << dev.name << endl;
 
+		systemSoundStream_Started = true;
+
+		//lastBuffer.setDeviceID(deviceId);
+		
 	}
 	else
 	{
 		cout << "Could not find any usable sound Device" << endl;
+
+		systemSoundStream_Started = false;
 	}
 }
 
@@ -1052,7 +1177,11 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 
 
 /// Audio output management by openFramework
+#if 1
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
+	//OF_KEY_F12
+
+	lock_guard < mutex > lock(audioMutex);
 
 	// The requested frame size is not allways supported by the audio driver:
 	if (myCore.GetAudioState().bufferSize != bufferSize)
@@ -1062,9 +1191,24 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	Common::CEarPair<CMonoBuffer<float>> bOutput;
 	bOutput.left.resize(bufferSize);
 	bOutput.right.resize(bufferSize);
-	
-	// Process audio
-	audioProcess(bOutput, bufferSize);
+
+	if (!recordingOffline)
+	  // Process audio
+	   audioProcess(bOutput, bufferSize);
+	else {
+
+		bOutput.left.clear();
+		bOutput.right.clear();
+		/*
+		anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+		imageSourceDSPList = createImageSourceDSP();
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->ResetSourceBuffers();
+		environment->ResetReverbBuffers();
+		*/
+		return;
+	}
+		
 	// Build float array from output buffer
 	int i = 0;
 	CStereoBuffer<float> iOutput;
@@ -1074,19 +1218,19 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 		float s = *it;
 		output[i++] = s;
 	}
+
+
 }
+#endif
 
 /// Process audio using the 3DTI Toolkit methods
-
+#if 1
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
 	source1Wav.FillBuffer(source1);
-
-	//CMonoBuffer<float> &bufferInput = source1;
-	//anechoicSourceDSP->SetBuffer(bufferInput);
-
+		
 	processAnechoic(source1, bufferOutput);
 
 	if (bEnableReverb)
@@ -1100,8 +1244,8 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	processImages(source1, bufferOutput);
 
 }
-
-/*
+#endif
+#if 0
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
 	// Declaration, initialization and filling mono buffers
@@ -1126,7 +1270,7 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	processImages(source1, bufferOutput);
 
 }
-*/
+#endif
 
 void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
 {	
@@ -1143,7 +1287,7 @@ void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
 void ofApp::processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput)
 {
 	Common::CEarPair<CMonoBuffer<float>> bufferProcessed;
-	
+		
 	anechoicSourceDSP->SetBuffer(bufferInput);
 	anechoicSourceDSP->ProcessAnechoic(bufferProcessed.left, bufferProcessed.right);
 	
@@ -1377,4 +1521,136 @@ std::vector<int> ofApp::parserStToVectInt(const std::string & _st)
 	int val = std::stoi(st);
 	aux.push_back(val);
 	return aux;
+}
+
+
+
+//////////////////////////
+// Record to WAV functions
+//////////////////////////
+void ofApp::OfflineWavRecordOneLoopIteration(int _bufferSize)
+{
+	//OF_KEY_F12
+	Common::CEarPair<CMonoBuffer<float>> recordBuffer;
+	recordBuffer.left.resize(_bufferSize);
+	recordBuffer.right.resize(_bufferSize);
+	audioProcess(recordBuffer, _bufferSize);
+	wavWriter.AppendToFile(recordBuffer);
+	offlineRecordBuffers++;
+}
+
+void ofApp::ShowRecordingMessage()
+{
+	float windowWidth = ofGetWidth();
+	float windowHeight = ofGetHeight();
+	float panelOpac = 140;
+	float border = 5;
+	float panelWidth = 300;
+	float panelHeight = 80;
+	float frameWidth = 2;
+
+	bool centerOnListenerPanel = true;
+	//float x;
+	//if (centerOnListenerPanel)  x = (windowWidth - IPL_WIDTH - IM.GetRightPanelWidth() - panelWidth) / 2 + IPL_WIDTH;
+	//else                        
+	float x = (windowWidth - panelWidth) / 2;
+	float y = (windowHeight - panelHeight) / 2;
+
+	ofPushMatrix();
+	ofEnableAlphaBlending();
+	ofFill();
+
+	ofSetColor(0, 0, 0, 128);
+	ofDrawRectangle(0, 0, windowWidth, windowHeight);
+
+	ofSetColor(255, 255, 255, panelOpac);
+	ofDrawRectangle(x, y, panelWidth, panelHeight);
+
+	ofSetColor(0, 0, 0, panelOpac);
+	ofDrawRectangle(x + frameWidth, y + frameWidth, panelWidth - 2 * frameWidth, panelHeight - 2 * frameWidth);
+
+	ofNoFill();
+	ofDisableAlphaBlending();
+
+	ofSetColor(255, 255, 255);
+
+	char recordPercentStr[30];
+	snprintf(recordPercentStr, 30, "Recording to disk...%.1f%%", recordingPercent);
+	ofDrawBitmapString(recordPercentStr, x + panelWidth / 4 - 15, y + panelHeight / 2 + 6);
+
+	ofPopMatrix();
+}
+
+void ofApp::OfflineWavRecordEndLoop()
+{
+	Stop();	// Reset clip positions	
+	recordingOffline = false;
+}
+
+void ofApp::StartWavRecord(string filename, int bitspersample)
+{
+	wavWriter.Setup(2, SAMPLERATE, bitspersample);
+	if (!wavWriter.CreateWavFile(filename)) {
+		cout << "ERROR: Unable to record WAV file" << endl << endl;
+	}
+	else {
+		cout << "FILE: "<< filename << "open" << endl << endl;
+	}
+}
+
+void ofApp::EndWavRecord()
+{
+	wavWriter.CloseFile();
+}
+
+
+void ofApp::Stop()
+{
+	lock_guard < mutex > lock(audioMutex);	 // Avoids race conditions with audio thread when cleaning buffers
+
+	if (wavWriter.IsWriting())
+		EndWavRecord();
+
+	//for (auto & mySound : mySounds)
+	//	mySound.Stop();
+
+	environment->ResetReverbBuffers();				//Clean reverb buffers
+}
+
+int ofApp::OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds)
+{
+	//OF_KEY_F12
+	// Convert milliseconds into number of samples
+	unsigned long long durationInSamples;
+	durationInSamples = (SAMPLERATE * durationInMilliseconds) / 1000;	// might be rounded
+
+	// Convert number of samples into number of buffers
+	//int numberOfBuffers = ceil(durationInSamples / BUFFERSIZE);	// rounded up
+	int numberOfBuffers = floor(durationInSamples / BUFFERSIZE);	// rounded up
+
+	offlineRecordIteration = 0;
+
+	// Reset progress percentage
+	recordingPercent = 0.0f;
+
+	return numberOfBuffers;
+}
+
+
+void ofApp::StopSystemSoundStream()
+{
+	if (systemSoundStream_Started)
+	{
+		systemSoundStream_Started = false;
+		systemSoundStream.stop();
+	}
+}
+//---------------------------------------------------------------
+void ofApp::StartSystemSoundStream()
+{
+	if (!systemSoundStream_Started)
+	{
+		systemSoundStream_Started = true;
+		systemSoundStream.start();
+	}
 }

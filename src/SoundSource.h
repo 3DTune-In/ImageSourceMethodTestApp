@@ -26,6 +26,8 @@ public :
 */
 	void FillBuffer(CMonoBuffer<float> &output);
 
+	void setInitialPosition();
+
 private:
 	
 	std::vector<float> samplesVector;

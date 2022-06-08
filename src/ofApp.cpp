@@ -174,11 +174,8 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	
-	// OFFLINE WAV RECORD
-	//OF_KEY_F9
-	
-	if (recordingOffline)
+		
+	if (recordingOffline)											//OF_KEY_F9 (OFFLINE WAV RECORD)
 	{
 		uint64_t frameStart = ofGetElapsedTimeMillis();
 		int bufferSize = 512;
@@ -354,10 +351,8 @@ void ofApp::keyPressed(int key){
 	{
 	case OF_KEY_F9: //recording
 	{
-		//systemSoundStream.stop();
 		recordingOffline = true;
 		offlineRecordBuffers = 0;
-		//systemSoundStream.close();
 	}
 		break;
 	
@@ -1179,8 +1174,7 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 /// Audio output management by openFramework
 #if 1
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
-	//OF_KEY_F9
-
+	
 	lock_guard < mutex > lock(audioMutex);
 
 	// The requested frame size is not allways supported by the audio driver:
@@ -1196,16 +1190,8 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	  // Process audio
 	   audioProcess(bOutput, bufferSize);
 	else {
-
 		bOutput.left.clear();
 		bOutput.right.clear();
-		/*
-		anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
-		imageSourceDSPList = createImageSourceDSP();
-		for (int i = 0; i < imageSourceDSPList.size(); i++)
-			imageSourceDSPList.at(i)->ResetSourceBuffers();
-		environment->ResetReverbBuffers();
-		*/
 		return;
 	}
 		
@@ -1530,8 +1516,7 @@ std::vector<int> ofApp::parserStToVectInt(const std::string & _st)
 //////////////////////////
 void ofApp::OfflineWavRecordOneLoopIteration(int _bufferSize)
 {
-	//OF_KEY_F9
-	Common::CEarPair<CMonoBuffer<float>> recordBuffer;
+	Common::CEarPair<CMonoBuffer<float>> recordBuffer;                     //OF_KEY_F9
 	recordBuffer.left.resize(_bufferSize);
 	recordBuffer.right.resize(_bufferSize);
 	audioProcess(recordBuffer, _bufferSize);
@@ -1619,8 +1604,7 @@ void ofApp::Stop()
 
 int ofApp::OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds)
 {
-	//OF_KEY_F9
-	// Convert milliseconds into number of samples
+	// Convert milliseconds into number of samples (OF_KEY_F9)
 	unsigned long long durationInSamples;
 	durationInSamples = (SAMPLERATE * durationInMilliseconds) / 1000;	// might be rounded
 

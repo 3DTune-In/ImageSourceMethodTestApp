@@ -176,7 +176,7 @@ void ofApp::update() {
 void ofApp::draw() {
 	
 	// OFFLINE WAV RECORD
-	//OF_KEY_F12
+	//OF_KEY_F9
 	
 	if (recordingOffline)
 	{
@@ -198,13 +198,13 @@ void ofApp::draw() {
 			else filename += "Nrev";
 			filename += ".WAV";
             StartWavRecord(filename, 16);                             // Open wav file
-			//StartWavRecord(filename, 24);                               // Open wav file
+			//StartWavRecord(filename, 24);                           // Open wav file
 			//offlineRecordBuffers = OfflineWavRecordStartLoop(ConfRecording.duration_s * 1000);
-			offlineRecordBuffers = OfflineWavRecordStartLoop(100);      //offlineRecordIteration = 0;
+			offlineRecordBuffers = OfflineWavRecordStartLoop(100);    //offlineRecordIteration = 0;
 			
-			lock_guard < mutex > lock(audioMutex);	 // Avoids race conditions with audio thread when cleaning buffers
+			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
 			systemSoundStream.stop();
-			anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 			imageSourceDSPList = createImageSourceDSP();
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
 				imageSourceDSPList.at(i)->ResetSourceBuffers();
@@ -352,7 +352,7 @@ void ofApp::keyPressed(int key){
 		
 	switch (key)
 	{
-	case OF_KEY_F12: //recording
+	case OF_KEY_F9: //recording
 	{
 		//systemSoundStream.stop();
 		recordingOffline = true;
@@ -1179,7 +1179,7 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 /// Audio output management by openFramework
 #if 1
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
-	//OF_KEY_F12
+	//OF_KEY_F9
 
 	lock_guard < mutex > lock(audioMutex);
 
@@ -1530,7 +1530,7 @@ std::vector<int> ofApp::parserStToVectInt(const std::string & _st)
 //////////////////////////
 void ofApp::OfflineWavRecordOneLoopIteration(int _bufferSize)
 {
-	//OF_KEY_F12
+	//OF_KEY_F9
 	Common::CEarPair<CMonoBuffer<float>> recordBuffer;
 	recordBuffer.left.resize(_bufferSize);
 	recordBuffer.right.resize(_bufferSize);
@@ -1619,7 +1619,7 @@ void ofApp::Stop()
 
 int ofApp::OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds)
 {
-	//OF_KEY_F12
+	//OF_KEY_F9
 	// Convert milliseconds into number of samples
 	unsigned long long durationInSamples;
 	durationInSamples = (SAMPLERATE * durationInMilliseconds) / 1000;	// might be rounded

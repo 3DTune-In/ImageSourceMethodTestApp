@@ -630,6 +630,15 @@ void ofApp::keyPressed(int key){
 		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
 		break;
 	}
+	case 'A': //Rotate Left
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), 0.05);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'D': //Rotate Right
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -0.05);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+
 	case '+': //increases the reflection order 
 		if(reflectionOrderControl<MAX_REFLECTION_ORDER) reflectionOrderControl++;
 		break;

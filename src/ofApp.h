@@ -76,9 +76,13 @@ private:
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;
 		ofParameter<int> reflectionOrderControl;
+		ofParameter<bool> reverbEnableControl;
+		ofParameter<bool> anechoicEnableControl;
+
 		std::vector<ofParameter<bool>> guiActiveWalls;
 		//std::vector<string> wallNames = { "Front", "Left", "Right", "Back", "Floor", "Ceiling" };
 		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
+		
 		
 
 		float azimuth;		//Camera azimuth
@@ -102,7 +106,7 @@ private:
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
-		bool bEnableReverb = false;
+		bool bDisableReverb;                                                                         // true;
 		int numberOfSilencedFrames = 0;
 		float MaxDistanceSourcesToListener = 10.0;
 
@@ -113,7 +117,7 @@ private:
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
-		bool stateAnechoicProcess = true;                                                      //Enabled o Disabled
+		bool stateAnechoicProcess=false;                                                   // Enabled o Disabled
 
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
@@ -149,6 +153,8 @@ private:
 		void changeReflectionOrder(int &reflectionOrder);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
+		void toolgeAnechoic(bool &active);
+		void toolgeReverb(bool &active);
 
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);

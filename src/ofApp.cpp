@@ -116,7 +116,7 @@ void ofApp::setup() {
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
 	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	//stateAnechoicProcess = false;
+	//stateAnechoicProcess = true;
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 	anechoicSourceDSP->EnableDistanceAttenuationReverb();
 	anechoicSourceDSP->EnablePropagationDelay();
@@ -145,11 +145,19 @@ void ofApp::setup() {
 
 	leftPanel.setup("Controls", "config.xml", 20, 150);
 	leftPanel.setWidthElements(200);
+
 	zoom.addListener(this, &ofApp::changeZoom);
 	leftPanel.add(zoom.setup("Zoom", 0, -20, 20, 50, 15));
+
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
-	//for (int i = 0; i < NUMBER_OF_WALLS; i++)
+		
+	anechoicEnableControl.addListener(this, &ofApp::toolgeAnechoic);
+	leftPanel.add(anechoicEnableControl.set("ANECHOIC", true));
+
+	reverbEnableControl.addListener(this, &ofApp::toolgeReverb);
+	leftPanel.add(reverbEnableControl.set("REVERB", false));
+
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
 	{
@@ -188,7 +196,7 @@ void ofApp::draw() {
 			else filename.append("Nan");
 			filename += "Rord";
 			filename += std::to_string(reflectionOrderControl);
-			if (bEnableReverb) {
+			if (!bDisableReverb) {
 				filename += "Revb";
 				filename += std::to_string(numberOfSilencedFrames);
 			}
@@ -327,7 +335,7 @@ void ofApp::draw() {
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, ofGetHeight()- 110, 280, 90);
+	ofRect(ofGetWidth() - 300, ofGetHeight()- 100, 290, 90);
 	ofPopStyle();
 	char numberOfImagesStr[255];
 	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
@@ -336,6 +344,17 @@ void ofApp::draw() {
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
 	sprintf(numberOfImagesStr, "Maxdistance sources-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
+	if (!bDisableReverb) 
+	{
+ 	    sprintf(numberOfImagesStr, "Number of silences frames: %d", numberOfSilencedFrames);
+		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
+	}
+	else
+	{
+		sprintf(numberOfImagesStr, "Reverb Disabled");
+		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
+	}
+
 
 	leftPanel.draw();
 }
@@ -422,9 +441,10 @@ void ofApp::keyPressed(int key){
 		//imageSourceDSPList = createImageSourceDSP();
 	}
 	break;
+	/*
 	case'r':
-		if (bEnableReverb) bEnableReverb=false;
-		else bEnableReverb = true;
+		if (bDisableReverb) bDisableReverb=false;
+		else bDisableReverb = true;
 		systemSoundStream.stop();
 		anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
 		imageSourceDSPList = createImageSourceDSP();
@@ -434,7 +454,8 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 
 	break;
-
+	*/
+	
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
 		systemSoundStream.stop();
@@ -490,7 +511,8 @@ void ofApp::keyPressed(int key){
 	}
 	break;
 
-	case 'p': //toggles between enabled and disabled AnechoicProcess 
+	/*
+	case 'p': //toggles between enabled and disabled AnechoicProcess
 	{
 		if (anechoicSourceDSP->IsAnechoicProcessEnabled())
 		{
@@ -504,6 +526,7 @@ void ofApp::keyPressed(int key){
 		}
 	}
 		break;
+	*/
 
 	case 'k': //Moves the source left (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
@@ -1021,12 +1044,15 @@ void ofApp::keyPressed(int key){
 			cout << "AnechoicProcess Enabled" << "\n";
 		else 
 			cout << "AnechoicProcess Disabled" << "\n";
-		if (bEnableReverb)
+		if (!bDisableReverb)
+		{
 			cout << "Reverb Enabled" << "\n";
+			cout << "NumberOfSilencedFrames = " << numberOfSilencedFrames << "\n";
+		}
 		else
 			cout << "Reverb Disabled" << "\n";
 
-		cout << "NumberOfSilencedFrames = " << numberOfSilencedFrames << "\n";
+		
 
 		cout << "MaxDistanceSourcesToListener = " << MaxDistanceSourcesToListener << "\n";
 		
@@ -1229,7 +1255,7 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 		
 	processAnechoic(source1, bufferOutput);
 
-	if (bEnableReverb)
+	if (!bDisableReverb)
 	{
 		processReverb(source1, bufferOutput);
 	}
@@ -1253,7 +1279,7 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	// Declaration and initialization of separate buffer needed for the reverb
 	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
 	// Reverberation processing of all sources
-	if (bEnableReverb) {
+	if (!bDisableReverb) {
 		environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedFrames);
 		// Adding reverberated sound to the output mix
 		bufferOutput.left += bufferReverb.left;
@@ -1458,6 +1484,33 @@ void ofApp::toggleWall(bool &_active)
 {
 	refreshActiveWalls();
 }
+void ofApp::toolgeAnechoic(bool &_active)
+{
+	if (stateAnechoicProcess)
+	{
+		anechoicSourceDSP->DisableAnechoicProcess();
+		stateAnechoicProcess = false;
+	}
+	else
+	{
+		anechoicSourceDSP->EnableAnechoicProcess();
+		stateAnechoicProcess = true;
+	}
+}
+
+void ofApp::toolgeReverb(bool &_active)
+{
+	if (bDisableReverb) bDisableReverb = false;
+	else bDisableReverb = true;
+	systemSoundStream.stop();
+	anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+	imageSourceDSPList = createImageSourceDSP();
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		imageSourceDSPList.at(i)->ResetSourceBuffers();
+	environment->ResetReverbBuffers();
+	systemSoundStream.start();
+}
+
 void ofApp::refreshActiveWalls()
 {
 	systemSoundStream.stop();

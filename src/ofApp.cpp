@@ -441,21 +441,6 @@ void ofApp::keyPressed(int key){
 		//imageSourceDSPList = createImageSourceDSP();
 	}
 	break;
-	/*
-	case'r':
-		if (bDisableReverb) bDisableReverb=false;
-		else bDisableReverb = true;
-		systemSoundStream.stop();
-		anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
-		imageSourceDSPList = createImageSourceDSP();
-		for (int i = 0; i < imageSourceDSPList.size(); i++)
-			imageSourceDSPList.at(i)->ResetSourceBuffers();
-		environment->ResetReverbBuffers();
-		systemSoundStream.start();
-
-	break;
-	*/
-	
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
 		systemSoundStream.stop();
@@ -510,24 +495,6 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 	}
 	break;
-
-	/*
-	case 'p': //toggles between enabled and disabled AnechoicProcess
-	{
-		if (anechoicSourceDSP->IsAnechoicProcessEnabled())
-		{
-			anechoicSourceDSP->DisableAnechoicProcess();
-			stateAnechoicProcess = false;
-		}
-		else
-		{
-			anechoicSourceDSP->EnableAnechoicProcess();
-			stateAnechoicProcess = true;
-		}
-	}
-		break;
-	*/
-
 	case 'k': //Moves the source left (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;

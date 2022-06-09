@@ -117,7 +117,7 @@ private:
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
-		bool stateAnechoicProcess=false;                                                   // Enabled o Disabled
+		bool stateAnechoicProcess;                                                          // Enabled o Disabled
 
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 

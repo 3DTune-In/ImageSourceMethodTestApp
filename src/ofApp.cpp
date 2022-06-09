@@ -123,7 +123,7 @@ void ofApp::setup() {
 	
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
-	float MaxDistanceSourcesToListener = 11.0;
+	float MaxDistanceSourcesToListener = 10.0;
 	ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
 
 	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
@@ -327,13 +327,15 @@ void ofApp::draw() {
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, ofGetHeight()- 110, 270, 75);
+	ofRect(ofGetWidth() - 300, ofGetHeight()- 110, 280, 90);
 	ofPopStyle();
 	char numberOfImagesStr[255];
 	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, ofGetHeight() - 85);
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 85);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 280, ofGetHeight()-55);
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
+	sprintf(numberOfImagesStr, "Maxdistance sources-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
+	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
 
 	leftPanel.draw();
 }
@@ -638,7 +640,6 @@ void ofApp::keyPressed(int key){
 		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -0.05);
 		listener->SetListenerTransform(listenerTransform);
 		break;
-
 	case '+': //increases the reflection order 
 		if(reflectionOrderControl<MAX_REFLECTION_ORDER) reflectionOrderControl++;
 		break;

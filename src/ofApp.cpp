@@ -123,9 +123,12 @@ void ofApp::setup() {
 	
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
-	float MaxDistanceSourcesToListener = 10.0;
-	ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
 
+	// setup maxDistanceSourcesToListener and numberOfSilencedFrames
+	float maxDistanceSourcesToListener = 10.0;
+	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
+	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
+	
 	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
 	//LoadWavFile(source1Wav, "3S_3Ch_4S.wav");                            // Loading .wav file
 	LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
@@ -342,7 +345,7 @@ void ofApp::draw() {
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 85);
 	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
-	sprintf(numberOfImagesStr, "Maxdistance sources-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
+	sprintf(numberOfImagesStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
 	if (!bDisableReverb) 
 	{
@@ -416,10 +419,12 @@ void ofApp::keyPressed(int key){
 
 	case OF_KEY_PAGE_UP:
 	{
-		MaxDistanceSourcesToListener += 1.0;
-		if (MaxDistanceSourcesToListener >70.0) MaxDistanceSourcesToListener = 70.0;
-		ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
+		maxDistanceSourcesToListener += 1.0;
+		if (maxDistanceSourcesToListener >70.0) maxDistanceSourcesToListener = 70.0;
+		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
 
+		numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
+		
 		Common::CTransform listenerTransform = listener->GetListenerTransform();
 		Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 		Common::CVector3 Location = ISMHandler->getSourceLocation();
@@ -430,9 +435,11 @@ void ofApp::keyPressed(int key){
 
 	case OF_KEY_PAGE_DOWN:
 	{
-		MaxDistanceSourcesToListener -= 1.0;
-		if (MaxDistanceSourcesToListener < 6.0) MaxDistanceSourcesToListener = 6.0;
-		ISMHandler->setMaxDistanceImageSources(MaxDistanceSourcesToListener);
+		maxDistanceSourcesToListener -= 1.0;
+		if (maxDistanceSourcesToListener < 6.0) maxDistanceSourcesToListener = 6.0;
+		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
+
+		numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
 
 		Common::CTransform listenerTransform = listener->GetListenerTransform();
 		Common::CVector3 listenerLocation = listenerTransform.GetPosition();
@@ -1014,14 +1021,14 @@ void ofApp::keyPressed(int key){
 		if (!bDisableReverb)
 		{
 			cout << "Reverb Enabled" << "\n";
-			cout << "NumberOfSilencedFrames = " << numberOfSilencedFrames << "\n";
+			cout << "Number of silenced frames= " << numberOfSilencedFrames << "\n";
 		}
 		else
 			cout << "Reverb Disabled" << "\n";
 
 		
 
-		cout << "MaxDistanceSourcesToListener = " << MaxDistanceSourcesToListener << "\n";
+		cout << "Max distance images to listener = " << maxDistanceSourcesToListener << "\n";
 		
 		break;
 		

@@ -35,6 +35,7 @@
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
 # define INITIAL_REFLECTION_ORDER 1
+# define INITIAL_DIST_SILENCED_FRAMES  10
 # define FRAME_RATE 60
 
 class ofApp : public ofBaseApp{
@@ -78,6 +79,7 @@ private:
 		ofParameter<int> reflectionOrderControl;
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
+		ofParameter<int> maxDistanceImageSourcesToListenerControl;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 		//std::vector<string> wallNames = { "Front", "Left", "Right", "Back", "Floor", "Ceiling" };
@@ -151,6 +153,7 @@ private:
 		/// Methods to manage GUI
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
+		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
 		void toolgeAnechoic(bool &active);

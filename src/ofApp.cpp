@@ -7,6 +7,8 @@
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 4
 #define NUMBER_OF_WALLS 6
+#define MAX_DIST_SILENCED_FRAMES 70
+#define MIN_DIST_SILENCED_FRAMES 6
 
 
 //--------------------------------------------------------------
@@ -125,7 +127,7 @@ void ofApp::setup() {
 	imageSourceDSPList = createImageSourceDSP();
 
 	// setup maxDistanceSourcesToListener and numberOfSilencedFrames
-	float maxDistanceSourcesToListener = 10.0;
+	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
 	
@@ -154,12 +156,15 @@ void ofApp::setup() {
 
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
-		
+			
 	anechoicEnableControl.addListener(this, &ofApp::toolgeAnechoic);
 	leftPanel.add(anechoicEnableControl.set("ANECHOIC", true));
 
 	reverbEnableControl.addListener(this, &ofApp::toolgeReverb);
 	leftPanel.add(reverbEnableControl.set("REVERB", false));
+
+	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
+	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", 10, 6, 70));
 
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
@@ -392,13 +397,12 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_DOWN:
 		elevation--;
 		break;
-//	case OF_KEY_PAGE_UP:
-//		scale*=0.9;
-//		break;
-//	case OF_KEY_PAGE_DOWN:
-//		scale*=1.1;
-//		break;
-		
+	case OF_KEY_PAGE_UP:
+	    scale*=0.9;
+		break;
+	case OF_KEY_PAGE_DOWN:
+		scale*=1.1;
+		break;
 	case OF_KEY_INSERT:
 		numberOfSilencedFrames++;
 		if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
@@ -416,11 +420,13 @@ void ofApp::keyPressed(int key){
 		numberOfSilencedFrames--;
 		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
-
-	case OF_KEY_PAGE_UP:
+	case OF_KEY_HOME: // OF_KEY_PAGE_UP:
 	{
-		maxDistanceSourcesToListener += 1.0;
-		if (maxDistanceSourcesToListener >70.0) maxDistanceSourcesToListener = 70.0;
+		if (maxDistanceImageSourcesToListenerControl < MAX_DIST_SILENCED_FRAMES) {
+			maxDistanceSourcesToListener += 1.0;
+			maxDistanceImageSourcesToListenerControl++;
+		}
+		
 		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
 
 		numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
@@ -432,13 +438,15 @@ void ofApp::keyPressed(int key){
 		//imageSourceDSPList = createImageSourceDSP();
 	 }
 	break;
-
-	case OF_KEY_PAGE_DOWN:
+	case OF_KEY_END: //OF_KEY_PAGE_DOWN:
 	{
-		maxDistanceSourcesToListener -= 1.0;
-		if (maxDistanceSourcesToListener < 6.0) maxDistanceSourcesToListener = 6.0;
+		if (maxDistanceImageSourcesToListenerControl > MIN_DIST_SILENCED_FRAMES) 
+		{
+			maxDistanceSourcesToListener -= 1.0;
+			maxDistanceImageSourcesToListenerControl--;
+		}
+		
 		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
-
 		numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
 
 		Common::CTransform listenerTransform = listener->GetListenerTransform();
@@ -448,6 +456,7 @@ void ofApp::keyPressed(int key){
 		//imageSourceDSPList = createImageSourceDSP();
 	}
 	break;
+	
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
 		systemSoundStream.stop();
@@ -1025,10 +1034,8 @@ void ofApp::keyPressed(int key){
 		}
 		else
 			cout << "Reverb Disabled" << "\n";
-
-		
-
-		cout << "Max distance images to listener = " << maxDistanceSourcesToListener << "\n";
+			
+		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
 		
 		break;
 		
@@ -1453,6 +1460,20 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }
+
+void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
+{
+	systemSoundStream.stop();
+	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
+	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(_maxDistanceSourcesToListener);
+	maxDistanceSourcesToListener = (float)_maxDistanceSourcesToListener;
+	Common::CTransform listenerTransform = listener->GetListenerTransform();
+	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
+	Common::CVector3 Location = ISMHandler->getSourceLocation();
+	ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+	systemSoundStream.start();
+}
+
 
 void ofApp::toggleWall(bool &_active)
 {

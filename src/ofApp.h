@@ -110,7 +110,6 @@ private:
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bDisableReverb;                                                                         // true;
 		int numberOfSilencedFrames = 0;
-		float maxDistanceSourcesToListener = 10.0;
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;

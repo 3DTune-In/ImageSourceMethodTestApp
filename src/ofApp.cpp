@@ -421,41 +421,17 @@ void ofApp::keyPressed(int key){
 		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
 	case OF_KEY_HOME: // OF_KEY_PAGE_UP:
-	{
 		if (maxDistanceImageSourcesToListenerControl < MAX_DIST_SILENCED_FRAMES) {
-			maxDistanceSourcesToListener += 1.0;
 			maxDistanceImageSourcesToListenerControl++;
 		}
-		
-		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
+		break;
 
-		numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
-		
-		Common::CTransform listenerTransform = listener->GetListenerTransform();
-		Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
-		//imageSourceDSPList = createImageSourceDSP();
-	 }
-	break;
 	case OF_KEY_END: //OF_KEY_PAGE_DOWN:
-	{
 		if (maxDistanceImageSourcesToListenerControl > MIN_DIST_SILENCED_FRAMES) 
 		{
-			maxDistanceSourcesToListener -= 1.0;
 			maxDistanceImageSourcesToListenerControl--;
 		}
-		
-		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
-		numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
-
-		Common::CTransform listenerTransform = listener->GetListenerTransform();
-		Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
-		//imageSourceDSPList = createImageSourceDSP();
-	}
-	break;
+		break;
 	
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
@@ -995,7 +971,7 @@ void ofApp::keyPressed(int key){
 		auto w5 = std::setw(5);
 		auto w7 = std::setw(7);
 		cout << "------------------------------------------------List of Source Images -------------------------------------\n";
-		cout << "  Visibility  | Refl. |                Reflection coeficients                  |          Location  \n";
+		cout << "  Visibility  | Refl. |                Reflection coeficients                  |          Location        |  Room dist.\n";
 		cout << "              | order | ";
 		float freq = 62.5;
 		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
@@ -1005,7 +981,7 @@ void ofApp::keyPressed(int key){
 			else { cout << w2 << ((int) (freq / 1000)) << "kHz "; }
 			freq *= 2;
 		}
-		cout << " |     X        Y        Z    \n";
+		cout << " |     X        Y        Z  |\n";
 		cout << "--------------+-------+--------------------------------------------------------+---------------------------\n";
 		for (int i = 0; i < data.size(); i++)
 		{
@@ -1019,8 +995,10 @@ void ofApp::keyPressed(int key){
 			}
 			cout << " | " << w7 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";         //print source location
 			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
-			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.z << "\n";
+			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.z;// << "\n";
 
+			//Arcadio Test to check distance between first and last walls
+			cout << "   --- " << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << "\n";
 		}
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
@@ -1467,11 +1445,7 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	systemSoundStream.stop();
 	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(_maxDistanceSourcesToListener);
-	maxDistanceSourcesToListener = (float)_maxDistanceSourcesToListener;
-	Common::CTransform listenerTransform = listener->GetListenerTransform();
-	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	Common::CVector3 Location = ISMHandler->getSourceLocation();
-	ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }
 

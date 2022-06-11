@@ -1010,16 +1010,17 @@ void ofApp::keyPressed(int key){
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
-			cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;
-			cout << " |   " << data.at(i).reflectionWalls.size();
+			cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;							//print source visibility 
+			cout << " |   " << data.at(i).reflectionWalls.size();                                               //print number of reflection needed for this source
 			cout << "   | ";
 			for (int j = 0; j < NUM_BAND_ABSORTION; j++)
 			{ 
-				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";
+				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";    //print abortion coefficientes for a source
 			}
-			cout << " | " << w7 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";
+			cout << " | " << w7 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";         //print source location
 			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
 			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.z << "\n";
+
 		}
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";

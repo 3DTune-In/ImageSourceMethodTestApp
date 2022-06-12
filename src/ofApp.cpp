@@ -798,13 +798,51 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.stop();
 
 		ISM::RoomGeometry InitialRoom;
-		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
+
+		string pathData = ofToDataPath("", true);
+	
+		ofFileDialogResult openFileResult = ofSystemLoadDialog("Select a xml file");
+		//Check if the user opened a file
+		if (openFileResult.bSuccess) {
+
+			ofFile file(openFileResult.getPath());
+			ofLogVerbose("The file exists - now checking the type via file extension");
+			string fileExtension = ofToUpper(file.getExtension());
+			if (fileExtension == "XML")
+			{
+				string pathData = openFileResult.getPath();
+				//	string fileName = openFileResult.getName();
+				if (!xml.load(pathData))
+				{
+					ofLogError() << "Couldn't load file";
+					systemSoundStream.start();
+					return;
+				}
+			}
+			else
+			{
+				ofLogError() << "Extension must be XML";
+				systemSoundStream.start();
+				return;
+			}
+
+		}
+		else {
+			ofLogError() << "Couldn't load file";
+			systemSoundStream.start();
+			return;
+		}
+
+		/*
 		string pathData = ofToDataPath("", true);
 		string fileName = pathData + "\\theater_room.xml";
 		if (!xml.load(pathData + "\\theater_room.xml"))
 		{
 			ofLogError() << "Couldn't load file";
 		}
+		*/
+
+		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 		// select all corners and iterate through them
 		auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");

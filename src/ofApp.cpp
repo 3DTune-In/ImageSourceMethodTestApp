@@ -288,7 +288,7 @@ void ofApp::draw() {
 
 	//draw image sources 
 	int numberOfVisibleImages = 0;
-	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData(listenerLocation);
+	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
 	for (int i = 0; i < imageSourceDataList.size(); i++)
 	{
 		if (imageSourceDataList.at(i).visible)
@@ -966,7 +966,7 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	case 't': //Test
-		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData(listenerLocation);
+		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
 		auto w2 = std::setw(2);
 		auto w5 = std::setw(5);
 		auto w7 = std::setw(7);
@@ -1298,7 +1298,7 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 {
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData(listenerLocation);
+	std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 

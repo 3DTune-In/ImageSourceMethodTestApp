@@ -1007,10 +1007,11 @@ void ofApp::keyPressed(int key){
 		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
 		auto w2 = std::setw(2);
 		auto w5 = std::setw(5);
+		auto w6 = std::setw(6);
 		auto w7 = std::setw(7);
-		cout << "------------------------------------------------List of Source Images -------------------------------------\n";
-		cout << "  Visibility  | Refl. |                Reflection coeficients                  |          Location        |  Room dist.\n";
-		cout << "              | order | ";
+		cout << "------------------------------------------------List of Source Images ---------------------------------------------\n";
+		cout << "  Visibility | Refl. |                Reflection coeficients                 |        Location       | Dist. (Room)\n";
+		cout << "             | order | ";
 		float freq = 62.5;
 		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
 		{
@@ -1019,24 +1020,24 @@ void ofApp::keyPressed(int key){
 			else { cout << w2 << ((int) (freq / 1000)) << "kHz "; }
 			freq *= 2;
 		}
-		cout << " |     X        Y        Z  |\n";
-		cout << "--------------+-------+--------------------------------------------------------+---------------------------\n";
+		cout << "|    X       Y       Z  |  \n";
+		cout << "-------------+-------+-------------------------------------------------------+-----------------------+--------\n";
 		for (int i = 0; i < data.size(); i++)
 		{
 			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
 			cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;							//print source visibility 
-			cout << " |   " << data.at(i).reflectionWalls.size();                                               //print number of reflection needed for this source
+			cout << "|   " << data.at(i).reflectionWalls.size();												//print number of reflection needed for this source
 			cout << "   | ";
 			for (int j = 0; j < NUM_BAND_ABSORTION; j++)
 			{ 
-				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";    //print abortion coefficientes for a source
+				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";	//print abortion coefficientes for a source
 			}
-			cout << " | " << w7 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";         //print source location
-			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
-			cout << w7 << std::fixed << std::setprecision(2) << data.at(i).location.z;// << "\n";
+			cout << "| " << w6 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";			//print source location
+			cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
+			cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.z << "|";
 
-			//Arcadio Test to check distance between first and last walls
-			cout << "   --- " << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << "\n";
+			cout << w6 << (data.at(i).location - listenerLocation).GetDistance();								//print distance to listener and distance between first and last reflection walls
+			cout << " (" << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << ")" << "\n";
 		}
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";

@@ -109,7 +109,7 @@ void ofApp::setup() {
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
 	Common::CVector3 initialLocation(2, 0, -1);
-	ISMHandler->setSourceLocation(initialLocation,listenerLocation);					// Source to be rendered
+	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(initialLocation);
@@ -464,7 +464,7 @@ void ofApp::keyPressed(int key){
 		//SOURCE
 		// Set the original anechoic source to corner
 		Common::CVector3 newLocation(4, 0, 0);
-		ISMHandler->setSourceLocation(newLocation,listenerLocation);
+		ISMHandler->setSourceLocation(newLocation);
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(newLocation);
 		anechoicSourceDSP->SetSourceTransform(sourcePosition);
@@ -520,7 +520,7 @@ void ofApp::keyPressed(int key){
 			listener->SetListenerTransform(listenerTransform);
 		}
 		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation);  //FIXME: when the listener is moved images should be updated
+		ISMHandler->setSourceLocation(Location);  //FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'w': //Moves the listener right (X)
@@ -538,7 +538,7 @@ void ofApp::keyPressed(int key){
 			listener->SetListenerTransform(listenerTransform);
 		}
 		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'a': //Moves the listener up (Y)
@@ -556,7 +556,7 @@ void ofApp::keyPressed(int key){
 			listener->SetListenerTransform(listenerTransform);
 		}
 		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'd': //Moves the listener down (-Y)
@@ -574,7 +574,7 @@ void ofApp::keyPressed(int key){
 			listener->SetListenerTransform(listenerTransform);
 		}
 		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'e': //Moves the listener up (Z)
@@ -592,7 +592,7 @@ void ofApp::keyPressed(int key){
 			listener->SetListenerTransform(listenerTransform);
 		}
 		Common::CVector3 Location = ISMHandler->getSourceLocation();	
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 
@@ -611,7 +611,7 @@ void ofApp::keyPressed(int key){
 			listener->SetListenerTransform(listenerTransform);
 		}
 		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location, listenerLocation); // FIXME: when the listener is moved images should be updated
+		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
 	case 'A': //Rotate Left
@@ -1396,7 +1396,7 @@ void ofApp::moveSource(Common::CVector3 movement)
 	Common::CVector3 newLocation = ISMHandler->getSourceLocation() + movement;
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	ISMHandler->setSourceLocation(newLocation,listenerLocation);
+	ISMHandler->setSourceLocation(newLocation);
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(newLocation);
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);	

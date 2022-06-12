@@ -1490,11 +1490,11 @@ void ofApp::refreshActiveWalls()
 	{
 		if (guiActiveWalls.at(i))
 		{
-			ISMHandler->enableWall(i, listenerLocation);
+			ISMHandler->enableWall(i);
 		}
 		else
 		{
-			ISMHandler->disableWall(i, listenerLocation);
+			ISMHandler->disableWall(i);
 		}
 	}
 	mainRoom = ISMHandler->getRoom();

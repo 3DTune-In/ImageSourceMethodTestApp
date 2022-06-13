@@ -846,6 +846,12 @@ void ofApp::keyPressed(int key){
 
 		// select all corners and iterate through them
 		auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
+		if (cornersXml.empty()) {
+			ofLogError() << "The file is not a room configuration";
+			systemSoundStream.start();
+			return;
+		}
+
 		for (auto & currentCorner : cornersXml) {
 			// for each corner in the room insert its coordinates
 			auto cornersInFile = currentCorner.getChildren("CORNER");

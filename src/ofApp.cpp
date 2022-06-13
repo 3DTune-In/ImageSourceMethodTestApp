@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
-#define SAMPLERATE 44100
-#define BUFFERSIZE 512
+//#define SAMPLERATE 44100
+//#define BUFFERSIZE 512
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
@@ -15,12 +15,11 @@
 void ofApp::setup() {
 
 	// Core setup
-	Common::TAudioStateStruct audioState;	    // Audio State struct declaration
-	audioState.bufferSize = BUFFERSIZE;			// Setting buffer size 
-	audioState.sampleRate = SAMPLERATE;			// Setting frame rate 
-	myCore.SetAudioState(audioState);		    // Applying configuration to core
-	myCore.SetHRTFResamplingStep(15);		    // Setting 15-degree resampling step for HRTF
-
+	Common::TAudioStateStruct audioState;	                            // Audio State struct declaration
+	audioState.bufferSize = myCore.GetAudioState().bufferSize;			// Setting buffer size 
+	audioState.sampleRate = myCore.GetAudioState().sampleRate;   		// Setting frame rate 
+	myCore.SetAudioState(audioState);									// Applying configuration to core
+	myCore.SetHRTFResamplingStep(15);								    // Setting 15-degree resampling step for HRTF
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
@@ -1652,7 +1651,8 @@ void ofApp::OfflineWavRecordEndLoop()
 
 void ofApp::StartWavRecord(string filename, int bitspersample)
 {
-	wavWriter.Setup(2, SAMPLERATE, bitspersample);
+	int sampleRate = myCore.GetAudioState().sampleRate;
+	wavWriter.Setup(2, sampleRate, bitspersample);
 	if (!wavWriter.CreateWavFile(filename)) {
 		cout << "ERROR: Unable to record WAV file" << endl << endl;
 	}
@@ -1684,11 +1684,12 @@ int ofApp::OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds)
 {
 	// Convert milliseconds into number of samples (OF_KEY_F9)
 	unsigned long long durationInSamples;
-	durationInSamples = (SAMPLERATE * durationInMilliseconds) / 1000;	// might be rounded
+	int sampleRate = myCore.GetAudioState().sampleRate;
+	durationInSamples = (sampleRate * durationInMilliseconds) / 1000;	// might be rounded
 
 	// Convert number of samples into number of buffers
 	//int numberOfBuffers = ceil(durationInSamples / BUFFERSIZE);	// rounded up
-	int numberOfBuffers = floor(durationInSamples / BUFFERSIZE);	// rounded up
+	int numberOfBuffers = floor(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded up
 
 	offlineRecordIteration = 0;
 

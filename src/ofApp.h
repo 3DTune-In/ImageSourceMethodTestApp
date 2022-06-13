@@ -67,7 +67,6 @@ private:
 	    int offlineRecordBuffers = 0;
 		bool systemSoundStream_Started;
 		mutex audioMutex;
-		//bool readyToStop = false;
 		/////////////////////////
 
 		ofTrueTypeFont titleFont;
@@ -82,7 +81,7 @@ private:
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
-		//std::vector<string> wallNames = { "Front", "Left", "Right", "Back", "Floor", "Ceiling" };
+
 		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
 		
 		
@@ -113,8 +112,7 @@ private:
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
-		//ofSoundBuffer lastBuffer; //ofSoundBuffer
-
+		
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP

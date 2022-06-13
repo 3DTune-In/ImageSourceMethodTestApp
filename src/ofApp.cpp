@@ -793,15 +793,15 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F7://Initial Room
+	case OF_KEY_F7://Load a New Room
 	{
 		systemSoundStream.stop();
 
-		ISM::RoomGeometry InitialRoom;
+		ISM::RoomGeometry newRoom;
 
 		string pathData = ofToDataPath("", true);
 	
-		ofFileDialogResult openFileResult = ofSystemLoadDialog("Select a xml file");
+		ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
 		//Check if the user opened a file
 		if (openFileResult.bSuccess) {
 
@@ -863,7 +863,7 @@ void ofApp::keyPressed(int key){
 				tempP3d.x = p3Dfloat[0];
 				tempP3d.y = p3Dfloat[1];
 				tempP3d.z = p3Dfloat[2];
-				InitialRoom.corners.push_back(tempP3d);
+				newRoom.corners.push_back(tempP3d);
 			}
 		}
 
@@ -881,7 +881,7 @@ void ofApp::keyPressed(int key){
 			for (auto aux : wallsInFile) {
 				std::string strVectInt = aux.getAttribute("corner").getValue();
 				std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
-				InitialRoom.walls.push_back(tempCornersWall);
+				newRoom.walls.push_back(tempCornersWall);
 
 				std::string strVectFloat = aux.getAttribute("absor").getValue();
 				std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
@@ -889,7 +889,7 @@ void ofApp::keyPressed(int key){
 			}
 		}
 		////////////////////////////////////////////////
-		ISMHandler->setupArbitraryRoom(InitialRoom);
+		ISMHandler->setupArbitraryRoom(newRoom);
 		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		guiActiveWalls.resize(numWalls);

@@ -62,6 +62,7 @@ private:
 	    // Record to WAV
 	    WavWriter wavWriter;
 	    bool recordingOffline=false;
+		bool boolRecordingIR = false;
 	    float recordingPercent;
 	    int offlineRecordIteration = 0;
 	    int offlineRecordBuffers = 0;
@@ -79,6 +80,7 @@ private:
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
+		ofParameter<bool> recordOfflineIRControl;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
@@ -153,8 +155,9 @@ private:
 		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
-		void toolgeAnechoic(bool &active);
-		void toolgeReverb(bool &active);
+		void toggleAnechoic(bool &active);
+		void toggleReverb(bool &active);
+		void recordIrOffline(bool &active);
 
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);

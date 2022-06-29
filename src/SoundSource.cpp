@@ -39,6 +39,8 @@ bool SoundSource::LoadWav(const char* stringIn)
 			samplesVector.push_back((float)sample[i] / (float)INT16_MAX);				 // Converting samples to float to push them in samples vector
 
 		initialized = true;
+		samplesVectorSize = samplesVector.size();
+		samplesVectorCopy.reserve(samplesVectorSize);
 		return true;
 	}
 	else
@@ -55,7 +57,7 @@ void SoundSource::FillBuffer(CMonoBuffer<float> &output)
 	position = endFrame + 1;							 // Set starting point as next sample of the end of last frame
 	if (position >= samplesVector.size())				 // If the end of the audio is met, the position variable must return to the beginning
 		position = 0;
-
+	
 	endFrame = position + output.size() - 1;			 // Set ending point as starting point plus frame size
 	for (int i = 0; i < output.size(); i++) {
 		if ((position + i) < samplesVector.size())
@@ -69,4 +71,28 @@ void SoundSource::setInitialPosition() {
 	position = 0;
 	endFrame = 0;
 	endChunk = 0;
+}
+
+void SoundSource::setUninitialized()
+{
+	initialized = false;
+}
+void SoundSource::setInitialized()
+{
+	initialized = true;
+}
+
+
+void SoundSource::startRecordOfflineOfImpulseResponse() {
+	
+	samplesVectorCopy = samplesVector;			// Save initial wav file
+	samplesVector.resize(441000);               // 10 SECONDS
+
+	std::fill(samplesVector.begin(), samplesVector.end(), 0.0);   
+	samplesVector.at(1) = 0.99;
+}
+
+void SoundSource::endRecordOfflineOfImpulseResponse() {
+	samplesVector.resize(samplesVectorSize);
+	samplesVector = samplesVectorCopy;           //Restore initial wav file
 }

@@ -28,6 +28,14 @@ public :
 
 	void setInitialPosition();
 
+	void setUninitialized();
+
+	void setInitialized();
+
+	void startRecordOfflineOfImpulseResponse();
+
+	void endRecordOfflineOfImpulseResponse();
+
 private:
 	
 	std::vector<float> samplesVector;
@@ -35,6 +43,9 @@ private:
 	unsigned int endFrame;
 	unsigned int endChunk;
 	bool initialized;
+
+	std::vector<float> samplesVectorCopy;
+	unsigned int samplesVectorSize;
 };
 
 #endif

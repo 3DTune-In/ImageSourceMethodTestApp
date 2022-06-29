@@ -93,9 +93,7 @@ void ofApp::setup() {
 	ISMHandler->setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 20; shoeboxWidth = 20; shoeboxHeight = 10;
 	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		
 	
-
 	//Absortion as escalar
 	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 	//Absortion as vector
@@ -109,7 +107,7 @@ void ofApp::setup() {
 	//Common::CVector3 initialLocation(13, 0, -4);
 	Common::CVector3 initialLocation(2, 0, -1);
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
-	anechoicSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
+	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(initialLocation);
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
@@ -156,15 +154,18 @@ void ofApp::setup() {
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
 			
-	anechoicEnableControl.addListener(this, &ofApp::toolgeAnechoic);
+	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("ANECHOIC", true));
 
-	reverbEnableControl.addListener(this, &ofApp::toolgeReverb);
+	reverbEnableControl.addListener(this, &ofApp::toggleReverb);
 	leftPanel.add(reverbEnableControl.set("REVERB", false));
-
+		
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
 	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", 10, 6, 70));
 
+	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
+	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
+	
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
 	{
@@ -196,7 +197,7 @@ void ofApp::draw() {
 		int bufferSize = 512;
 
 		if (offlineRecordBuffers == 0) {
-			
+
 			string filename = "IR";
 			string auxFilemame;
 			if (stateAnechoicProcess) filename.append("An");
@@ -208,6 +209,8 @@ void ofApp::draw() {
 				filename += std::to_string(numberOfSilencedFrames);
 			}
 			else filename += "Nrev";
+			if (boolRecordingIR) filename += "FromMem";
+			else filename += "FromWav";
 			filename += ".WAV";
             StartWavRecord(filename, 16);                             // Open wav file
 			//StartWavRecord(filename, 24);                           // Open wav file
@@ -215,12 +218,20 @@ void ofApp::draw() {
 			offlineRecordBuffers = OfflineWavRecordStartLoop(100);    //offlineRecordIteration = 0;
 			
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
+				
 			systemSoundStream.stop();
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 			imageSourceDSPList = createImageSourceDSP();
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
 				imageSourceDSPList.at(i)->ResetSourceBuffers();
 			environment->ResetReverbBuffers();
+
+			if (boolRecordingIR)
+			{
+				//source1Wav.setUninitialized();
+				source1Wav.startRecordOfflineOfImpulseResponse();      //Save initial wav file
+				//source1Wav.setInitialized();
+			}
 			
 			source1Wav.setInitialPosition();
 		}
@@ -242,11 +253,18 @@ void ofApp::draw() {
 		if (recordingPercent >= 100.0f){
 			OfflineWavRecordEndLoop();    // Stop & recordingOffline = false;
 			EndWavRecord();               // Close wav file
-
+			
+			if (boolRecordingIR)
+			{
+				//source1Wav.setUninitialized();
+				source1Wav.endRecordOfflineOfImpulseResponse();    //Restore initial wav file
+				//source1Wav.setInitialized();
+				boolRecordingIR = false;
+			}
+			source1Wav.setInitialPosition();
 			systemSoundStream.start();
 		}
-		ofPopStyle();
-
+		ofPopStyle();		
 		return;
 	}
 
@@ -377,12 +395,13 @@ void ofApp::keyPressed(int key){
 		
 	switch (key)
 	{
-	case OF_KEY_F9: //recording
-	{
-		recordingOffline = true;
-		offlineRecordBuffers = 0;
-	}
-		break;
+	//case OF_KEY_F9: //recording
+	//{
+	//	recordingOffline = true;
+	//	boolRecordingIR = false;
+	//	offlineRecordBuffers = 0;
+	//}
+	//break;
 	
 	case OF_KEY_LEFT:
 		azimuth++;
@@ -1226,15 +1245,18 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	bOutput.left.resize(bufferSize);
 	bOutput.right.resize(bufferSize);
 
-	if (!recordingOffline)
-	  // Process audio
+	audioProcess(bOutput, bufferSize);
+
+	/*
+	if(!recordingOffline)
 	   audioProcess(bOutput, bufferSize);
 	else {
 		bOutput.left.clear();
 		bOutput.right.clear();
 		return;
 	}
-		
+	*/
+			
 	// Build float array from output buffer
 	int i = 0;
 	CStereoBuffer<float> iOutput;
@@ -1493,12 +1515,23 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	systemSoundStream.start();
 }
 
+void ofApp::recordIrOffline(bool &_active)
+{
+	recordingOffline = true;               // Similar to OF_KEY_F9
+
+	boolRecordingIR = true;
+	offlineRecordBuffers = 0;
+	recordingPercent = 0.0f;
+	offlineRecordIteration = 0;
+		
+	recordOfflineIRControl = false;
+}
 
 void ofApp::toggleWall(bool &_active)
 {
 	refreshActiveWalls();
 }
-void ofApp::toolgeAnechoic(bool &_active)
+void ofApp::toggleAnechoic(bool &_active)
 {
 	if (stateAnechoicProcess)
 	{
@@ -1512,7 +1545,7 @@ void ofApp::toolgeAnechoic(bool &_active)
 	}
 }
 
-void ofApp::toolgeReverb(bool &_active)
+void ofApp::toggleReverb(bool &_active)
 {
 	if (bDisableReverb) bDisableReverb = false;
 	else bDisableReverb = true;
@@ -1545,6 +1578,8 @@ void ofApp::refreshActiveWalls()
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }
+
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
@@ -1593,7 +1628,7 @@ std::vector<int> ofApp::parserStToVectInt(const std::string & _st)
 //////////////////////////
 void ofApp::OfflineWavRecordOneLoopIteration(int _bufferSize)
 {
-	Common::CEarPair<CMonoBuffer<float>> recordBuffer;                     //OF_KEY_F9
+	Common::CEarPair<CMonoBuffer<float>> recordBuffer;               
 	recordBuffer.left.resize(_bufferSize);
 	recordBuffer.right.resize(_bufferSize);
 	audioProcess(recordBuffer, _bufferSize);

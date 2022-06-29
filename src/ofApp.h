@@ -81,6 +81,7 @@ private:
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
 		ofParameter<bool> recordOfflineIRControl;
+		ofParameter<int> numberOfSecondsToRecordControl;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
@@ -111,6 +112,7 @@ private:
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bDisableReverb;                                                                         // true;
 		int numberOfSilencedFrames = 0;
+		int secondsToRecordIR = 10;
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
@@ -158,6 +160,7 @@ private:
 		void toggleAnechoic(bool &active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
+		void changeSecondsToRecordIR(int &secondsToRecordIR);
 
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);

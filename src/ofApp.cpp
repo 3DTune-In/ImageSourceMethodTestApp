@@ -165,7 +165,12 @@ void ofApp::setup() {
 
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
+
+	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
+	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 10, 5, 20));
 	
+	
+
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
 	{
@@ -209,14 +214,17 @@ void ofApp::draw() {
 				filename += std::to_string(numberOfSilencedFrames);
 			}
 			else filename += "Nrev";
-			if (boolRecordingIR) filename += "FromMem";
-			else filename += "FromWav";
+			filename += "Sec";
+			filename += std::to_string(secondsToRecordIR);
+
+			//if (boolRecordingIR) filename += "FromMem";
+			//else filename += "FromWav";
 			filename += ".WAV";
             StartWavRecord(filename, 16);                             // Open wav file
 			//StartWavRecord(filename, 24);                           // Open wav file
 			//offlineRecordBuffers = OfflineWavRecordStartLoop(ConfRecording.duration_s * 1000);
-			offlineRecordBuffers = OfflineWavRecordStartLoop(100);    //offlineRecordIteration = 0;
-			
+			//offlineRecordBuffers = OfflineWavRecordStartLoop(100);    //offlineRecordIteration = 0;
+			offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);    
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
 				
 			systemSoundStream.stop();
@@ -229,7 +237,7 @@ void ofApp::draw() {
 			if (boolRecordingIR)
 			{
 				//source1Wav.setUninitialized();
-				source1Wav.startRecordOfflineOfImpulseResponse();      //Save initial wav file
+				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
 				//source1Wav.setInitialized();
 			}
 			
@@ -1525,6 +1533,10 @@ void ofApp::recordIrOffline(bool &_active)
 	offlineRecordIteration = 0;
 		
 	recordOfflineIRControl = false;
+}
+void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
+{
+	secondsToRecordIR = _secondsToRecordIR;
 }
 
 void ofApp::toggleWall(bool &_active)

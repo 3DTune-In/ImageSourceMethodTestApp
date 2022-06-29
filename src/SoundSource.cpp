@@ -83,10 +83,10 @@ void SoundSource::setInitialized()
 }
 
 
-void SoundSource::startRecordOfflineOfImpulseResponse() {
+void SoundSource::startRecordOfflineOfImpulseResponse(int secondsToRecord) {
 	
 	samplesVectorCopy = samplesVector;			// Save initial wav file
-	samplesVector.resize(441000);               // 10 SECONDS
+	samplesVector.resize(44100*secondsToRecord);    
 
 	std::fill(samplesVector.begin(), samplesVector.end(), 0.0);   
 	samplesVector.at(1) = 0.99;

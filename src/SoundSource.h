@@ -32,7 +32,7 @@ public :
 
 	void setInitialized();
 
-	void startRecordOfflineOfImpulseResponse();
+	void startRecordOfflineOfImpulseResponse(int _secondsToRecord);
 
 	void endRecordOfflineOfImpulseResponse();
 

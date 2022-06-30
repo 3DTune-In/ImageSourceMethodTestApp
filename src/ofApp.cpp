@@ -161,7 +161,7 @@ void ofApp::setup() {
 	leftPanel.add(reverbEnableControl.set("REVERB", false));
 		
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
-	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", 10, 6, 70));
+	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", 10, 6, 100));
 
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
@@ -926,6 +926,13 @@ void ofApp::keyPressed(int key){
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		//////////////////////////////////
+		Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
+
+  	    Common::CVector3 listenerLocation(roomCenter);
+		Common::CTransform listenerPosition = Common::CTransform();		 
+		listenerPosition.SetPosition(listenerLocation);
+		listener->SetListenerTransform(listenerPosition);
+	
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 

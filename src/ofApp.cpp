@@ -168,6 +168,9 @@ void ofApp::setup() {
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 10, 5, 20));
+
+	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
+	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
 	
 	
 
@@ -216,23 +219,41 @@ void ofApp::draw() {
 			else filename += "Nrev";
 			filename += "Sec";
 			filename += std::to_string(secondsToRecordIR);
-
-			//if (boolRecordingIR) filename += "FromMem";
-			//else filename += "FromWav";
+						
 			filename += ".WAV";
-            StartWavRecord(filename, 16);                             // Open wav file
-			//StartWavRecord(filename, 24);                           // Open wav file
-			//offlineRecordBuffers = OfflineWavRecordStartLoop(ConfRecording.duration_s * 1000);
-			//offlineRecordBuffers = OfflineWavRecordStartLoop(100);    //offlineRecordIteration = 0;
-			offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);    
-			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
+			
+			//////
+			string pathData = ofToDataPath("", true);
+			string filename2;
+			string fileNameUsr = ofSystemTextBoxDialog("Save Response Impulse", filename2 = "");
+			//////
+			if (fileNameUsr.size()>0)
+			  StartWavRecord(fileNameUsr, 16);                          // Open wav file
+			else
+			{
+				//lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers	
+				recordingOffline = false;
+				boolRecordingIR = false;
+				return;
+				//source1Wav.setInitialPosition();
+				//systemSoundStream.start();
 				
+				/*
+				string pathData = ofToDataPath("", true);               // Open wav file
+				string filename2 = pathData +"\\"+ filename;
+				StartWavRecord(filename2, 16);                             // Open wav file
+				*/
+			}
+			offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);    
+			
+			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 			systemSoundStream.stop();
+			environment->ResetReverbBuffers();
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 			imageSourceDSPList = createImageSourceDSP();
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
 				imageSourceDSPList.at(i)->ResetSourceBuffers();
-			environment->ResetReverbBuffers();
+				
 
 			if (boolRecordingIR)
 			{
@@ -858,15 +879,7 @@ void ofApp::keyPressed(int key){
 			systemSoundStream.start();
 			return;
 		}
-
-		/*
-		string pathData = ofToDataPath("", true);
-		string fileName = pathData + "\\theater_room.xml";
-		if (!xml.load(pathData + "\\theater_room.xml"))
-		{
-			ofLogError() << "Couldn't load file";
-		}
-		*/
+		
 
 		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
@@ -1261,17 +1274,7 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	bOutput.right.resize(bufferSize);
 
 	audioProcess(bOutput, bufferSize);
-
-	/*
-	if(!recordingOffline)
-	   audioProcess(bOutput, bufferSize);
-	else {
-		bOutput.left.clear();
-		bOutput.right.clear();
-		return;
-	}
-	*/
-			
+				
 	// Build float array from output buffer
 	int i = 0;
 	CStereoBuffer<float> iOutput;
@@ -1538,12 +1541,79 @@ void ofApp::recordIrOffline(bool &_active)
 	offlineRecordBuffers = 0;
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
-		
 	recordOfflineIRControl = false;
+
+	//resetAudio();
+
 }
 void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
 {
 	secondsToRecordIR = _secondsToRecordIR;
+}
+
+void ofApp::changeAudioToPlay(bool &_active)
+{
+	changeAudioToPlayControl = false;
+
+	resetAudio();
+
+	string pathData = ofToDataPath("", true);
+
+	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an WAV file to Play");
+	//Check if the user opened a file
+	if (openFileResult.bSuccess) {
+		ofFile file(openFileResult.getPath());
+		ofLogVerbose("The file exists - now checking the type via file extension");
+		string fileExtension = ofToUpper(file.getExtension());
+		if (fileExtension == "WAV")
+		{
+			std::string pathData = openFileResult.getPath();
+			char *charFilename = new char[pathData.length() + 1];
+			strcpy(charFilename, pathData.c_str());
+			//LoadWavFile(source1Wav, charFilename);									// Loading .wav file
+			source1Wav.resetSamplesVector();
+			source1Wav.LoadWav(charFilename);
+		}
+		else
+		{
+			ofLogError() << "Extension must be WAV";
+			systemSoundStream.start();
+			return;
+		}
+	}
+	else {
+		ofLogError() << "Couldn't load file";
+		systemSoundStream.start();
+		return;
+	}
+	source1Wav.setInitialPosition();
+	systemSoundStream.start();
+}
+
+void ofApp::resetAudio()
+{
+	systemSoundStream.stop();
+	//
+	lock_guard < mutex > lock(audioMutex);
+
+	anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+	imageSourceDSPList = createImageSourceDSP();
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		imageSourceDSPList.at(i)->ResetSourceBuffers();
+	environment->ResetReverbBuffers();
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+	//////////////////////////////////
+
+	myCore.RemoveEnvironment(environment);
+	//Environment setup
+	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
+	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	BRIR::CreateFromSofa("brir.sofa", environment);								// Loading SOFAcoustics BRIR file and applying it to the e
+	
+	// setup of the image sources
+	imageSourceDSPList = createImageSourceDSP();
 }
 
 void ofApp::toggleWall(bool &_active)

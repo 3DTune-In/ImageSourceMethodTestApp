@@ -96,3 +96,7 @@ void SoundSource::endRecordOfflineOfImpulseResponse() {
 	samplesVector.resize(samplesVectorSize);
 	samplesVector = samplesVectorCopy;           //Restore initial wav file
 }
+
+void SoundSource::resetSamplesVector() {
+	samplesVector.clear();
+}

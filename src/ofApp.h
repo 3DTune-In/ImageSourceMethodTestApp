@@ -31,6 +31,8 @@
 #include "ISM/ISM.h"
 #include "ofxGui\src\ofxGui.h"
 #include "WavWriter.h"
+#include <cstring>
+#include <iostream>
 
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
@@ -82,6 +84,7 @@ private:
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
+		ofParameter<bool> changeAudioToPlayControl;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
@@ -161,6 +164,7 @@ private:
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
+		void changeAudioToPlay(bool &active);
 
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);
@@ -178,5 +182,7 @@ private:
 		//
 		void StopSystemSoundStream();
 		void StartSystemSoundStream();
+
+		void resetAudio();
 
 };

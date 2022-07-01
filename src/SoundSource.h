@@ -36,6 +36,8 @@ public :
 
 	void endRecordOfflineOfImpulseResponse();
 
+	void resetSamplesVector();
+
 private:
 	
 	std::vector<float> samplesVector;

@@ -205,44 +205,18 @@ void ofApp::draw() {
 		int bufferSize = 512;
 
 		if (offlineRecordBuffers == 0) {
-
-			string filename = "IR";
-			string auxFilemame;
-			if (stateAnechoicProcess) filename.append("An");
-			else filename.append("Nan");
-			filename += "Rord";
-			filename += std::to_string(reflectionOrderControl);
-			if (!bDisableReverb) {
-				filename += "Revb";
-				filename += std::to_string(numberOfSilencedFrames);
-			}
-			else filename += "Nrev";
-			filename += "Sec";
-			filename += std::to_string(secondsToRecordIR);
-						
-			filename += ".WAV";
 			
-			//////
 			string pathData = ofToDataPath("", true);
 			string filename2;
 			string fileNameUsr = ofSystemTextBoxDialog("Save Response Impulse", filename2 = "");
-			//////
+		
 			if (fileNameUsr.size()>0)
-			  StartWavRecord(fileNameUsr, 16);                          // Open wav file
+   			    StartWavRecord(fileNameUsr, 16);                        // Open wav file
 			else
 			{
-				//lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers	
-				recordingOffline = false;
+				recordingOffline = false;                               // Cancel recording process
 				boolRecordingIR = false;
 				return;
-				//source1Wav.setInitialPosition();
-				//systemSoundStream.start();
-				
-				/*
-				string pathData = ofToDataPath("", true);               // Open wav file
-				string filename2 = pathData +"\\"+ filename;
-				StartWavRecord(filename2, 16);                             // Open wav file
-				*/
 			}
 			offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);    
 			
@@ -252,14 +226,11 @@ void ofApp::draw() {
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 			imageSourceDSPList = createImageSourceDSP();
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
-				imageSourceDSPList.at(i)->ResetSourceBuffers();
-				
+				imageSourceDSPList.at(i)->ResetSourceBuffers();	
 
 			if (boolRecordingIR)
 			{
-				//source1Wav.setUninitialized();
 				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
-				//source1Wav.setInitialized();
 			}
 			
 			source1Wav.setInitialPosition();
@@ -285,9 +256,7 @@ void ofApp::draw() {
 			
 			if (boolRecordingIR)
 			{
-				//source1Wav.setUninitialized();
 				source1Wav.endRecordOfflineOfImpulseResponse();    //Restore initial wav file
-				//source1Wav.setInitialized();
 				boolRecordingIR = false;
 			}
 			source1Wav.setInitialPosition();
@@ -424,14 +393,6 @@ void ofApp::keyPressed(int key){
 		
 	switch (key)
 	{
-	//case OF_KEY_F9: //recording
-	//{
-	//	recordingOffline = true;
-	//	boolRecordingIR = false;
-	//	offlineRecordBuffers = 0;
-	//}
-	//break;
-	
 	case OF_KEY_LEFT:
 		azimuth++;
 		break;
@@ -1536,7 +1497,6 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 void ofApp::recordIrOffline(bool &_active)
 {
 	recordingOffline = true;               // Similar to OF_KEY_F9
-
 	boolRecordingIR = true;
 	offlineRecordBuffers = 0;
 	recordingPercent = 0.0f;

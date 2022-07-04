@@ -172,7 +172,9 @@ void ofApp::setup() {
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
 	
-	
+	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
+	leftPanel.add(helpDisplayControl.set("HELP", false));
+
 
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
@@ -377,7 +379,54 @@ void ofApp::draw() {
 		sprintf(numberOfImagesStr, "Reverb Disabled");
 		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
 	}
+	if (!boolToogleDisplayHelp)
 
+	{
+		ofPushStyle();
+		ofSetColor(50, 150);
+		ofRect(20, ofGetHeight() - 330, 390, 325);
+		ofPopStyle();
+		char numberOfImagesStr[255];
+		sprintf(numberOfImagesStr, "KEY_LEFT: azimuth++   KEY_RIGHT: azimuth--");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -320);
+		sprintf(numberOfImagesStr, "KEY_UP: elevation++   KEY_DOWN: elevation--");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 300);
+		sprintf(numberOfImagesStr, "MoveSOURCE:      'k'_Left(-X)   'i'_Right(+X)");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 280);
+		sprintf(numberOfImagesStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 260);
+		sprintf(numberOfImagesStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 240);
+
+		sprintf(numberOfImagesStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 220);
+		sprintf(numberOfImagesStr, "                 'a'_Up  (+Y)   'd'_Down (-Y)");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 200);
+		sprintf(numberOfImagesStr, "                 'e'_Up  (+Z)   'x'_Down (-Z)");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 180);
+		
+		sprintf(numberOfImagesStr, "RotateLISTENER:  'A'_Left       'D'_right");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 160);
+
+		sprintf(numberOfImagesStr, "ChangeABSORTION: 'F1' ZeroAbs   'F2' TotalAbs");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 140);
+		sprintf(numberOfImagesStr, "                 'F3' StopBand  'F4' BandPass");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 120);
+		sprintf(numberOfImagesStr, "                 'F5' NarrowSP  'F6' NarrowBP");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 100);
+
+		sprintf(numberOfImagesStr, "ChangeGEOMETRY:  'F7'");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 80);
+
+		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 60);
+		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 40);
+		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 20);
+
+
+	}
 
 	leftPanel.draw();
 }
@@ -769,7 +818,23 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F5://ABSORTION -- BP-Narrow-1000
+	case OF_KEY_F5://ABSORTION STOPB
+	{
+		systemSoundStream.stop();
+		ISMHandler->setAbsortion({ 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 });
+
+		int numWalls = ISMHandler->getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
+		}
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler->getRoom();
+		systemSoundStream.start();
+		break;
+	}
+	case OF_KEY_F6://ABSORTION -- BP-Narrow-1000
 	{
 		systemSoundStream.stop();
 		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
@@ -785,22 +850,7 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F6://ABSORTION STOPB
-	{
-		systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0});
-
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
-		break;
-	}
+	
 	case OF_KEY_F7://Load a New Room
 	{
 		systemSoundStream.stop();
@@ -1509,6 +1559,11 @@ void ofApp::recordIrOffline(bool &_active)
 void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
 {
 	secondsToRecordIR = _secondsToRecordIR;
+}
+
+void ofApp::toogleHelpDisplay(bool &_active)
+{
+	boolToogleDisplayHelp = !boolToogleDisplayHelp;
 }
 
 void ofApp::changeAudioToPlay(bool &_active)

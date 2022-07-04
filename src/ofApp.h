@@ -86,6 +86,8 @@ private:
 		ofParameter<int> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
 
+		ofParameter<bool> helpDisplayControl;
+
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
 		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
@@ -97,6 +99,7 @@ private:
 		float shoeboxLength;
 		float shoeboxWidth;
 		float shoeboxHeight;
+
 
 		//ISM::ISM ISMHandler;
 		shared_ptr<ISM::CISM> ISMHandler;
@@ -128,6 +131,7 @@ private:
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
 		float scale = DEFAULT_SCALE;			//visualization scale
+		bool boolToogleDisplayHelp;
 
 		
 									
@@ -165,6 +169,7 @@ private:
 		void recordIrOffline(bool &active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
+		void toogleHelpDisplay(bool &_active);
 
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);

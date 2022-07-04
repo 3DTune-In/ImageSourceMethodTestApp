@@ -118,7 +118,7 @@ private:
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bDisableReverb;                                                                         // true;
 		int numberOfSilencedFrames = 0;
-		int secondsToRecordIR = 10;
+		int secondsToRecordIR = 1;
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;

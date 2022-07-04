@@ -5,7 +5,7 @@
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
-#define MAX_REFLECTION_ORDER 4
+#define MAX_REFLECTION_ORDER 7
 #define NUMBER_OF_WALLS 6
 #define MAX_DIST_SILENCED_FRAMES 70
 #define MIN_DIST_SILENCED_FRAMES 6
@@ -152,7 +152,7 @@ void ofApp::setup() {
 	leftPanel.add(zoom.setup("Zoom", 0, -20, 20, 50, 15));
 
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
-	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 4));
+	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 7));
 			
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("ANECHOIC", true));
@@ -167,7 +167,7 @@ void ofApp::setup() {
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 10, 5, 20));
+	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 2, 1, 8));
 
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
@@ -1558,7 +1558,8 @@ void ofApp::recordIrOffline(bool &_active)
 }
 void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
 {
-	secondsToRecordIR = _secondsToRecordIR;
+	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=8)
+	   secondsToRecordIR = _secondsToRecordIR;
 }
 
 void ofApp::toogleHelpDisplay(bool &_active)

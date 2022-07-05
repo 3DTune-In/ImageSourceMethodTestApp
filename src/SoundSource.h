@@ -36,6 +36,9 @@ public :
 
 	void endRecordOfflineOfImpulseResponse();
 
+	void startStopState();
+	void endStopState();
+
 	void resetSamplesVector();
 
 private:

@@ -85,6 +85,8 @@ private:
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
+		ofParameter<bool> playToStopControl;
+		ofParameter<bool> stopToPlayControl;
 
 		ofParameter<bool> helpDisplayControl;
 
@@ -132,7 +134,8 @@ private:
 
 		float scale = DEFAULT_SCALE;			//visualization scale
 		bool boolToogleDisplayHelp;
-
+		bool playState;
+		bool stopState;
 		
 									
 		/// Methods to handle Audio
@@ -169,6 +172,9 @@ private:
 		void recordIrOffline(bool &active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
+		void playToStop(bool &active);
+		void stopToPlay(bool &active);
+		
 		void toogleHelpDisplay(bool &_active);
 
 		/// Methods to manage XML

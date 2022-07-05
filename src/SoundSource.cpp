@@ -100,3 +100,14 @@ void SoundSource::endRecordOfflineOfImpulseResponse() {
 void SoundSource::resetSamplesVector() {
 	samplesVector.clear();
 }
+
+void SoundSource::startStopState() {
+	samplesVectorCopy = samplesVector;			// Save initial wav file
+	samplesVector.resize(44100);
+	std::fill(samplesVector.begin(), samplesVector.end(), 0.0);
+}
+
+void SoundSource::endStopState() {
+	samplesVector.resize(samplesVectorSize);
+	samplesVector = samplesVectorCopy;           //Restore initial wav file
+}

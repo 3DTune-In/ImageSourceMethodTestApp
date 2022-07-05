@@ -171,18 +171,23 @@ void ofApp::setup() {
 
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
+
+	playToStopControl.addListener(this, &ofApp::playToStop);
+	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
+
+	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
+	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
 	
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
 	leftPanel.add(helpDisplayControl.set("HELP", false));
-
-
+	
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
 	{
 		ofParameter<bool> tempWall;
 		guiActiveWalls.push_back(tempWall);
-		guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
-		leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
+		//guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
+		//leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
 	}
 
 	// Offline WAV record
@@ -190,6 +195,9 @@ void ofApp::setup() {
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	offlineRecordBuffers = 0;
+
+	playState = true;
+	stopState = false;
 }
 
 
@@ -1630,6 +1638,51 @@ void ofApp::resetAudio()
 	
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
+}
+
+void ofApp::playToStop(bool &_active)
+{
+	if (playToStopControl && playState)
+	{
+		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
+		systemSoundStream.stop();
+		environment->ResetReverbBuffers();
+		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+		imageSourceDSPList = createImageSourceDSP();
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->ResetSourceBuffers();
+		source1Wav.startStopState();      //Save initial wav file
+		source1Wav.setInitialPosition();
+		systemSoundStream.start();
+		stopState = true;
+		playState = false;
+		playToStopControl.set("STOP_AUDIO", true);
+		stopToPlayControl.set("PLAY_AUDIO", false);
+	}
+	else if (stopState && !playState) {
+		playToStopControl.set("STOP_AUDIO", true);
+		stopToPlayControl.set("PLAY_AUDIO", false);
+	}
+		
+	
+}
+void ofApp::stopToPlay(bool &_active)
+{
+	if(stopToPlayControl && stopState) {
+		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
+		systemSoundStream.stop();
+		source1Wav.endStopState();
+		source1Wav.setInitialPosition();
+		systemSoundStream.start();
+		stopState = false;
+		playState = true;
+		stopToPlayControl.set("PLAY_AUDIO", true);
+		playToStopControl.set("STOP_AUDIO", false);
+	}
+	else if (!stopState && playState) {
+		playToStopControl.set("STOP_AUDIO", false);
+		stopToPlayControl.set("PLAY_AUDIO", true);
+	}
 }
 
 void ofApp::toggleWall(bool &_active)

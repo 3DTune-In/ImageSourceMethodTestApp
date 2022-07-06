@@ -85,6 +85,7 @@ private:
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
+		ofParameter<bool> changeRoomGeometryControl;
 		ofParameter<bool> playToStopControl;
 		ofParameter<bool> stopToPlayControl;
 
@@ -172,6 +173,7 @@ private:
 		void recordIrOffline(bool &active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
+		void changeRoomGeometry(bool &active);
 		void playToStop(bool &active);
 		void stopToPlay(bool &active);
 		

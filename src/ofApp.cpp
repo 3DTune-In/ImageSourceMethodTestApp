@@ -5,7 +5,7 @@
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
-#define MAX_REFLECTION_ORDER 7
+#define MAX_REFLECTION_ORDER 10
 #define NUMBER_OF_WALLS 6
 #define MAX_DIST_SILENCED_FRAMES 70
 #define MIN_DIST_SILENCED_FRAMES 6
@@ -152,7 +152,7 @@ void ofApp::setup() {
 	leftPanel.add(zoom.setup("Zoom", 0, -20, 20, 50, 15));
 
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
-	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, 7));
+	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, MAX_REFLECTION_ORDER));
 			
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("ANECHOIC", true));
@@ -168,15 +168,18 @@ void ofApp::setup() {
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 2, 1, 8));
-
-	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
-	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
+		
+	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
+	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
 
-	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
+	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
+	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
+
+	changeRoomGeometryControl.addListener(this, &ofApp::changeRoomGeometry);
+	leftPanel.add(changeRoomGeometryControl.set("CHANGE_ROOM_GEOMETRY", false));
 	
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
 	leftPanel.add(helpDisplayControl.set("HELP", false));
@@ -423,17 +426,12 @@ void ofApp::draw() {
 		sprintf(numberOfImagesStr, "                 'F5' NarrowSP  'F6' NarrowBP");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 100);
 
-		sprintf(numberOfImagesStr, "ChangeGEOMETRY:  'F7'");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 80);
-
 		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 60);
 		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 40);
 		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 20);
-
-
 	}
 
 	leftPanel.draw();
@@ -858,119 +856,7 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-	
-	case OF_KEY_F7://Load a New Room
-	{
-		systemSoundStream.stop();
-
-		ISM::RoomGeometry newRoom;
-
-		string pathData = ofToDataPath("", true);
-	
-		ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
-		//Check if the user opened a file
-		if (openFileResult.bSuccess) {
-
-			ofFile file(openFileResult.getPath());
-			ofLogVerbose("The file exists - now checking the type via file extension");
-			string fileExtension = ofToUpper(file.getExtension());
-			if (fileExtension == "XML")
-			{
-				string pathData = openFileResult.getPath();
-				//	string fileName = openFileResult.getName();
-				if (!xml.load(pathData))
-				{
-					ofLogError() << "Couldn't load file";
-					systemSoundStream.start();
-					return;
-				}
-			}
-			else
-			{
-				ofLogError() << "Extension must be XML";
-				systemSoundStream.start();
-				return;
-			}
-
-		}
-		else {
-			ofLogError() << "Couldn't load file";
-			systemSoundStream.start();
-			return;
-		}
 		
-
-		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-
-		// select all corners and iterate through them
-		auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
-		if (cornersXml.empty()) {
-			ofLogError() << "The file is not a room configuration";
-			systemSoundStream.start();
-			return;
-		}
-
-		for (auto & currentCorner : cornersXml) {
-			// for each corner in the room insert its coordinates
-			auto cornersInFile = currentCorner.getChildren("CORNER");
-
-			for (auto aux : cornersInFile) {
-				std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
-				std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
-				Common::CVector3 tempP3d;
-				tempP3d.x = p3Dfloat[0];
-				tempP3d.y = p3Dfloat[1];
-				tempP3d.z = p3Dfloat[2];
-				newRoom.corners.push_back(tempP3d);
-			}
-		}
-
-		/***********************/
-		absortionsWalls.clear();
-		/***********************/
-
-		// select all walls and iterate through them
-		auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
-
-
-		for (auto & currentWall : wallsXml) {
-			// for each wall in the room insert corners its and absortions
-			auto wallsInFile = currentWall.getChildren("WALL");
-			for (auto aux : wallsInFile) {
-				std::string strVectInt = aux.getAttribute("corner").getValue();
-				std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
-				newRoom.walls.push_back(tempCornersWall);
-
-				std::string strVectFloat = aux.getAttribute("absor").getValue();
-				std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
-				absortionsWalls.push_back(tempAbsorsWall);
-			}
-		}
-		////////////////////////////////////////////////
-		ISMHandler->setupArbitraryRoom(newRoom);
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		guiActiveWalls.resize(numWalls);
-				
-		//Absortion as escalar
-		ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
-		//Absortion as vector
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		//////////////////////////////////
-		Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-
-  	    Common::CVector3 listenerLocation(roomCenter);
-		Common::CTransform listenerPosition = Common::CTransform();		 
-		listenerPosition.SetPosition(listenerLocation);
-		listener->SetListenerTransform(listenerPosition);
-	
-		imageSourceDSPList = createImageSourceDSP();
-		mainRoom = ISMHandler->getRoom();
-
-		systemSoundStream.start();
-		break;
-	}
 	case 'y': //increase room's length
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;
@@ -1560,7 +1446,6 @@ void ofApp::recordIrOffline(bool &_active)
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	recordOfflineIRControl = false;
-
 	//resetAudio();
 
 }
@@ -1617,7 +1502,6 @@ void ofApp::changeAudioToPlay(bool &_active)
 void ofApp::resetAudio()
 {
 	systemSoundStream.stop();
-	//
 	lock_guard < mutex > lock(audioMutex);
 
 	anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
@@ -1683,6 +1567,122 @@ void ofApp::stopToPlay(bool &_active)
 		playToStopControl.set("STOP_AUDIO", false);
 		stopToPlayControl.set("PLAY_AUDIO", true);
 	}
+}
+
+void ofApp::changeRoomGeometry(bool &_active)
+{
+	if (!changeRoomGeometryControl)    //old F7
+		return;                   
+	else 
+		changeRoomGeometryControl = false;
+#if 1 
+	systemSoundStream.stop();
+
+	ISM::RoomGeometry newRoom;
+
+	string pathData = ofToDataPath("", true);
+
+	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
+	//Check if the user opened a file
+	if (openFileResult.bSuccess) {
+
+	    ofFile file(openFileResult.getPath());
+		ofLogVerbose("The file exists - now checking the type via file extension");
+		string fileExtension = ofToUpper(file.getExtension());
+		if (fileExtension == "XML")
+		{
+			string pathData = openFileResult.getPath();
+			//	string fileName = openFileResult.getName();
+			if (!xml.load(pathData))
+			{
+				ofLogError() << "Couldn't load file";
+				systemSoundStream.start();
+				return;
+			}
+		}
+		else
+		{
+			ofLogError() << "Extension must be XML";
+			systemSoundStream.start();
+			return;
+		}
+
+	}
+	else {
+		ofLogError() << "Couldn't load file";
+		systemSoundStream.start();
+		return;
+	}
+
+
+		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
+
+		// select all corners and iterate through them
+	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
+	if (cornersXml.empty()) {
+		ofLogError() << "The file is not a room configuration";
+		systemSoundStream.start();
+		return;
+	}
+
+	for (auto & currentCorner : cornersXml) {
+		// for each corner in the room insert its coordinates
+		auto cornersInFile = currentCorner.getChildren("CORNER");
+
+		for (auto aux : cornersInFile) {
+			std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
+			std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
+			Common::CVector3 tempP3d;
+			tempP3d.x = p3Dfloat[0];
+			tempP3d.y = p3Dfloat[1];
+			tempP3d.z = p3Dfloat[2];
+			newRoom.corners.push_back(tempP3d);
+		}
+	}
+
+	/***********************/
+	absortionsWalls.clear();
+	/***********************/
+
+	// select all walls and iterate through them
+	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+	
+	for (auto & currentWall : wallsXml) {
+		// for each wall in the room insert corners its and absortions
+		auto wallsInFile = currentWall.getChildren("WALL");
+		for (auto aux : wallsInFile) {
+			std::string strVectInt = aux.getAttribute("corner").getValue();
+			std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
+			newRoom.walls.push_back(tempCornersWall);
+			std::string strVectFloat = aux.getAttribute("absor").getValue();
+			std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
+			absortionsWalls.push_back(tempAbsorsWall);
+		}
+	}
+	////////////////////////////////////////////////
+	ISMHandler->setupArbitraryRoom(newRoom);
+
+	int numWalls = ISMHandler->getRoom().getWalls().size();
+	guiActiveWalls.resize(numWalls);
+
+	//Absortion as escalar
+	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
+	//Absortion as vector
+	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+	//////////////////////////////////
+	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
+
+	Common::CVector3 listenerLocation(roomCenter);
+	Common::CTransform listenerPosition = Common::CTransform();
+	listenerPosition.SetPosition(listenerLocation);
+	listener->SetListenerTransform(listenerPosition);
+
+	imageSourceDSPList = createImageSourceDSP();
+	mainRoom = ISMHandler->getRoom();
+
+	systemSoundStream.start();
+#endif
 }
 
 void ofApp::toggleWall(bool &_active)

@@ -11,7 +11,7 @@ class SoundSource {
 
 public :
 
-	SoundSource() : position{ 0 }, endFrame{ 0 }, endChunk{ 0 }, initialized{false} {}
+	SoundSource() : position{ 0 }, endFrame{ 0 }, endChunk{ 0 }, sampleRate{44100}, initialized{ false } {}
 
 	
 	/** \brief Loads a mono, 16-bit, 44.1kHz ".wav" file
@@ -25,6 +25,10 @@ public :
 *	\param [in,out] CMonoBuffer vector that contains the next N samples of the wav file. Where N is the size of the buffer when the method is called.
 */
 	void FillBuffer(CMonoBuffer<float> &output);
+
+	void setSampleRate(unsigned int _sampleRate);
+
+	unsigned int getSampleRate();
 
 	void setInitialPosition();
 
@@ -47,7 +51,10 @@ private:
 	unsigned int position;
 	unsigned int endFrame;
 	unsigned int endChunk;
+	unsigned int sampleRate;
 	bool initialized;
+
+	
 
 	std::vector<float> samplesVectorCopy;
 	unsigned int samplesVectorSize;

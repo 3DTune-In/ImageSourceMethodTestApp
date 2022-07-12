@@ -15,6 +15,7 @@ bool SoundSource::LoadWav(const char* stringIn)
 	endFrame  =0;
 	endChunk  =0;
 	
+	
 	// Opening of the wav file
 	if (FILE* wavFile = fopen(stringIn, "rb")) {
 	
@@ -67,6 +68,17 @@ void SoundSource::FillBuffer(CMonoBuffer<float> &output)
 	}
 }
 
+void SoundSource::setSampleRate(unsigned int _sampleRate)
+{
+	sampleRate = _sampleRate;
+}
+
+unsigned int SoundSource::getSampleRate()
+{
+	return sampleRate;
+}
+
+
 void SoundSource::setInitialPosition() {
 	position = 0;
 	endFrame = 0;
@@ -86,7 +98,8 @@ void SoundSource::setInitialized()
 void SoundSource::startRecordOfflineOfImpulseResponse(int secondsToRecord) {
 	
 	samplesVectorCopy = samplesVector;			// Save initial wav file
-	samplesVector.resize(44100*secondsToRecord);    
+	//samplesVector.resize(44100*secondsToRecord);    
+	samplesVector.resize( sampleRate * secondsToRecord);
 
 	std::fill(samplesVector.begin(), samplesVector.end(), 0.0);   
 	samplesVector.at(1) = 0.99;
@@ -103,7 +116,8 @@ void SoundSource::resetSamplesVector() {
 
 void SoundSource::startStopState() {
 	samplesVectorCopy = samplesVector;			// Save initial wav file
-	samplesVector.resize(44100);
+	//samplesVector.resize(44100); sampleRate
+	samplesVector.resize(sampleRate);       
 	std::fill(samplesVector.begin(), samplesVector.end(), 0.0);
 }
 

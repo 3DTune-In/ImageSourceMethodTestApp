@@ -426,6 +426,9 @@ void ofApp::draw() {
 		sprintf(numberOfImagesStr, "                 'F5' NarrowSP  'F6' NarrowBP");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 100);
 
+		sprintf(numberOfImagesStr, "                 'F7' 0.2   'F8' 0.5   'F9' 0.8");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 80);
+
 		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 60);
 		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
@@ -848,6 +851,57 @@ void ofApp::keyPressed(int key){
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
+		}
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler->getRoom();
+		systemSoundStream.start();
+		break;
+	}
+
+	case OF_KEY_F7: //set absortion to 0.2
+	{
+		systemSoundStream.stop();
+		ISMHandler->setAbsortion({ 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
+
+		int numWalls = ISMHandler->getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 };
+		}
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler->getRoom();
+		systemSoundStream.start();
+		break;
+	}
+
+	case OF_KEY_F8: //set absortion to 0.5
+	{
+		systemSoundStream.stop();
+		ISMHandler->setAbsortion({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
+
+		int numWalls = ISMHandler->getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 };
+		}
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		imageSourceDSPList = createImageSourceDSP();
+		mainRoom = ISMHandler->getRoom();
+		systemSoundStream.start();
+		break;
+	}
+
+	case OF_KEY_F9: //set absortion to 0.8
+	{
+		systemSoundStream.stop();
+		ISMHandler->setAbsortion({ 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 });
+
+		int numWalls = ISMHandler->getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 };
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
@@ -1547,8 +1601,6 @@ void ofApp::playToStop(bool &_active)
 		playToStopControl.set("STOP_AUDIO", true);
 		stopToPlayControl.set("PLAY_AUDIO", false);
 	}
-		
-	
 }
 void ofApp::stopToPlay(bool &_active)
 {

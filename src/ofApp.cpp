@@ -168,13 +168,16 @@ void ofApp::setup() {
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 2, 1, 8));
-		
+	
+	playState = true;
+	stopState = false;
+
 	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
+	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", false));
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
-
+	
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
 
@@ -198,9 +201,7 @@ void ofApp::setup() {
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	offlineRecordBuffers = 0;
-
-	playState = true;
-	stopState = false;
+		
 }
 
 
@@ -1580,7 +1581,12 @@ void ofApp::resetAudio()
 
 void ofApp::playToStop(bool &_active)
 {
-	if (playToStopControl && playState)
+	if (!playToStopControl && !stopToPlayControl && playState && !stopState)
+	{
+		playToStopControl.set("STOP_AUDIO", false);
+		stopToPlayControl.set("PLAY_AUDIO", true);
+	}
+	else if (playToStopControl && playState)
 	{
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 		systemSoundStream.stop();
@@ -1597,14 +1603,15 @@ void ofApp::playToStop(bool &_active)
 		playToStopControl.set("STOP_AUDIO", true);
 		stopToPlayControl.set("PLAY_AUDIO", false);
 	}
-	else if (stopState && !playState) {
-		playToStopControl.set("STOP_AUDIO", true);
-		stopToPlayControl.set("PLAY_AUDIO", false);
-	}
 }
 void ofApp::stopToPlay(bool &_active)
 {
-	if(stopToPlayControl && stopState) {
+	if (!playToStopControl && !stopToPlayControl && playState && !stopState)
+	{
+		playToStopControl.set("STOP_AUDIO", false);
+		stopToPlayControl.set("PLAY_AUDIO", true);
+	}
+	else if(stopToPlayControl && stopState) {
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
 		systemSoundStream.stop();
 		source1Wav.endStopState();
@@ -1614,10 +1621,6 @@ void ofApp::stopToPlay(bool &_active)
 		playState = true;
 		stopToPlayControl.set("PLAY_AUDIO", true);
 		playToStopControl.set("STOP_AUDIO", false);
-	}
-	else if (!stopState && playState) {
-		playToStopControl.set("STOP_AUDIO", false);
-		stopToPlayControl.set("PLAY_AUDIO", true);
 	}
 }
 

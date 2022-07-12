@@ -29,9 +29,13 @@ void ofApp::setup() {
 	listener->SetListenerTransform(listenerPosition);
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
+	string pathData = ofToDataPath("");
+	string pathResources = ofToDataPath("resources");
+	string fullPath = pathResources + "\\" + "hrtf.sofa";  //"hrtf.sofa"= pathFile;
 	bool specifiedDelays;
-	bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);
-	//bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);
+	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
+	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);                 //VSTUDIO
+	//bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);  //VSTUDIO
 	if (!sofaLoadResult) {
 		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
 	}
@@ -40,7 +44,9 @@ void ofApp::setup() {
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	BRIR::CreateFromSofa("brir.sofa", environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
+	fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
+	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
+	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
 	
 	//environment->SetNumberOfSilencedFrames(9);
 	
@@ -48,15 +54,21 @@ void ofApp::setup() {
 	ISM::RoomGeometry trapezoidal;
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-	string pathData = ofToDataPath("", true);
-	//string fileName = pathData + "\\theater_room.xml";
-	//if (!xml.load(pathData+"\\theater_room.xml"))
+	/*
+	string pathData = ofToDataPath("", true); 
 	string fileName = pathData + "\\trapezoidal_3.xml";
 	if (!xml.load(pathData+"\\trapezoidal_3.xml"))
 	{
 		ofLogError() << "Couldn't load file";
 	}
-	
+	*/
+
+	fullPath = pathResources + "\\" + "trapezoidal_3.xml";
+	if (!xml.load(fullPath))
+	{
+		ofLogError() << "Couldn't load file";
+	}
+
 	// select all corners and iterate through them
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	for (auto & currentCorner : cornersXml) {
@@ -128,9 +140,11 @@ void ofApp::setup() {
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
 	
+	fullPath = pathResources + "\\" + "speech_female.wav";
+	const char* _filePath = fullPath.c_str();
+	LoadWavFile(source1Wav, _filePath);
 	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
-	//LoadWavFile(source1Wav, "3S_3Ch_4S.wav");                            // Loading .wav file
-	LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
+	//LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
 	//LoadWavFile(source1Wav, "sweep0_5.wav");										// Loading .wav file										   
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
@@ -139,13 +153,13 @@ void ofApp::setup() {
 	SetDeviceAndAudio(audioState);
 
 	//GUI setup
-	logoUMA.loadImage("UMA.png");
+	logoUMA.loadImage(pathResources + "\\" + "UMA.png");
 	logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
-	titleFont.load("Verdana.ttf", 32);
-	logoSAVLab.loadImage("SAVLab.png");
+	titleFont.load(pathResources + "\\" + "Verdana.ttf", 32);
+	logoSAVLab.loadImage(pathResources + "\\" + "SAVLab.png");
 	logoSAVLab.resize(logoSAVLab.getWidth() / 10, logoSAVLab.getHeight() / 10);
 
-	leftPanel.setup("Controls", "config.xml", 20, 150);
+	leftPanel.setup(pathResources + "\\" + "Controls", "config.xml", 20, 150);
 	leftPanel.setWidthElements(200);
 
 	zoom.addListener(this, &ofApp::changeZoom);
@@ -1521,8 +1535,9 @@ void ofApp::changeAudioToPlay(bool &_active)
 
 	resetAudio();
 
-	string pathData = ofToDataPath("", true);
-
+	//string pathData = ofToDataPath("", true);
+	string pathData = ofToDataPath("", false);
+	
 	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an WAV file to Play");
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
@@ -1573,7 +1588,10 @@ void ofApp::resetAudio()
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	BRIR::CreateFromSofa("brir.sofa", environment);								// Loading SOFAcoustics BRIR file and applying it to the e
+	string pathData = ofToDataPath("");
+	string pathResources = ofToDataPath("resources");
+	string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
+	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
@@ -1635,7 +1653,8 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	ISM::RoomGeometry newRoom;
 
-	string pathData = ofToDataPath("", true);
+	//string pathData = ofToDataPath("", true);
+	string pathData = ofToDataPath("", false);
 
 	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
 	//Check if the user opened a file

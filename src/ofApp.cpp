@@ -253,14 +253,18 @@ void ofApp::draw() {
 				return;
 			}
 			if (boolRecordingIR)
-			    offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);
+			    offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR)*10+1);
 			else
-				offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*100);
+				offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR)*20+1);
 
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 			systemSoundStream.stop();
 			environment->ResetReverbBuffers();
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+
+			for (int i = 0; i < imageSourceDSPList.size(); i++)
+				myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 			imageSourceDSPList = createImageSourceDSP();
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
 				imageSourceDSPList.at(i)->ResetSourceBuffers();	
@@ -565,6 +569,9 @@ void ofApp::keyPressed(int key){
 			guiActiveWalls.at(i) = FALSE;
 
 		//SOURCES DSP
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 
 		// Disable AnechoicProcess 
@@ -797,6 +804,9 @@ void ofApp::keyPressed(int key){
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
 		
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
@@ -814,6 +824,9 @@ void ofApp::keyPressed(int key){
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
@@ -830,6 +843,9 @@ void ofApp::keyPressed(int key){
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
@@ -846,6 +862,9 @@ void ofApp::keyPressed(int key){
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
@@ -862,6 +881,9 @@ void ofApp::keyPressed(int key){
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
@@ -877,6 +899,9 @@ void ofApp::keyPressed(int key){
 			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
 
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
@@ -895,6 +920,9 @@ void ofApp::keyPressed(int key){
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
@@ -912,6 +940,9 @@ void ofApp::keyPressed(int key){
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
 		systemSoundStream.start();
@@ -928,6 +959,9 @@ void ofApp::keyPressed(int key){
 			absortionsWalls.at(i) = { 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 };
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
 
 		imageSourceDSPList = createImageSourceDSP();
 		mainRoom = ISMHandler->getRoom();
@@ -958,8 +992,11 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = createImageSourceDSP();
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+		imageSourceDSPList = createImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 'b': //decrease room's length
@@ -975,8 +1012,11 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = createImageSourceDSP();
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+		imageSourceDSPList = createImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 'g': //decrease room's width
@@ -992,8 +1032,11 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = createImageSourceDSP();
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+		imageSourceDSPList = createImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 'h': //increase room's width
@@ -1009,8 +1052,11 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = createImageSourceDSP();
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+		imageSourceDSPList = createImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 'v': //decrease room's height
@@ -1026,8 +1072,11 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = createImageSourceDSP();
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+		imageSourceDSPList = createImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 'n': //increase room's height
@@ -1043,8 +1092,11 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = createImageSourceDSP();
 
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+		imageSourceDSPList = createImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 't': //Test
@@ -1482,6 +1534,8 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 {
 	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
 	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler->getImageSourceLocations();
+	
+
 	for (int i = 0; i < imageSourceLocationList.size(); i++)
 	{
 		shared_ptr<Binaural::CSingleSourceDSP> tempSourceDSP = myCore.CreateSingleSourceDSP();								// Creating audio source
@@ -1511,6 +1565,10 @@ void ofApp::changeZoom(int &zoom)
 void ofApp::changeReflectionOrder(int &_reflectionOrder)
 {
 	systemSoundStream.stop();
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 	ISMHandler->setReflectionOrder(_reflectionOrder);
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
@@ -1519,6 +1577,10 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 {
 	systemSoundStream.stop();
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(_maxDistanceSourcesToListener);
 	imageSourceDSPList = createImageSourceDSP();
@@ -1593,6 +1655,10 @@ void ofApp::resetAudio()
 	lock_guard < mutex > lock(audioMutex);
 
 	anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 	imageSourceDSPList = createImageSourceDSP();
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 		imageSourceDSPList.at(i)->ResetSourceBuffers();
@@ -1628,7 +1694,12 @@ void ofApp::playToStop(bool &_active)
 		systemSoundStream.stop();
 		environment->ResetReverbBuffers();
 		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 		imageSourceDSPList = createImageSourceDSP();
+
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->ResetSourceBuffers();
 		source1Wav.startStopState();      //Save initial wav file
@@ -1770,6 +1841,9 @@ void ofApp::changeRoomGeometry(bool &_active)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
 
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 	imageSourceDSPList = createImageSourceDSP();
 	mainRoom = ISMHandler->getRoom();
 
@@ -1801,6 +1875,10 @@ void ofApp::toggleReverb(bool &_active)
 	else bDisableReverb = true;
 	systemSoundStream.stop();
 	anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 	imageSourceDSPList = createImageSourceDSP();
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 		imageSourceDSPList.at(i)->ResetSourceBuffers();
@@ -1825,6 +1903,10 @@ void ofApp::refreshActiveWalls()
 		}
 	}
 	mainRoom = ISMHandler->getRoom();
+
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
 	imageSourceDSPList = createImageSourceDSP();
 	systemSoundStream.start();
 }

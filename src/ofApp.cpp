@@ -32,6 +32,7 @@ void ofApp::setup() {
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	string fullPath = pathResources + "\\" + "hrtf.sofa";  //"hrtf.sofa"= pathFile;
+	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";  // To test the Filterbank
 	bool specifiedDelays;
 	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
 	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);                 //VSTUDIO
@@ -206,6 +207,8 @@ void ofApp::setup() {
 	{
 		ofParameter<bool> tempWall;
 		guiActiveWalls.push_back(tempWall);
+		guiActiveWalls.at(i) = true;
+
 		//guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
 		//leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
 	}
@@ -235,8 +238,11 @@ void ofApp::draw() {
 		if (offlineRecordBuffers == 0) {
 			
 			string pathData = ofToDataPath("", true);
-			string filename2;
-			string fileNameUsr = ofSystemTextBoxDialog("Save Response Impulse", filename2 = "");
+			string filename2, fileNameUsr;
+			if (boolRecordingIR)
+				fileNameUsr = ofSystemTextBoxDialog("Save Response Impulse", filename2 = "");
+			else
+				fileNameUsr = ofSystemTextBoxDialog("File to save the recording", filename2 = "");
 		
 			if (fileNameUsr.size()>0)
    			    StartWavRecord(fileNameUsr, 16);                        // Open wav file
@@ -246,8 +252,11 @@ void ofApp::draw() {
 				boolRecordingIR = false;
 				return;
 			}
-			offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);    
-			
+			if (boolRecordingIR)
+			    offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*10);
+			else
+				offlineRecordBuffers = OfflineWavRecordStartLoop(secondsToRecordIR*100);
+
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 			systemSoundStream.stop();
 			environment->ResetReverbBuffers();
@@ -813,11 +822,11 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F3://ABSORTION -- LP + HP
 	{
 		systemSoundStream.stop();	
-		ISMHandler->setAbsortion(  {0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0});
+		ISMHandler->setAbsortion(  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 };
+			absortionsWalls.at(i) = { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 };
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
@@ -829,11 +838,11 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F4://ABSORTION -- BP-250-4000
 	{
 		systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0});
+		ISMHandler->setAbsortion(  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0});
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
+			absortionsWalls.at(i) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
 		}
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		
@@ -925,7 +934,16 @@ void ofApp::keyPressed(int key){
 		systemSoundStream.start();
 		break;
 	}
-		
+	case OF_KEY_F10: //Recording offline
+	{
+		recordingOffline = true;               // Recording offline
+		boolRecordingIR = false;
+		offlineRecordBuffers = 0;
+		recordingPercent = 0.0f;
+		offlineRecordIteration = 0;
+	}
+	break;
+
 	case 'y': //increase room's length
 		systemSoundStream.stop();
 		shoeboxLength += 0.5;
@@ -1949,14 +1967,14 @@ void ofApp::Stop()
 
 int ofApp::OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds)
 {
-	// Convert milliseconds into number of samples (OF_KEY_F9)
+	// Convert milliseconds into number of samples (OF_KEY_F10)
 	unsigned long long durationInSamples;
 	int sampleRate = myCore.GetAudioState().sampleRate;
 	durationInSamples = (sampleRate * durationInMilliseconds) / 1000;	// might be rounded
 
 	// Convert number of samples into number of buffers
-	//int numberOfBuffers = ceil(durationInSamples / BUFFERSIZE);	// rounded up
-	int numberOfBuffers = floor(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded up
+	int numberOfBuffers = ceil(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded up
+	//int numberOfBuffers = floor(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded down
 
 	offlineRecordIteration = 0;
 

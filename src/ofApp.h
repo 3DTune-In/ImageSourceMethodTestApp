@@ -70,6 +70,7 @@ private:
 	    int offlineRecordBuffers = 0;
 		bool systemSoundStream_Started;
 		mutex audioMutex;
+	    float frameRate;
 		/////////////////////////
 
 		ofTrueTypeFont titleFont;
@@ -161,6 +162,7 @@ private:
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
+		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP();
 
 		/// Methods to manage GUI
 		void changeZoom(int &zoom);

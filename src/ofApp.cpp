@@ -85,7 +85,7 @@ void ofApp::setup() {
 	}
 	*/
 
-	fullPath = pathResources + "\\" + "trapezoidal_3.xml";
+	fullPath = pathResources + "\\" + "trapezoidal_2.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -125,8 +125,8 @@ void ofApp::setup() {
 			
 	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM		
 	ISMHandler->setupArbitraryRoom(trapezoidal);
-	shoeboxLength = 20; shoeboxWidth = 20; shoeboxHeight = 10;
-	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+	shoeboxLength = 5; shoeboxWidth = 4; shoeboxHeight = 3;
+	ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 	
 	//Absortion as escalar
 	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
@@ -139,7 +139,7 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
-	Common::CVector3 initialLocation(2, 0, -1);
+	Common::CVector3 initialLocation(1, 0, -0.5);
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -980,6 +980,7 @@ void ofApp::keyPressed(int key){
 
 	case 'y': //increase room's length
 		systemSoundStream.stop();
+		
 		shoeboxLength += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 				
@@ -992,12 +993,13 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-
+		imageSourceDSPList = reCreateImageSourceDSP();
 		systemSoundStream.start();
 		break;
 	case 'b': //decrease room's length
 		systemSoundStream.stop();
-		if (shoeboxLength > 2.5)  shoeboxLength -= 0.5;
+		if (shoeboxLength > 3.0)  shoeboxLength -= 0.5;
+		
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1008,14 +1010,13 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-
 		imageSourceDSPList = reCreateImageSourceDSP();
-
 		systemSoundStream.start();
 		break;
 	case 'g': //decrease room's width
 		systemSoundStream.stop();
-		if (shoeboxWidth > 2.2) shoeboxWidth -= 0.2;
+		if (shoeboxWidth > 3.0) shoeboxWidth -= 0.5;
+		
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1026,14 +1027,13 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-
 		imageSourceDSPList = reCreateImageSourceDSP();
-
 		systemSoundStream.start();
 		break;
 	case 'h': //increase room's width
 		systemSoundStream.stop();
-		shoeboxWidth += 0.2;
+		shoeboxWidth += 0.5;
+
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1044,14 +1044,12 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-
 		imageSourceDSPList = reCreateImageSourceDSP();
-
 		systemSoundStream.start();
 		break;
 	case 'v': //decrease room's height
 		systemSoundStream.stop();
-		if (shoeboxHeight > 2.2) shoeboxHeight -= 0.2;
+		if (shoeboxHeight > 2.5) shoeboxHeight -= 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1062,14 +1060,12 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-
 		imageSourceDSPList = reCreateImageSourceDSP();
-
 		systemSoundStream.start();
 		break;
 	case 'n': //increase room's height
 		systemSoundStream.stop();
-		shoeboxHeight += 0.2;
+		shoeboxHeight += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1080,9 +1076,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
-
 		imageSourceDSPList = reCreateImageSourceDSP();
-
 		systemSoundStream.start();
 		break;
 	case 't': //Test

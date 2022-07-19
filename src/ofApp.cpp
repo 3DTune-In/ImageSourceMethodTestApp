@@ -3,6 +3,18 @@
 //#define SAMPLERATE 44100
 //#define BUFFERSIZE 512
 
+// TEST PROFILER CLASS
+#define USE_PROFILER
+#ifdef USE_PROFILER
+#include <Windows.h>
+#include "Common/Profiler.h"
+//CProfilerDataSet dsAudioLoop;
+Common::CProfilerDataSet dsProcessFrameTime;
+//Common::CProfilerDataSet dsProcessReverb;
+Common::CTimeMeasure startOfflineRecord;
+#endif
+
+
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 10
@@ -13,6 +25,15 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	
+	// SETUP PROFILER
+#ifdef USE_PROFILER
+	Common::PROFILER3DTI.InitProfiler();
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessFrameTime, "PROF_APP_ProcessAllSourcesTIME.txt");
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessFrameTime);
+	//PROFILER3DTI.SetAutomaticWrite(dsProcessReverb, "PROF_APP_PROCESSREVERB.txt");
+	//PROFILER3DTI.StartRelativeSampling(dsProcessReverb);
+#endif
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	                            // Audio State struct declaration
@@ -218,8 +239,9 @@ void ofApp::setup() {
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	offlineRecordBuffers = 0;
-	frameRate = ofGetFrameRate();
-		
+	frameRate = ofGetFrameRate();		
+	// Profilling
+	profilling = false;
 }
 
 
@@ -1123,7 +1145,11 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+	if (key == 32 /*space*/) {
+		std::cout << "Starting profilling" << std::endl;
+		std::this_thread::sleep_for(10ms);		// In case "cout" will create some kind of interference with the profile measurement.
+		profilling = true;
+	}
 }
 
 //--------------------------------------------------------------
@@ -1292,8 +1318,6 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 		float s = *it;
 		output[i++] = s;
 	}
-
-
 }
 #endif
 
@@ -1305,6 +1329,10 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
 	source1Wav.FillBuffer(source1);
 		
+#ifdef USE_PROFILER
+	if (profilling) { Common::PROFILER3DTI.RelativeSampleStart(dsProcessFrameTime); }	
+#endif
+
 	processAnechoic(source1, bufferOutput);
 
 	if (!bDisableReverb)
@@ -1312,11 +1340,14 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 		processReverb(source1, bufferOutput);
 	}
 
-	Common::CTransform lisenerTransform = listener->GetListenerTransform();
-	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
+	//Common::CTransform lisenerTransform = listener->GetListenerTransform();
+	//Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
 
 	processImages(source1, bufferOutput);
 
+#ifdef USE_PROFILER
+	if (profilling) { Common::PROFILER3DTI.RelativeSampleEnd(dsProcessFrameTime); }
+#endif	
 }
 #endif
 #if 0

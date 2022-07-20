@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 //#define SAMPLERATE 44100
-//#define BUFFERSIZE 512
+#define BUFFERSIZE 1024
 
 // TEST PROFILER CLASS
 #define USE_PROFILER
@@ -19,8 +19,8 @@ Common::CTimeMeasure startOfflineRecord;
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 10
 #define NUMBER_OF_WALLS 6
-#define MAX_DIST_SILENCED_FRAMES 70
-#define MIN_DIST_SILENCED_FRAMES 6
+#define MAX_DIST_SILENCED_FRAMES 1000
+#define MIN_DIST_SILENCED_FRAMES 2
 
 
 //--------------------------------------------------------------
@@ -37,7 +37,8 @@ void ofApp::setup() {
 
 	// Core setup
 	Common::TAudioStateStruct audioState;	                            // Audio State struct declaration
-	audioState.bufferSize = myCore.GetAudioState().bufferSize;			// Setting buffer size 
+	//audioState.bufferSize = myCore.GetAudioState().bufferSize;		// Setting buffer size 
+	audioState.bufferSize = BUFFERSIZE;			                        // Setting buffer size 
 	audioState.sampleRate = myCore.GetAudioState().sampleRate;   		// Setting frame rate 
 	myCore.SetAudioState(audioState);									// Applying configuration to core
 	myCore.SetHRTFResamplingStep(15);								    // Setting 15-degree resampling step for HRTF
@@ -85,7 +86,8 @@ void ofApp::setup() {
 	}
 	*/
 
-	fullPath = pathResources + "\\" + "trapezoidal_2.xml";
+	//"trapezoidal_3.xml"  "theater_room.xml";
+	fullPath = pathResources + "\\" + "theater_room.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -126,7 +128,7 @@ void ofApp::setup() {
 	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM		
 	ISMHandler->setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 5; shoeboxWidth = 4; shoeboxHeight = 3;
-	ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
+	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 	
 	//Absortion as escalar
 	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
@@ -139,7 +141,7 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
-	Common::CVector3 initialLocation(1, 0, -0.5);
+	Common::CVector3 initialLocation(2, 0, -1);
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -161,6 +163,7 @@ void ofApp::setup() {
 	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
+	if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 	
 	fullPath = pathResources + "\\" + "speech_female.wav";
 	const char* _filePath = fullPath.c_str();
@@ -197,7 +200,7 @@ void ofApp::setup() {
 	leftPanel.add(reverbEnableControl.set("REVERB", false));
 		
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
-	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", 10, 6, 100));
+	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", INITIAL_DIST_SILENCED_FRAMES, 2, MAX_DIST_SILENCED_FRAMES));
 
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));

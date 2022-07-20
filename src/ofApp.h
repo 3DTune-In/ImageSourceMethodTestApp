@@ -37,7 +37,7 @@
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
 # define INITIAL_REFLECTION_ORDER 1
-# define INITIAL_DIST_SILENCED_FRAMES  10
+# define INITIAL_DIST_SILENCED_FRAMES  2
 # define FRAME_RATE 60
 
 class ofApp : public ofBaseApp{

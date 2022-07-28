@@ -137,9 +137,10 @@ private:
 		float scale = DEFAULT_SCALE;			//visualization scale
 		bool boolToogleDisplayHelp;
 		bool playState;
-		bool stopState;
-		
-		bool profilling;
+		bool stopState;		
+		bool profilling;	
+		std::chrono::steady_clock::time_point startRecordingOfflineTime;
+		std::chrono::steady_clock::time_point stopRecordingOfflineTime;
 
 		bool setupDone;
 									
@@ -183,6 +184,7 @@ private:
 		void stopToPlay(bool &active);
 		
 		void toogleHelpDisplay(bool &_active);
+		void ShowRecordingDurationTime();
 
 		/// Methods to manage XML
 		std::vector<float> parserStToFloat(const std::string & st);

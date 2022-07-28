@@ -274,8 +274,10 @@ void ofApp::draw() {
 			else
 				fileNameUsr = ofSystemTextBoxDialog("File to save the recording", filename2 = "");
 		
-			if (fileNameUsr.size()>0)
-   			    StartWavRecord(fileNameUsr, 16);                        // Open wav file
+			if (fileNameUsr.size() > 0) {				
+				StartWavRecord(fileNameUsr, 16);                        // Open wav file
+				startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
+			}
 			else
 			{
 				recordingOffline = false;                               // Cancel recording process
@@ -321,6 +323,7 @@ void ofApp::draw() {
 			recordingPercent = 0 + (100 * offlineRecordIteration) / offlineRecordBuffers;
 
 		if (recordingPercent >= 100.0f){
+			stopRecordingOfflineTime = std::chrono::high_resolution_clock::now();
 			OfflineWavRecordEndLoop();    // Stop & recordingOffline = false;
 			EndWavRecord();               // Close wav file
 			
@@ -331,6 +334,7 @@ void ofApp::draw() {
 			}
 			source1Wav.setInitialPosition();
 			systemSoundStream.start();
+			ShowRecordingDurationTime();
 		}
 		ofPopStyle();		
 		return;
@@ -2073,4 +2077,13 @@ void ofApp::StartSystemSoundStream()
 		systemSoundStream_Started = true;
 		systemSoundStream.start();
 	}
+}
+
+
+void ofApp::ShowRecordingDurationTime() {
+	/*auto duration = std::chrono::duration_cast<std::chrono::seconds>(stopRecordingOfflineTime - startRecordingOfflineTime);
+	std::cout << "Time taken to do the recording offline: "	<< duration.count() << " seconds" << endl;*/
+	
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stopRecordingOfflineTime - startRecordingOfflineTime);
+	std::cout << "Time taken to do the recording offline: " << duration.count() << " milliseconds" << endl;
 }

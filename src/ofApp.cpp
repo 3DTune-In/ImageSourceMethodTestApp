@@ -375,32 +375,35 @@ void ofApp::draw() {
 	ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z,
 		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 
-	//draw image sources 
 	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
-	for (int i = 0; i < imageSourceDataList.size(); i++)
-	{
-		if (imageSourceDataList.at(i).visible)
+	if (!stopState) {
+		//draw image sources 
+		for (int i = 0; i < imageSourceDataList.size(); i++)
 		{
-			numberOfVisibleImages++;
-			ofSetColor(255, 150, 200, imageSourceDataList.at(i).visibility * 255);
-			ofBox(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z, 0.2);
-			ofLine(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z,
-				listenerLocation.x, listenerLocation.y, listenerLocation.z);
-			for (int j = 0; j < imageSourceDataList.at(i).reflectionWalls.size(); j++)
+			if (imageSourceDataList.at(i).visible)
 			{
-				ofPushStyle();
-				if (imageSourceDataList.at(i).visibility < 1)
+				numberOfVisibleImages++;
+				ofSetColor(255, 150, 200, imageSourceDataList.at(i).visibility * 255);
+				ofBox(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z, 0.2);
+				ofLine(imageSourceDataList.at(i).location.x, imageSourceDataList.at(i).location.y, imageSourceDataList.at(i).location.z,
+					listenerLocation.x, listenerLocation.y, listenerLocation.z);
+				for (int j = 0; j < imageSourceDataList.at(i).reflectionWalls.size(); j++)
 				{
-					ofSetColor(150, 255, 200, imageSourceDataList.at(i).visibility * 255);
+					ofPushStyle();
+					if (imageSourceDataList.at(i).visibility < 1)
+					{
+						ofSetColor(150, 255, 200, imageSourceDataList.at(i).visibility * 255);
+					}
+					Common::CVector3 reflectionPoint = imageSourceDataList.at(i).reflectionWalls.at(j).getIntersectionPointWithLine(imageSourceDataList.at(i).location, listenerLocation);
+					ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
+					ofPopStyle();
 				}
-				Common::CVector3 reflectionPoint = imageSourceDataList.at(i).reflectionWalls.at(j).getIntersectionPointWithLine(imageSourceDataList.at(i).location, listenerLocation);
-				ofBox(reflectionPoint.x, reflectionPoint.y, reflectionPoint.z, 0.05);
-				ofPopStyle();
 			}
 		}
-	}
 
+	}
+	
 	ofPopStyle();
 	//sourceImages.drawFirstReflectionRays(listenerPosition);
 
@@ -1303,6 +1306,7 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	
 	lock_guard < mutex > lock(audioMutex);
+	if (stopState) return;
 
 	// The requested frame size is not allways supported by the audio driver:
 	if (myCore.GetAudioState().bufferSize != bufferSize)
@@ -1331,6 +1335,9 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 #if 1
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
+	
+	//if (stopState) return;
+
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
 	source1Wav.FillBuffer(source1);

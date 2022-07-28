@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 //#define SAMPLERATE 44100
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 512
 
 // TEST PROFILER CLASS
 #define USE_PROFILER
@@ -25,6 +25,8 @@ Common::CTimeMeasure startOfflineRecord;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	
+	setupDone = false;
 	
 	// SETUP PROFILER
 #ifdef USE_PROFILER
@@ -127,7 +129,7 @@ void ofApp::setup() {
 			
 	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM		
 	ISMHandler->setupArbitraryRoom(trapezoidal);
-	shoeboxLength = 5; shoeboxWidth = 4; shoeboxHeight = 3;
+	shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
 	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 	
 	//Absortion as escalar
@@ -141,7 +143,7 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
-	Common::CVector3 initialLocation(2, 0, -1);
+	Common::CVector3 initialLocation(1, 0, 0);
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -206,7 +208,7 @@ void ofApp::setup() {
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 2, 1, 8));
+	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, 8));
 	
 	playState = true;
 	stopState = false;
@@ -245,6 +247,7 @@ void ofApp::setup() {
 	frameRate = ofGetFrameRate();		
 	// Profilling
 	profilling = false;
+	setupDone = true;
 }
 
 
@@ -280,8 +283,10 @@ void ofApp::draw() {
 				return;
 			}
 
-			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR)*20+1);
-			
+			//offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR)*20+1);
+			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
+			cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 			systemSoundStream.stop();
 			environment->ResetReverbBuffers();
@@ -295,9 +300,9 @@ void ofApp::draw() {
 			if (boolRecordingIR)
 			{
 				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
+				source1Wav.setInitialPosition();
 			}
-			
-			source1Wav.setInitialPosition();
+
 		}
 				
 		
@@ -313,7 +318,7 @@ void ofApp::draw() {
 			offlineRecordIteration++;
 		}
 		if (offlineRecordBuffers != 0)
-			recordingPercent = 1 + (100 * offlineRecordIteration) / offlineRecordBuffers;
+			recordingPercent = 0 + (100 * offlineRecordIteration) / offlineRecordBuffers;
 
 		if (recordingPercent >= 100.0f){
 			OfflineWavRecordEndLoop();    // Stop & recordingOffline = false;
@@ -1564,8 +1569,9 @@ void ofApp::changeZoom(int &zoom)
 
 void ofApp::changeReflectionOrder(int &_reflectionOrder)
 {
-	systemSoundStream.stop();
+	if (setupDone == false) return;
 
+	systemSoundStream.stop();
 	ISMHandler->setReflectionOrder(_reflectionOrder);
 	imageSourceDSPList = reCreateImageSourceDSP();
 	systemSoundStream.start();
@@ -1949,7 +1955,7 @@ void ofApp::OfflineWavRecordOneLoopIteration(int _bufferSize)
 	recordBuffer.right.resize(_bufferSize);
 	audioProcess(recordBuffer, _bufferSize);
 	wavWriter.AppendToFile(recordBuffer);
-	offlineRecordBuffers++;
+	//offlineRecordBuffers++;
 }
 
 void ofApp::ShowRecordingMessage()

@@ -140,6 +140,8 @@ private:
 		bool stopState;
 		
 		bool profilling;
+
+		bool setupDone;
 									
 		/// Methods to handle Audio
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);

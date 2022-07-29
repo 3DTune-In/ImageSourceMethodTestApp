@@ -2,7 +2,6 @@
 
 //#define SAMPLERATE 44100
 #define BUFFERSIZE 512
-
 // TEST PROFILER CLASS
 #define USE_PROFILER
 #ifdef USE_PROFILER
@@ -324,6 +323,7 @@ void ofApp::draw() {
 
 		if (recordingPercent >= 100.0f){
 			stopRecordingOfflineTime = std::chrono::high_resolution_clock::now();
+			ShowRecordingDurationTime();
 			OfflineWavRecordEndLoop();    // Stop & recordingOffline = false;
 			EndWavRecord();               // Close wav file
 			
@@ -334,7 +334,6 @@ void ofApp::draw() {
 			}
 			source1Wav.setInitialPosition();
 			systemSoundStream.start();
-			ShowRecordingDurationTime();
 		}
 		ofPopStyle();		
 		return;
@@ -359,9 +358,12 @@ void ofApp::draw() {
 	ofLine(0, 0, 0, 0, 0, 1);
 	ofPopStyle();
 
-	//draw room and room images
-	drawRoom(mainRoom, reflectionOrderControl,255);
-
+	//draw room and room images. In stop state only the room is drawn
+	if (!stopState)   
+		drawRoom(mainRoom, reflectionOrderControl,255);
+	else
+		drawRoom(mainRoom, 1, 255);
+	
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
@@ -378,7 +380,7 @@ void ofApp::draw() {
 	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
 	if (!stopState) {
-		//draw image sources 
+		//draw image sources (only i play state)
 		for (int i = 0; i < imageSourceDataList.size(); i++)
 		{
 			if (imageSourceDataList.at(i).visible)
@@ -1306,8 +1308,7 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	
 	lock_guard < mutex > lock(audioMutex);
-	if (stopState) return;
-
+	
 	// The requested frame size is not allways supported by the audio driver:
 	if (myCore.GetAudioState().bufferSize != bufferSize)
 		return;
@@ -1336,7 +1337,7 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
 	
-	//if (stopState) return;
+	if (stopState) return; // in the stop state the processing is not carried out
 
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
@@ -1584,7 +1585,7 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 
 	systemSoundStream.stop();
 	ISMHandler->setReflectionOrder(_reflectionOrder);
-	imageSourceDSPList = reCreateImageSourceDSP();
+    imageSourceDSPList = reCreateImageSourceDSP();
 	systemSoundStream.start();
 }
 
@@ -1595,7 +1596,8 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	
 	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(_maxDistanceSourcesToListener);
-	imageSourceDSPList = reCreateImageSourceDSP();
+	if (!stopState)
+		imageSourceDSPList = reCreateImageSourceDSP();
 	systemSoundStream.start();
 }
 
@@ -1668,11 +1670,11 @@ void ofApp::resetAudio()
 
 	anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 
-	
-
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 		imageSourceDSPList.at(i)->ResetSourceBuffers();
 	environment->ResetReverbBuffers();
+	
+	
 
 	//imageSourceDSPList = reCreateImageSourceDSP();
 		

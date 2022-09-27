@@ -16,7 +16,7 @@ Common::CTimeMeasure startOfflineRecord;
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
-#define MAX_REFLECTION_ORDER 10
+#define MAX_REFLECTION_ORDER 8
 #define NUMBER_OF_WALLS 6
 #define MAX_DIST_SILENCED_FRAMES 1000
 #define MIN_DIST_SILENCED_FRAMES 2
@@ -1628,6 +1628,8 @@ void ofApp::changeAudioToPlay(bool &_active)
 	changeAudioToPlayControl = false;
 
 	if (setupDone == false) return;
+	
+	if (stopState) return;
 
 	resetAudio();
 

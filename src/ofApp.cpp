@@ -88,7 +88,7 @@ void ofApp::setup() {
 	*/
 
 	//"trapezoidal_3.xml"  "theater_room.xml";
-	fullPath = pathResources + "\\" + "theater_room.xml";
+	fullPath = pathResources + "\\" + "trapezoidal_1.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -1626,6 +1626,8 @@ void ofApp::toogleHelpDisplay(bool &_active)
 void ofApp::changeAudioToPlay(bool &_active)
 {
 	changeAudioToPlayControl = false;
+
+	if (setupDone == false) return;
 
 	resetAudio();
 

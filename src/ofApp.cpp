@@ -1338,7 +1338,7 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
 	
-	if (stopState) return; // in the stop state the processing is not carried out
+	//if (stopState) return; // in the stop state the processing is not carried out
 
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
@@ -1629,9 +1629,7 @@ void ofApp::changeAudioToPlay(bool &_active)
 	changeAudioToPlayControl = false;
 
 	if (setupDone == false) return;
-	
-	if (stopState) return;
-
+		
 	resetAudio();
 
 	//string pathData = ofToDataPath("", true);
@@ -1655,17 +1653,17 @@ void ofApp::changeAudioToPlay(bool &_active)
 		else
 		{
 			ofLogError() << "Extension must be WAV";
-			systemSoundStream.start();
+			if (!stopState) systemSoundStream.start();
 			return;
 		}
 	}
 	else {
 		ofLogError() << "Couldn't load file";
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		return;
 	}
 	source1Wav.setInitialPosition();
-	systemSoundStream.start();
+	if (!stopState)  systemSoundStream.start();
 }
 
 void ofApp::resetAudio()
@@ -1716,9 +1714,9 @@ void ofApp::playToStop(bool &_active)
 
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->ResetSourceBuffers();
-		source1Wav.startStopState();      //Save initial wav file
-		source1Wav.setInitialPosition();
-		systemSoundStream.start();
+		//source1Wav.startStopState();      //Save initial wav file
+		//source1Wav.setInitialPosition();
+		//systemSoundStream.start();
 		stopState = true;
 		playState = false;
 		playToStopControl.set("STOP_AUDIO", true);
@@ -1734,12 +1732,12 @@ void ofApp::stopToPlay(bool &_active)
 	}
 	else if(stopToPlayControl && stopState) {
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
-		systemSoundStream.stop();
-		source1Wav.endStopState();
-		source1Wav.setInitialPosition();
-		systemSoundStream.start();
+		//systemSoundStream.stop();
+		//source1Wav.endStopState
 		stopState = false;
 		playState = true;
+		source1Wav.setInitialPosition();
+		systemSoundStream.start();
 		stopToPlayControl.set("PLAY_AUDIO", true);
 		playToStopControl.set("STOP_AUDIO", false);
 	}
@@ -1773,21 +1771,21 @@ void ofApp::changeRoomGeometry(bool &_active)
 			if (!xml.load(pathData))
 			{
 				ofLogError() << "Couldn't load file";
-				systemSoundStream.start();
+				if (!stopState) systemSoundStream.start();
 				return;
 			}
 		}
 		else
 		{
 			ofLogError() << "Extension must be XML";
-			systemSoundStream.start();
+			if (!stopState) systemSoundStream.start();
 			return;
 		}
 
 	}
 	else {
 		ofLogError() << "Couldn't load file";
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		return;
 	}
 
@@ -1798,7 +1796,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	if (cornersXml.empty()) {
 		ofLogError() << "The file is not a room configuration";
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		return;
 	}
 
@@ -1859,7 +1857,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	mainRoom = ISMHandler->getRoom();
 
-	systemSoundStream.start();
+	if (!stopState) systemSoundStream.start();
 #endif
 }
 

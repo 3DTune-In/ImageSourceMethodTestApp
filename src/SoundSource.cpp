@@ -114,6 +114,7 @@ void SoundSource::resetSamplesVector() {
 	samplesVector.clear();
 }
 
+#if 0
 void SoundSource::startStopState() {
 	samplesVectorCopy = samplesVector;			// Save initial wav file
 	//samplesVector.resize(44100); sampleRate
@@ -125,3 +126,4 @@ void SoundSource::endStopState() {
 	samplesVector.resize(samplesVectorSize);
 	samplesVector = samplesVectorCopy;           //Restore initial wav file
 }
+#endif

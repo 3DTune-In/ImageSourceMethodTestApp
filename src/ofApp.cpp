@@ -214,11 +214,11 @@ void ofApp::setup() {
 	stopState = false;
 
 	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", false));
+	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
-	
+		
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
 
@@ -238,6 +238,8 @@ void ofApp::setup() {
 		//guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
 		//leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
 	}
+
+	
 
 	// Offline WAV record
 	recordingOffline = false;
@@ -334,7 +336,7 @@ void ofApp::draw() {
 				boolRecordingIR = false;
 			}
 			source1Wav.setInitialPosition();
-			systemSoundStream.start();
+			if (!stopState) systemSoundStream.start();
 		}
 		ofPopStyle();		
 		return;
@@ -568,7 +570,7 @@ void ofApp::keyPressed(int key){
 	
 	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		//ROOM
 						
 		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
@@ -617,7 +619,7 @@ void ofApp::keyPressed(int key){
 			anechoicSourceDSP->DisableAnechoicProcess();
 			stateAnechoicProcess = false;
 		}
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start(); 
 	}
 	break;
 	case 'k': //Moves the source left (-X)
@@ -833,7 +835,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case OF_KEY_F1://ABSORTION -- null
 	{
-	    systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
@@ -844,12 +846,12 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 		
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F2://ABSORTION -- total
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -861,12 +863,12 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 		
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F3://ABSORTION -- LP + HP
 	{
-		systemSoundStream.stop();	
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion(  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -878,7 +880,7 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F4://ABSORTION -- BP-250-4000
@@ -895,12 +897,12 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F5://ABSORTION STOPB
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion({ 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 });
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -912,12 +914,12 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F6://ABSORTION -- BP-Narrow-1000
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -929,13 +931,13 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 
 	case OF_KEY_F7: //set absortion to 0.2
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion({ 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -947,13 +949,13 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 
 	case OF_KEY_F8: //set absortion to 0.5
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -965,13 +967,13 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 
 	case OF_KEY_F9: //set absortion to 0.8
 	{
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		ISMHandler->setAbsortion({ 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 });
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -983,7 +985,7 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 
 		mainRoom = ISMHandler->getRoom();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	}
 	case OF_KEY_F10: //Recording offline
@@ -997,7 +999,7 @@ void ofApp::keyPressed(int key){
 	break;
 
 	case 'y': //increase room's length
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		
 		shoeboxLength += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -1012,10 +1014,10 @@ void ofApp::keyPressed(int key){
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	case 'b': //decrease room's length
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		if (shoeboxLength > 3.0)  shoeboxLength -= 0.5;
 		
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -1029,10 +1031,10 @@ void ofApp::keyPressed(int key){
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	case 'g': //decrease room's width
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		if (shoeboxWidth > 3.0) shoeboxWidth -= 0.5;
 		
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -1046,10 +1048,10 @@ void ofApp::keyPressed(int key){
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	case 'h': //increase room's width
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		shoeboxWidth += 0.5;
 
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -1063,10 +1065,10 @@ void ofApp::keyPressed(int key){
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	case 'v': //decrease room's height
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		if (shoeboxHeight > 2.5) shoeboxHeight -= 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
@@ -1079,10 +1081,10 @@ void ofApp::keyPressed(int key){
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	case 'n': //increase room's height
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
 		shoeboxHeight += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
@@ -1095,7 +1097,7 @@ void ofApp::keyPressed(int key){
 		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
-		systemSoundStream.start();
+		if (!stopState) systemSoundStream.start();
 		break;
 	case 't': //Test
 		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
@@ -1584,22 +1586,22 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 {
 	if (setupDone == false) return;
 
-	systemSoundStream.stop();
+	if (!stopState) systemSoundStream.stop();
 	ISMHandler->setReflectionOrder(_reflectionOrder);
     imageSourceDSPList = reCreateImageSourceDSP();
-	systemSoundStream.start();
+	if (!stopState) systemSoundStream.start();
 }
 
 void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 {
-	systemSoundStream.stop();
+	if (setupDone == false) return;
 
-	
+	if (!stopState) systemSoundStream.stop();
+		
 	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(_maxDistanceSourcesToListener);
-	if (!stopState)
-		imageSourceDSPList = reCreateImageSourceDSP();
-	systemSoundStream.start();
+	imageSourceDSPList = reCreateImageSourceDSP();
+	if (!stopState) systemSoundStream.start();
 }
 
 void ofApp::recordIrOffline(bool &_active)
@@ -1668,7 +1670,7 @@ void ofApp::changeAudioToPlay(bool &_active)
 
 void ofApp::resetAudio()
 {
-	systemSoundStream.stop();
+	if (!stopState) systemSoundStream.stop();
 	lock_guard < mutex > lock(audioMutex);
 
 	anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
@@ -1698,10 +1700,12 @@ void ofApp::resetAudio()
 
 void ofApp::playToStop(bool &_active)
 {
-	if (!playToStopControl && !stopToPlayControl && playState && !stopState)
+	if (setupDone == false) return;
+		
+	if (!playToStopControl && !stopToPlayControl && !playState && stopState)
 	{
-		playToStopControl.set("STOP_AUDIO", false);
-		stopToPlayControl.set("PLAY_AUDIO", true);
+		playToStopControl.set("STOP_AUDIO", true);
+		stopToPlayControl.set("PLAY_AUDIO", false);
 	}
 	else if (playToStopControl && playState)
 	{
@@ -1714,26 +1718,24 @@ void ofApp::playToStop(bool &_active)
 
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->ResetSourceBuffers();
-		//source1Wav.startStopState();      //Save initial wav file
-		//source1Wav.setInitialPosition();
-		//systemSoundStream.start();
 		stopState = true;
 		playState = false;
 		playToStopControl.set("STOP_AUDIO", true);
 		stopToPlayControl.set("PLAY_AUDIO", false);
 	}
 }
+
 void ofApp::stopToPlay(bool &_active)
 {
+	if (setupDone == false) return;
+		
 	if (!playToStopControl && !stopToPlayControl && playState && !stopState)
 	{
 		playToStopControl.set("STOP_AUDIO", false);
 		stopToPlayControl.set("PLAY_AUDIO", true);
 	}
-	else if(stopToPlayControl && stopState) {
+	else if (stopToPlayControl && stopState) {
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
-		//systemSoundStream.stop();
-		//source1Wav.endStopState
 		stopState = false;
 		playState = true;
 		source1Wav.setInitialPosition();
@@ -1750,7 +1752,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	else 
 		changeRoomGeometryControl = false;
 #if 1 
-	systemSoundStream.stop();
+	if (!stopState) systemSoundStream.stop();
 
 	ISM::RoomGeometry newRoom;
 
@@ -1883,7 +1885,7 @@ void ofApp::toggleReverb(bool &_active)
 {
 	if (bDisableReverb) bDisableReverb = false;
 	else bDisableReverb = true;
-	systemSoundStream.stop();
+	if (!stopState) systemSoundStream.stop();
 	anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
 
 	imageSourceDSPList = reCreateImageSourceDSP();
@@ -1891,12 +1893,12 @@ void ofApp::toggleReverb(bool &_active)
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 		imageSourceDSPList.at(i)->ResetSourceBuffers();
 	environment->ResetReverbBuffers();
-	systemSoundStream.start();
+	if (!stopState) systemSoundStream.start();
 }
 
 void ofApp::refreshActiveWalls()
 {
-	systemSoundStream.stop();
+	if (!stopState) systemSoundStream.stop();
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 	for (int i = 0; i < guiActiveWalls.size(); i++)
@@ -1914,7 +1916,7 @@ void ofApp::refreshActiveWalls()
 
 	imageSourceDSPList = reCreateImageSourceDSP();
 
-	systemSoundStream.start();
+	if (!stopState) systemSoundStream.start();
 }
 
 

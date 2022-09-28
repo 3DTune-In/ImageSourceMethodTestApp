@@ -185,7 +185,8 @@ void ofApp::setup() {
 	logoSAVLab.loadImage(pathResources + "\\" + "SAVLab.png");
 	logoSAVLab.resize(logoSAVLab.getWidth() / 10, logoSAVLab.getHeight() / 10);
 
-	leftPanel.setup(pathResources + "\\" + "Controls", "config.xml", 20, 150);
+	leftPanel.disableHeader();
+	leftPanel.setup(pathResources + "\\", "config.xml", 20, 150);
 	leftPanel.setWidthElements(200);
 
 	zoom.addListener(this, &ofApp::changeZoom);

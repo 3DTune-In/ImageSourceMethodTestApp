@@ -209,7 +209,9 @@ void ofApp::setup() {
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, 8));
-	
+
+
+	/* The system starts its execution in PLAY mode
 	playState = true;
 	stopState = false;
 
@@ -218,6 +220,20 @@ void ofApp::setup() {
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
+	*/
+
+	//The system starts its execution in STOP mode
+	playState = false;
+	stopState = true;
+
+	systemSoundStream.stop();
+
+	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
+	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", false));
+
+	playToStopControl.addListener(this, &ofApp::playToStop);
+	leftPanel.add(playToStopControl.set("STOP_AUDIO", true));
+	
 		
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
@@ -361,12 +377,15 @@ void ofApp::draw() {
 	ofLine(0, 0, 0, 0, 0, 1);
 	ofPopStyle();
 
+	/*
 	//draw room and room images. In stop state only the room is drawn
 	if (!stopState)   
 		drawRoom(mainRoom, reflectionOrderControl,255);
 	else
 		drawRoom(mainRoom, 1, 255);
-	
+	*/
+	drawRoom(mainRoom, reflectionOrderControl, 255);
+
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();

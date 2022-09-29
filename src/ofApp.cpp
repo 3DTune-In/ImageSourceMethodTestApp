@@ -131,8 +131,6 @@ void ofApp::setup() {
 	shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
 	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 	
-	//Absortion as escalar
-	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 	//Absortion as vector
 	ISMHandler->setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
 
@@ -598,8 +596,7 @@ void ofApp::keyPressed(int key){
 		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		absortionsWalls.resize(numWalls);
-		
-		ISMHandler->setAbsortion({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+				
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		}
@@ -855,7 +852,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F1://ABSORTION -- null
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -871,8 +868,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F2://ABSORTION -- total
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
@@ -888,8 +884,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F3://ABSORTION -- LP + HP
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0});
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 };
@@ -905,8 +900,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F4://ABSORTION -- BP-250-4000
 	{
 		systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0});
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
@@ -922,8 +916,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F5://ABSORTION STOPB
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion({ 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 });
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
@@ -939,8 +932,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F6://ABSORTION -- BP-Narrow-1000
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion(  {1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0});
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
@@ -957,8 +949,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F7: //set absortion to 0.2
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion({ 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 });
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 };
@@ -975,7 +966,6 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F8: //set absortion to 0.5
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
@@ -993,8 +983,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F9: //set absortion to 0.8
 	{
 		if (!stopState) systemSoundStream.stop();
-		ISMHandler->setAbsortion({ 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 });
-
+		
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 };
@@ -1023,7 +1012,6 @@ void ofApp::keyPressed(int key){
 		shoeboxLength += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 				
-		ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1040,7 +1028,7 @@ void ofApp::keyPressed(int key){
 		if (shoeboxLength > 3.0)  shoeboxLength -= 0.5;
 		
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1057,7 +1045,7 @@ void ofApp::keyPressed(int key){
 		if (shoeboxWidth > 3.0) shoeboxWidth -= 0.5;
 		
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1074,7 +1062,7 @@ void ofApp::keyPressed(int key){
 		shoeboxWidth += 0.5;
 
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1090,7 +1078,7 @@ void ofApp::keyPressed(int key){
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxHeight > 2.5) shoeboxHeight -= 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1106,7 +1094,7 @@ void ofApp::keyPressed(int key){
 		if (!stopState) systemSoundStream.stop();
 		shoeboxHeight += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		ISMHandler->setAbsortion(  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3});
+		
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1861,8 +1849,6 @@ void ofApp::changeRoomGeometry(bool &_active)
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	guiActiveWalls.resize(numWalls);
 
-	//Absortion as escalar
-	ISMHandler->setAbsortion({ 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3 });
 	//Absortion as vector
 	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 

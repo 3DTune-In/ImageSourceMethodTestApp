@@ -114,6 +114,11 @@ void SoundSource::resetSamplesVector() {
 	samplesVector.clear();
 }
 
+unsigned long long SoundSource::getSizeSamplesVector()
+{
+	return samplesVector.size();
+}
+
 #if 0
 void SoundSource::startStopState() {
 	samplesVectorCopy = samplesVector;			// Save initial wav file

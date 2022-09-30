@@ -206,12 +206,11 @@ void ofApp::setup() {
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
 
-	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
-	leftPanel.add(recordOfflineWAVControl.set("RECORD_WAV_OFFLINE", false));
-
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, MAX_SECONDS_TO_RECORD));
 
+	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
+	leftPanel.add(recordOfflineWAVControl.set("RECORD_WAV_OFFLINE", false));
 
 	/* The system starts its execution in PLAY mode
 	playState = true;
@@ -304,9 +303,18 @@ void ofApp::draw() {
 				boolRecordingIR = false;
 				return;
 			}
-						
-			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
-			cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+			
+			if (boolRecordingIR)
+			{
+				offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
+				cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+			}
+			else
+			{                                                           //Calculates the number of buffers associated with the size of the wav file
+				unsigned long long samplesVectorSize = source1Wav.getSizeSamplesVector();
+				offlineRecordBuffers = ceil(samplesVectorSize / myCore.GetAudioState().bufferSize);
+				cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+			}
 
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 			systemSoundStream.stop();

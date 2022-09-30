@@ -40,11 +40,13 @@ public :
 
 	void endRecordOfflineOfImpulseResponse();
 
+	unsigned long long getSizeSamplesVector();
+
 	//void startStopState();
 	//void endStopState();
 
 	void resetSamplesVector();
-
+	
 private:
 	
 	std::vector<float> samplesVector;

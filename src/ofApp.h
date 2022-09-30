@@ -84,6 +84,7 @@ private:
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
 		ofParameter<bool> recordOfflineIRControl;
+		ofParameter<bool> recordOfflineWAVControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
 		ofParameter<bool> changeRoomGeometryControl;
@@ -177,6 +178,7 @@ private:
 		void toggleAnechoic(bool &active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
+		void recordWavOffline(bool& active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);

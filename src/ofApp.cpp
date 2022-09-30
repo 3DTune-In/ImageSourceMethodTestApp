@@ -206,6 +206,9 @@ void ofApp::setup() {
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
 
+	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
+	leftPanel.add(recordOfflineWAVControl.set("RECORD_WAV_OFFLINE", false));
+
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, MAX_SECONDS_TO_RECORD));
 
@@ -301,8 +304,7 @@ void ofApp::draw() {
 				boolRecordingIR = false;
 				return;
 			}
-
-			//offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR)*20+1);
+						
 			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
 			cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
 
@@ -319,9 +321,9 @@ void ofApp::draw() {
 			if (boolRecordingIR)
 			{
 				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
-				source1Wav.setInitialPosition();
+				//source1Wav.setInitialPosition();
 			}
-
+			source1Wav.setInitialPosition(); //Now the wav file is always recorded from the beginning
 		}
 				
 		
@@ -1620,9 +1622,19 @@ void ofApp::recordIrOffline(bool &_active)
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	recordOfflineIRControl = false;
-	//resetAudio();
-
+	
 }
+
+void ofApp::recordWavOffline(bool& _active)
+{
+	recordingOffline = true;               // Similar to OF_KEY_F9
+	boolRecordingIR = false;
+	offlineRecordBuffers = 0;
+	recordingPercent = 0.0f;
+	offlineRecordIteration = 0;
+	recordOfflineWAVControl = false;
+}
+
 void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
 {
 	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=MAX_SECONDS_TO_RECORD)

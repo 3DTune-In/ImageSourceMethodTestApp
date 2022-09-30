@@ -20,6 +20,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define NUMBER_OF_WALLS 6
 #define MAX_DIST_SILENCED_FRAMES 1000
 #define MIN_DIST_SILENCED_FRAMES 2
+#define MAX_SECONDS_TO_RECORD 60
 
 
 //--------------------------------------------------------------
@@ -206,7 +207,7 @@ void ofApp::setup() {
 	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
 
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, 8));
+	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, MAX_SECONDS_TO_RECORD));
 
 
 	/* The system starts its execution in PLAY mode
@@ -291,7 +292,7 @@ void ofApp::draw() {
 				fileNameUsr = ofSystemTextBoxDialog("File to save the recording", filename2 = "");
 		
 			if (fileNameUsr.size() > 0) {				
-				StartWavRecord(fileNameUsr, 16);                        // Open wav file
+				StartWavRecord(fileNameUsr+".wav", 16);                        // Open wav file
 				startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
 			}
 			else
@@ -1624,7 +1625,7 @@ void ofApp::recordIrOffline(bool &_active)
 }
 void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
 {
-	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=8)
+	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=MAX_SECONDS_TO_RECORD)
 	   secondsToRecordIR = _secondsToRecordIR;
 }
 

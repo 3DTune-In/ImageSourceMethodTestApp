@@ -346,7 +346,7 @@ void ofApp::draw() {
 		if (recordingPercent >= 100.0f){
 			stopRecordingOfflineTime = std::chrono::high_resolution_clock::now();
 			ShowRecordingDurationTime();
-			OfflineWavRecordEndLoop();    // Stop & recordingOffline = false;
+			OfflineWavRecordEndLoop();    // StopWavRecord & recordingOffline = false;
 			EndWavRecord();               // Close wav file
 			
 			if (boolRecordingIR)
@@ -475,7 +475,6 @@ void ofApp::draw() {
 		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
 	}
 	if (!boolToogleDisplayHelp)
-
 	{
 		ofPushStyle();
 		ofSetColor(50, 150);
@@ -491,7 +490,7 @@ void ofApp::draw() {
 		sprintf(numberOfImagesStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 290);
 		sprintf(numberOfImagesStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 260);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 270);
 
 		sprintf(numberOfImagesStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 250);
@@ -1284,9 +1283,6 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 #if 1
 void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
 {
-	
-	//if (stopState) return; // in the stop state the processing is not carried out
-
 	// Declaration, initialization and filling mono buffers
 	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
 	source1Wav.FillBuffer(source1);
@@ -1310,32 +1306,6 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 #ifdef USE_PROFILER
 	if (profilling) { Common::PROFILER3DTI.RelativeSampleEnd(dsProcessFrameTime); }
 #endif	
-}
-#endif
-#if 0
-void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize)
-{
-	// Declaration, initialization and filling mono buffers
-	CMonoBuffer<float> source1(uiBufferSize);  //FIXME cambiar el nombre source1
-	source1Wav.FillBuffer(source1);
-
-	processAnechoic(source1, bufferOutput);
-
-	// Declaration and initialization of separate buffer needed for the reverb
-	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
-	// Reverberation processing of all sources
-	if (!bDisableReverb) {
-		environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedFrames);
-		// Adding reverberated sound to the output mix
-		bufferOutput.left += bufferReverb.left;
-		bufferOutput.right += bufferReverb.right;
-	}
-
-	Common::CTransform lisenerTransform = listener->GetListenerTransform();
-	Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
-
-	processImages(source1, bufferOutput);
-
 }
 #endif
 
@@ -1432,13 +1402,7 @@ void ofApp::drawRoom(ISM::Room room, int reflectionOrder,int transparency)
 		}
 		ofPopStyle();
 	}
-	/*
-	float distanceNearestWall;
-	bool state;
-	Common::CVector3 point = Common::CVector3::ZERO;
-	point.x = 5.2; point.y = 5.2; point.z = 5.2;
-	state = room.checkPointInsideRoom(point, distanceNearestWall);
-	*/
+	
 }
 
 void ofApp::drawWall(ISM::Wall wall)
@@ -1551,18 +1515,17 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 
 void ofApp::recordIrOffline(bool &_active)
 {
-	recordingOffline = true;               // Similar to OF_KEY_F9
+	recordingOffline = true;               
 	boolRecordingIR = true;
 	offlineRecordBuffers = 0;
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	recordOfflineIRControl = false;
-	
 }
 
 void ofApp::recordWavOffline(bool& _active)
 {
-	recordingOffline = true;               // Similar to OF_KEY_F9
+	recordingOffline = true;               
 	boolRecordingIR = false;
 	offlineRecordBuffers = 0;
 	recordingPercent = 0.0f;
@@ -1603,7 +1566,6 @@ void ofApp::changeAudioToPlay(bool &_active)
 			std::string pathData = openFileResult.getPath();
 			char *charFilename = new char[pathData.length() + 1];
 			strcpy(charFilename, pathData.c_str());
-			//LoadWavFile(source1Wav, charFilename);									// Loading .wav file
 			source1Wav.resetSamplesVector();
 			source1Wav.LoadWav(charFilename);
 		}
@@ -1634,13 +1596,8 @@ void ofApp::resetAudio()
 		imageSourceDSPList.at(i)->ResetSourceBuffers();
 	environment->ResetReverbBuffers();
 	
-	
-
-	//imageSourceDSPList = reCreateImageSourceDSP();
-		
-	//////////////////////////////////
-
 	myCore.RemoveEnvironment(environment);
+
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
@@ -1702,7 +1659,7 @@ void ofApp::stopToPlay(bool &_active)
 
 void ofApp::changeRoomGeometry(bool &_active)
 {
-	if (!changeRoomGeometryControl)    //old F7
+	if (!changeRoomGeometryControl)   
 		return;                   
 	else 
 		changeRoomGeometryControl = false;
@@ -1973,7 +1930,7 @@ void ofApp::ShowRecordingMessage()
 
 void ofApp::OfflineWavRecordEndLoop()
 {
-	Stop();	// Reset clip positions	
+	StopWavRecord();	// Reset clip positions	
 	recordingOffline = false;
 }
 
@@ -1995,15 +1952,12 @@ void ofApp::EndWavRecord()
 }
 
 
-void ofApp::Stop()
+void ofApp::StopWavRecord()
 {
 	lock_guard < mutex > lock(audioMutex);	 // Avoids race conditions with audio thread when cleaning buffers
 
 	if (wavWriter.IsWriting())
 		EndWavRecord();
-
-	//for (auto & mySound : mySounds)
-	//	mySound.Stop();
 
 	environment->ResetReverbBuffers();				//Clean reverb buffers
 }

@@ -199,7 +199,7 @@ private:
 		void OfflineWavRecordOneLoopIteration(int _bufferSize);
 		void OfflineWavRecordEndLoop();
 		void ShowRecordingMessage();
-		void Stop();
+		void StopWavRecord();
 
 		//
 		void StopSystemSoundStream();

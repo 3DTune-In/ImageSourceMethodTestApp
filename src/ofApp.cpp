@@ -251,13 +251,8 @@ void ofApp::setup() {
 		ofParameter<bool> tempWall;
 		guiActiveWalls.push_back(tempWall);
 		guiActiveWalls.at(i) = true;
-
-		//guiActiveWalls.at(i).addListener(this, &ofApp::toggleWall);
-		//leftPanel.add(guiActiveWalls.at(i).set(wallNames.at(i), true));
 	}
-
 	
-
 	// Offline WAV record
 	recordingOffline = false;
 	recordingPercent = 0.0f;
@@ -329,7 +324,6 @@ void ofApp::draw() {
 			if (boolRecordingIR)
 			{
 				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
-				//source1Wav.setInitialPosition();
 			}
 			source1Wav.setInitialPosition(); //Now the wav file is always recorded from the beginning
 		}
@@ -386,13 +380,6 @@ void ofApp::draw() {
 	ofLine(0, 0, 0, 0, 0, 1);
 	ofPopStyle();
 
-	/*
-	//draw room and room images. In stop state only the room is drawn
-	if (!stopState)   
-		drawRoom(mainRoom, reflectionOrderControl,255);
-	else
-		drawRoom(mainRoom, 1, 255);
-	*/
 	drawRoom(mainRoom, reflectionOrderControl, 255);
 
 	//draw lisener
@@ -411,7 +398,7 @@ void ofApp::draw() {
 	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
 	if (!stopState) {
-		//draw image sources (only i play state)
+		//draw image sources (only if play state)
 		for (int i = 0; i < imageSourceDataList.size(); i++)
 		{
 			if (imageSourceDataList.at(i).visible)
@@ -492,46 +479,50 @@ void ofApp::draw() {
 	{
 		ofPushStyle();
 		ofSetColor(50, 150);
-		ofRect(20, ofGetHeight() - 330, 390, 325);
+		ofRect(20, ofGetHeight() - 360, 390, 355);
 		ofPopStyle();
 		char numberOfImagesStr[255];
 		sprintf(numberOfImagesStr, "KEY_LEFT: azimuth++   KEY_RIGHT: azimuth--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -320);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -350);
 		sprintf(numberOfImagesStr, "KEY_UP: elevation++   KEY_DOWN: elevation--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 300);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 330);
 		sprintf(numberOfImagesStr, "MoveSOURCE:      'k'_Left(-X)   'i'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 280);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 310);
 		sprintf(numberOfImagesStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 260);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 290);
 		sprintf(numberOfImagesStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 240);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 260);
 
 		sprintf(numberOfImagesStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 220);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 250);
 		sprintf(numberOfImagesStr, "                 'a'_Up  (+Y)   'd'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 200);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 230);
 		sprintf(numberOfImagesStr, "                 'e'_Up  (+Z)   'x'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 180);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 210);
 		
 		sprintf(numberOfImagesStr, "RotateLISTENER:  'A'_Left       'D'_right");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 160);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 190);
 
 		sprintf(numberOfImagesStr, "ChangeABSORTION: 'F1' ZeroAbs   'F2' TotalAbs");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 140);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 170);
 		sprintf(numberOfImagesStr, "                 'F3' StopBand  'F4' BandPass");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 120);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 150);
 		sprintf(numberOfImagesStr, "                 'F5' NarrowSP  'F6' NarrowBP");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 100);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 130);
 
 		sprintf(numberOfImagesStr, "                 'F7' 0.2   'F8' 0.5   'F9' 0.8");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 80);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 110);
 
 		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 60);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 90);
 		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 40);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 70);
 		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 20);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 50);
+		sprintf(numberOfImagesStr, "Enable or disable wall: '1' '2' '3' '4' ... ");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 30);
+		sprintf(numberOfImagesStr, "ReflectionOrder Increases '+'  Decreases '-'");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 10);
 	}
 
 	leftPanel.draw();
@@ -568,7 +559,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case OF_KEY_INSERT:
 		numberOfSilencedFrames++;
-		if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
+		if (numberOfSilencedFrames > 250) numberOfSilencedFrames = 250;
 		/*int numberOfSilencedFrames;
 		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
 		numberOfSilencedFrames++;
@@ -595,60 +586,7 @@ void ofApp::keyPressed(int key){
 			maxDistanceImageSourcesToListenerControl--;
 		}
 		break;
-	
-	case 'o': // setup Room=5x5x5, Absortion=0, Listener in (1,1,1), source in (4,0,0) --> top 
-	{
-		if (!stopState) systemSoundStream.stop();
-		//ROOM
-						
-		shoeboxLength = 10; shoeboxWidth = 10; shoeboxHeight = 5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 		
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		absortionsWalls.resize(numWalls);
-				
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		reflectionOrderControl = INITIAL_REFLECTION_ORDER;
-		mainRoom = ISMHandler->getRoom();
-						
-		//LISTENER
-		Common::CVector3 listenerLocation(1, 1, 1);
-		Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (1,1,1)
-		listenerPosition.SetPosition(listenerLocation);
-		listener->SetListenerTransform(listenerPosition);
-
-				
-		//SOURCE
-		// Set the original anechoic source to corner
-		Common::CVector3 newLocation(4, 0, 0);
-		ISMHandler->setSourceLocation(newLocation);
-		Common::CTransform sourcePosition;
-		sourcePosition.SetPosition(newLocation);
-		anechoicSourceDSP->SetSourceTransform(sourcePosition);
-
-		//WALLs
-		guiActiveWalls.resize(numWalls);
-		for (int i = 1; i < numWalls; i++)
-			guiActiveWalls.at(i) = FALSE;
-
-		//SOURCES DSP
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		// Disable AnechoicProcess 
-
-		if (anechoicSourceDSP->IsAnechoicProcessEnabled())
-		{
-			anechoicSourceDSP->DisableAnechoicProcess();
-			stateAnechoicProcess = false;
-		}
-		if (!stopState) systemSoundStream.start(); 
-	}
-	break;
 	case 'k': //Moves the source left (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
@@ -1007,16 +945,7 @@ void ofApp::keyPressed(int key){
 		if (!stopState) systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F10: //Recording offline
-	{
-		recordingOffline = true;               // Recording offline
-		boolRecordingIR = false;
-		offlineRecordBuffers = 0;
-		recordingPercent = 0.0f;
-		offlineRecordIteration = 0;
-	}
-	break;
-
+	
 	case 'y': //increase room's length
 		if (!stopState) systemSoundStream.stop();
 		
@@ -1029,7 +958,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1046,7 +975,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1063,7 +992,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1080,7 +1009,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1096,7 +1025,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1112,7 +1041,7 @@ void ofApp::keyPressed(int key){
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		//ISMHandler_new->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+		
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1170,8 +1099,6 @@ void ofApp::keyPressed(int key){
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
 		
 		break;
-		
-		
 	}
 }
 

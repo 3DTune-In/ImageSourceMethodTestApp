@@ -118,17 +118,3 @@ unsigned long long SoundSource::getSizeSamplesVector()
 {
 	return samplesVector.size();
 }
-
-#if 0
-void SoundSource::startStopState() {
-	samplesVectorCopy = samplesVector;			// Save initial wav file
-	//samplesVector.resize(44100); sampleRate
-	samplesVector.resize(sampleRate);       
-	std::fill(samplesVector.begin(), samplesVector.end(), 0.0);
-}
-
-void SoundSource::endStopState() {
-	samplesVector.resize(samplesVectorSize);
-	samplesVector = samplesVectorCopy;           //Restore initial wav file
-}
-#endif

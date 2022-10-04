@@ -42,9 +42,6 @@ public :
 
 	unsigned long long getSizeSamplesVector();
 
-	//void startStopState();
-	//void endStopState();
-
 	void resetSamplesVector();
 	
 private:

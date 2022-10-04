@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOMGEOMETRY>
+   <CORNERS>
+        <CORNER _3Dpoint="  7.0,  4.0, -3.0"/>
+		<CORNER _3Dpoint="  0.0,  6.0, -3.0"/>
+		<CORNER _3Dpoint=" -7.0,  4.0, -3.0"/>
+		<CORNER _3Dpoint=" -7.0, -4.0, -3.0"/>
+		<CORNER _3Dpoint="  0.0, -6.0, -3.0"/>
+		<CORNER _3Dpoint="  7.0, -4.0, -3.0"/>
+		
+		<CORNER _3Dpoint="  7.0,  4.0, 3.0"/>
+		<CORNER _3Dpoint="  0.0,  6.0, 3.0"/>
+		<CORNER _3Dpoint=" -7.0,  4.0, 3.0"/>
+		<CORNER _3Dpoint=" -7.0, -4.0, 3.0"/>
+		<CORNER _3Dpoint="  0.0, -6.0, 3.0"/>
+		<CORNER _3Dpoint="  7.0, -4.0, 3.0"/>
+		
+    </CORNERS>
+	
+    <WALLS>
+        <WALL corner="0,  5, 11, 6"           absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+        <WALL corner="0,  6,  7, 1"           absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="1,  7,  8, 2"           absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="8,  9,  3, 2"           absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+		<WALL corner="9,  10, 4, 3"           absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+        <WALL corner="4,  10, 11, 5"          absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+        <WALL corner="0,  1,  2,  3, 4,  5"   absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+        <WALL corner="11, 10, 9,  8, 7,  6"   absor="0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3"/>
+    </WALLS>
+</ROOMGEOMETRY>

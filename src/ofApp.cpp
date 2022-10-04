@@ -17,7 +17,6 @@ Common::CTimeMeasure startOfflineRecord;
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 8
-#define NUMBER_OF_WALLS 6
 #define MAX_DIST_SILENCED_FRAMES 1000
 #define MIN_DIST_SILENCED_FRAMES 2
 #define MAX_SECONDS_TO_RECORD 60
@@ -151,7 +150,7 @@ void ofApp::setup() {
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
 	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	//stateAnechoicProcess = true;
+	//stateAnechoicProcess = true;                  //Is set to true in the method in toggleAnechoic             
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 	anechoicSourceDSP->EnableDistanceAttenuationReverb();
 	anechoicSourceDSP->EnablePropagationDelay();

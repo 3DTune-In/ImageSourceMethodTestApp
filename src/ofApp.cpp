@@ -162,7 +162,7 @@ void ofApp::setup() {
 	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
-	if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
+	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 	
 	fullPath = pathResources + "\\" + "speech_female.wav";
 	const char* _filePath = fullPath.c_str();

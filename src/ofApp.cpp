@@ -1738,9 +1738,9 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 
 	if (stateBinauralSpatialisation)
 	{
-		anechoicSourceDSP->DisableAnechoicProcess();
+		anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
-			imageSourceDSPList.at(i)->DisableAnechoicProcess();
+			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
 
 		
 		anechoicEnableControl.set(false);
@@ -1749,9 +1749,9 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 	}
 	else
 	{
-		anechoicSourceDSP->EnableAnechoicProcess();
+		anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
-			imageSourceDSPList.at(i)->EnableAnechoicProcess();
+			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
 
 		
 		anechoicEnableControl.set(true);

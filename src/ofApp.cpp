@@ -19,7 +19,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_REFLECTION_ORDER 8
 #define MAX_DIST_SILENCED_FRAMES 1000
 #define MIN_DIST_SILENCED_FRAMES 2
-#define MAX_SECONDS_TO_RECORD 60
+#define MAX_SECONDS_TO_RECORD 30
 
 
 //--------------------------------------------------------------
@@ -185,61 +185,67 @@ void ofApp::setup() {
 
 	leftPanel.disableHeader();
 	leftPanel.setup(pathResources + "\\", "config.xml", 20, 150);
-	leftPanel.setWidthElements(200);
+	leftPanel.setWidthElements(220);
 
 	zoom.addListener(this, &ofApp::changeZoom);
-	leftPanel.add(zoom.setup("Zoom", 0, -20, 20, 50, 15));
+	leftPanel.add(zoom.setup("Zoom (Pg. up/down)", 0, -20, 20, 50, 15));
 
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
-	leftPanel.add(reflectionOrderControl.set("Order", INITIAL_REFLECTION_ORDER, 0, MAX_REFLECTION_ORDER));
-			
-	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
-	leftPanel.add(anechoicEnableControl.set("ANECHOIC", true));
-
-	reverbEnableControl.addListener(this, &ofApp::toggleReverb);
-	leftPanel.add(reverbEnableControl.set("REVERB", false));
-		
+	leftPanel.add(reflectionOrderControl.set("Relection Order (+/-)", INITIAL_REFLECTION_ORDER, 0, MAX_REFLECTION_ORDER));
+	
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
-	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Distance", INITIAL_DIST_SILENCED_FRAMES, 2, MAX_DIST_SILENCED_FRAMES));
+	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, 2, MAX_DIST_SILENCED_FRAMES));
 
-	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
-	leftPanel.add(recordOfflineIRControl.set("RECORD_IR_OFFLINE", false));
+	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
+	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
 
-	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("SecondsToRecord", 1, 1, MAX_SECONDS_TO_RECORD));
+	//reverbEnableControl.addListener(this, &ofApp::toggleReverb);
+	//leftPanel.add(reverbEnableControl.set("REVERB", false));
+	bDisableReverb = true;
 
-	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
-	leftPanel.add(recordOfflineWAVControl.set("RECORD_WAV_OFFLINE", false));
+	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
+	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
 
 	/* The system starts its execution in PLAY mode
-	playState = true;
-	stopState = false;
+       playState = true;
+       stopState = false;
 
-	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
+       stopToPlayControl.addListener(this, &ofApp::stopToPlay);
+       leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
 
-	playToStopControl.addListener(this, &ofApp::playToStop);
-	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
-	*/
+       playToStopControl.addListener(this, &ofApp::playToStop);
+       leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
+    */
 
-	//The system starts its execution in STOP mode
+//The system starts its execution in STOP mode
 	playState = false;
 	stopState = true;
 
 	systemSoundStream.stop();
 
 	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", false));
+	leftPanel.add(stopToPlayControl.set("Play", false));
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
-	leftPanel.add(playToStopControl.set("STOP_AUDIO", true));
+	leftPanel.add(playToStopControl.set("Stop", true));
 	
+	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
+	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", 1, 1, MAX_SECONDS_TO_RECORD));
+
+	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
+	leftPanel.add(recordOfflineIRControl.set("Save IR", false));
+
+	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
+	leftPanel.add(recordOfflineWAVControl.set("Record (offline)", false));
 		
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
-	leftPanel.add(changeAudioToPlayControl.set("CHANGE_AUDIO_FILE", false));
+	leftPanel.add(changeAudioToPlayControl.set("Load audio", false));
 
 	changeRoomGeometryControl.addListener(this, &ofApp::changeRoomGeometry);
-	leftPanel.add(changeRoomGeometryControl.set("CHANGE_ROOM_GEOMETRY", false));
+	leftPanel.add(changeRoomGeometryControl.set("Load room", false));
+
+	changeHRTFControl.addListener(this, &ofApp::changeHRTF);
+	leftPanel.add(changeHRTFControl.set("Load HRTF", false));
 	
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
 	leftPanel.add(helpDisplayControl.set("HELP", false));
@@ -283,7 +289,7 @@ void ofApp::draw() {
 			string pathData = ofToDataPath("", true);
 			string filename2, fileNameUsr;
 			if (boolRecordingIR)
-				fileNameUsr = ofSystemTextBoxDialog("Save Response Impulse", filename2 = "");
+				fileNameUsr = ofSystemTextBoxDialog("File to save Response Impulse", filename2 = "");
 			else
 				fileNameUsr = ofSystemTextBoxDialog("File to save the recording", filename2 = "");
 		
@@ -1615,8 +1621,8 @@ void ofApp::playToStop(bool &_active)
 		
 	if (!playToStopControl && !stopToPlayControl && !playState && stopState)
 	{
-		playToStopControl.set("STOP_AUDIO", true);
-		stopToPlayControl.set("PLAY_AUDIO", false);
+		playToStopControl.set("Stop", true);
+		stopToPlayControl.set("Play", false);
 	}
 	else if (playToStopControl && playState)
 	{
@@ -1631,8 +1637,8 @@ void ofApp::playToStop(bool &_active)
 			imageSourceDSPList.at(i)->ResetSourceBuffers();
 		stopState = true;
 		playState = false;
-		playToStopControl.set("STOP_AUDIO", true);
-		stopToPlayControl.set("PLAY_AUDIO", false);
+		playToStopControl.set("Stop", true);
+		stopToPlayControl.set("Play", false);
 	}
 }
 
@@ -1642,8 +1648,8 @@ void ofApp::stopToPlay(bool &_active)
 		
 	if (!playToStopControl && !stopToPlayControl && playState && !stopState)
 	{
-		playToStopControl.set("STOP_AUDIO", false);
-		stopToPlayControl.set("PLAY_AUDIO", true);
+		playToStopControl.set("Stop", false);
+		stopToPlayControl.set("Play", true);
 	}
 	else if (stopToPlayControl && stopState) {
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
@@ -1651,8 +1657,8 @@ void ofApp::stopToPlay(bool &_active)
 		playState = true;
 		source1Wav.setInitialPosition();
 		systemSoundStream.start();
-		stopToPlayControl.set("PLAY_AUDIO", true);
-		playToStopControl.set("STOP_AUDIO", false);
+		stopToPlayControl.set("Play", true);
+		playToStopControl.set("Stop", false);
 	}
 }
 
@@ -1793,6 +1799,19 @@ void ofApp::toggleAnechoic(bool &_active)
 		anechoicSourceDSP->EnableAnechoicProcess();
 		stateAnechoicProcess = true;
 	}
+}
+
+void ofApp::changeHRTF(bool& _active)
+{
+	if (!changeHRTFControl)
+		return;
+	else
+		changeHRTFControl = false;
+}
+
+void ofApp::toggleBinauralSpatialisation(bool& _active)
+{
+
 }
 
 void ofApp::toggleReverb(bool &_active)

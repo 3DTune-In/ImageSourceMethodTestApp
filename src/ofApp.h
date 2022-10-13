@@ -82,12 +82,14 @@ private:
 		ofParameter<int> reflectionOrderControl;
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
+		ofParameter<bool> binauralSpatialisationEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<bool> recordOfflineWAVControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
 		ofParameter<bool> changeRoomGeometryControl;
+		ofParameter<bool> changeHRTFControl;
 		ofParameter<bool> playToStopControl;
 		ofParameter<bool> stopToPlayControl;
 
@@ -175,13 +177,15 @@ private:
 		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
-		void toggleAnechoic(bool &active);
+		void toggleAnechoic(bool& active);
+		void toggleBinauralSpatialisation(bool& active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
 		void recordWavOffline(bool& active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);
+		void changeHRTF(bool& active);
 		void playToStop(bool &active);
 		void stopToPlay(bool &active);
 		

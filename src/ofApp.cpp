@@ -1753,6 +1753,11 @@ void ofApp::changeRoomGeometry(bool &_active)
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	guiActiveWalls.resize(numWalls);
 
+	for (int i = 0; i < numWalls; i++)
+	{
+		guiActiveWalls.at(i) = true;
+	}
+
 	//Absortion as vector
 	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 

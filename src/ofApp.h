@@ -134,6 +134,7 @@ private:
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
 		bool stateAnechoicProcess;                                                          // Enabled o Disabled
+		bool stateBinauralSpatialisation;                                                   // Enabled o Disabled
 
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 

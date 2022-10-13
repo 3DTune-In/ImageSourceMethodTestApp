@@ -1787,6 +1787,7 @@ void ofApp::toggleWall(bool &_active)
 {
 	refreshActiveWalls();
 }
+
 void ofApp::toggleAnechoic(bool &_active)
 {
 	if (stateAnechoicProcess)
@@ -1811,6 +1812,28 @@ void ofApp::changeHRTF(bool& _active)
 
 void ofApp::toggleBinauralSpatialisation(bool& _active)
 {
+	if (stateBinauralSpatialisation)
+	{
+		anechoicSourceDSP->DisableAnechoicProcess();
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->DisableAnechoicProcess();
+
+		stateAnechoicProcess = false;
+		anechoicEnableControl.set(false);
+
+		stateBinauralSpatialisation = false;
+	}
+	else
+	{
+		anechoicSourceDSP->EnableAnechoicProcess();
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->EnableAnechoicProcess();
+
+		stateAnechoicProcess = true;
+		anechoicEnableControl.set(true);
+
+		stateBinauralSpatialisation = true;
+	}
 
 }
 

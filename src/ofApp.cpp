@@ -248,7 +248,10 @@ void ofApp::setup() {
 	leftPanel.add(changeHRTFControl.set("Load HRTF", false));
 	
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
-	leftPanel.add(helpDisplayControl.set("HELP", false));
+	leftPanel.add(helpDisplayControl.set("Help", false));
+
+	aboutDisplayControl.addListener(this, &ofApp::toogleAboutDisplay);
+	leftPanel.add(aboutDisplayControl.set("About", false));
 	
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	for (int i = 0; i < numWalls; i++)
@@ -469,6 +472,7 @@ void ofApp::draw() {
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
 	sprintf(numberOfImagesStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
+#if 0
 	if (!bDisableReverb) 
 	{
  	    sprintf(numberOfImagesStr, "Number of silences frames: %d", numberOfSilencedFrames);
@@ -479,54 +483,81 @@ void ofApp::draw() {
 		sprintf(numberOfImagesStr, "Reverb Disabled");
 		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
 	}
+#endif
+	
 	if (!boolToogleDisplayHelp)
 	{
 		ofPushStyle();
 		ofSetColor(50, 150);
-		ofRect(20, ofGetHeight() - 360, 390, 355);
+		ofRect(20, ofGetHeight() - 250, 390, 355);
 		ofPopStyle();
 		char numberOfImagesStr[255];
-		sprintf(numberOfImagesStr, "KEY_LEFT: azimuth++   KEY_RIGHT: azimuth--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -350);
-		sprintf(numberOfImagesStr, "KEY_UP: elevation++   KEY_DOWN: elevation--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 330);
+		sprintf(numberOfImagesStr, "Point of View Control: cursor keys");
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -230);
+		
 		sprintf(numberOfImagesStr, "MoveSOURCE:      'k'_Left(-X)   'i'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 310);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 210);
 		sprintf(numberOfImagesStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 290);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 190);
 		sprintf(numberOfImagesStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 270);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 170);
 
 		sprintf(numberOfImagesStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 250);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 150);
 		sprintf(numberOfImagesStr, "                 'a'_Up  (+Y)   'd'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 230);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 130);
 		sprintf(numberOfImagesStr, "                 'e'_Up  (+Z)   'x'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 210);
+		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 110);
 		
 		sprintf(numberOfImagesStr, "RotateLISTENER:  'A'_Left       'D'_right");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 190);
-
-		sprintf(numberOfImagesStr, "ChangeABSORTION: 'F1' ZeroAbs   'F2' TotalAbs");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 170);
-		sprintf(numberOfImagesStr, "                 'F3' StopBand  'F4' BandPass");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 150);
-		sprintf(numberOfImagesStr, "                 'F5' NarrowSP  'F6' NarrowBP");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 130);
-
-		sprintf(numberOfImagesStr, "                 'F7' 0.2   'F8' 0.5   'F9' 0.8");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 110);
-
-		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 90);
-		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
+				
+		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 70);
-		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
+		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 50);
-		sprintf(numberOfImagesStr, "Enable or disable wall: '1' '2' '3' '4' ... ");
+		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 30);
-		sprintf(numberOfImagesStr, "ReflectionOrder Increases '+'  Decreases '-'");
+		sprintf(numberOfImagesStr, "Enable or disable wall: '1' '2' '3' '4' ... ");
 		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 10);
+
+	}
+
+	if (!boolToogleDisplayAbout)
+	{
+
+		ofPushStyle();
+		ofSetColor(50, 150);
+		ofRect((ofGetWidth()/2)-300, ofGetHeight()/4, 660, 300);
+		ofPopStyle();
+		char numberOfImagesStr[255];
+		sprintf(numberOfImagesStr, "Version: 1.0.0");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 +30, ofGetHeight()/4 +20);
+		sprintf(numberOfImagesStr, "Copyright: ");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +50);
+		sprintf(numberOfImagesStr, "Authors: Fabian Arrebola, Daniel Gonzalez-Toledo, Paula Garcia-Jimenez");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +80);
+		sprintf(numberOfImagesStr, "         Luis Molina-Tanco, Maria Cuevas-Rodriguez, Arcadio Reyes-Lecuona");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +100);
+
+		sprintf(numberOfImagesStr, "M. Cuevas-Rodriguez et al., 3D Tune-In Toolkit:");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +130);
+		sprintf(numberOfImagesStr, "An open - source library for real - time binaural spatialisation,");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight() / 4 +150);
+		sprintf(numberOfImagesStr, "PLoS One, vol. 14, no. 3, p. e0211899, Mar. 2019.");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight() / 4 +170);
+		
+		sprintf(numberOfImagesStr, "This work has been partially funded by the Ministry of Science and Technology");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +200);
+		sprintf(numberOfImagesStr, "within the National R&D Plan through the SAVLab project");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +220);
+		sprintf(numberOfImagesStr, "Virtual Spatial Audio Laboratory (PID2019-107854GB-I00)");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +240);
+		sprintf(numberOfImagesStr, "and by the European Union, within the framework program Horizon 2020");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +260);
+		sprintf(numberOfImagesStr, "through the SONICOM project (agreement No. 101017743)");
+		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +280);
+		 
 	}
 
 	leftPanel.draw();
@@ -802,6 +833,7 @@ void ofApp::keyPressed(int key){
 			refreshActiveWalls();
 		}
 		break;
+#if 0
 	case OF_KEY_F1://ABSORTION -- null
 	{
 		if (!stopState) systemSoundStream.stop();
@@ -818,137 +850,7 @@ void ofApp::keyPressed(int key){
 		if (!stopState) systemSoundStream.start();
 		break;
 	}
-	case OF_KEY_F2://ABSORTION -- total
-	{
-		if (!stopState) systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-	
-		imageSourceDSPList = reCreateImageSourceDSP();
-		
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-	case OF_KEY_F3://ABSORTION -- LP + HP
-	{
-		if (!stopState) systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-		
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-	case OF_KEY_F4://ABSORTION -- BP-250-4000
-	{
-		systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-		
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-	case OF_KEY_F5://ABSORTION STOPB
-	{
-		if (!stopState) systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-	case OF_KEY_F6://ABSORTION -- BP-Narrow-1000
-	{
-		if (!stopState) systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-
-	case OF_KEY_F7: //set absortion to 0.2
-	{
-		if (!stopState) systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-
-	case OF_KEY_F8: //set absortion to 0.5
-	{
-		if (!stopState) systemSoundStream.stop();
-
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-
-	case OF_KEY_F9: //set absortion to 0.8
-	{
-		if (!stopState) systemSoundStream.stop();
-		
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
+#endif
 	
 	case 'y': //increase room's length
 		if (!stopState) systemSoundStream.stop();
@@ -1088,10 +990,18 @@ void ofApp::keyPressed(int key){
 		}
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
+
 		if (stateAnechoicProcess) 
 			cout << "AnechoicProcess Enabled" << "\n";
 		else 
 			cout << "AnechoicProcess Disabled" << "\n";
+
+		if (stateBinauralSpatialisation)
+			cout << "BinauralSpatialisation Enabled" << "\n";
+		else
+			cout << "BinauralSpatialisation Disabled" << "\n";
+
+#if 0
 		if (!bDisableReverb)
 		{
 			cout << "Reverb Enabled" << "\n";
@@ -1099,7 +1009,8 @@ void ofApp::keyPressed(int key){
 		}
 		else
 			cout << "Reverb Disabled" << "\n";
-			
+#endif
+
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
 		
 		break;
@@ -1549,6 +1460,11 @@ void ofApp::toogleHelpDisplay(bool &_active)
 	boolToogleDisplayHelp = !boolToogleDisplayHelp;
 }
 
+void ofApp::toogleAboutDisplay(bool& _active)
+{
+	boolToogleDisplayAbout = !boolToogleDisplayAbout;
+}
+
 void ofApp::changeAudioToPlay(bool &_active)
 {
 	changeAudioToPlayControl = false;
@@ -1812,15 +1728,23 @@ void ofApp::changeHRTF(bool& _active)
 
 void ofApp::toggleBinauralSpatialisation(bool& _active)
 {
+
+	if (setupDone == false)
+	{
+		stateBinauralSpatialisation = true;
+		return;
+	}
+		
+
 	if (stateBinauralSpatialisation)
 	{
 		anechoicSourceDSP->DisableAnechoicProcess();
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->DisableAnechoicProcess();
 
-		stateAnechoicProcess = false;
+		
 		anechoicEnableControl.set(false);
-
+		stateAnechoicProcess = false;
 		stateBinauralSpatialisation = false;
 	}
 	else
@@ -1829,13 +1753,15 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->EnableAnechoicProcess();
 
-		stateAnechoicProcess = true;
+		
 		anechoicEnableControl.set(true);
-
+		stateAnechoicProcess = true;
 		stateBinauralSpatialisation = true;
 	}
 
 }
+
+
 
 void ofApp::toggleReverb(bool &_active)
 {

@@ -36,7 +36,7 @@
 
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
-# define INITIAL_REFLECTION_ORDER 2
+# define INITIAL_REFLECTION_ORDER 3
 # define INITIAL_DIST_SILENCED_FRAMES  1000
 # define FRAME_RATE 60
 
@@ -94,6 +94,7 @@ private:
 		ofParameter<bool> stopToPlayControl;
 
 		ofParameter<bool> helpDisplayControl;
+		ofParameter<bool> aboutDisplayControl;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
@@ -140,6 +141,7 @@ private:
 
 		float scale = DEFAULT_SCALE;			//visualization scale
 		bool boolToogleDisplayHelp;
+		bool boolToogleDisplayAbout;
 		bool playState;
 		bool stopState;		
 		bool profilling;	
@@ -191,6 +193,8 @@ private:
 		void stopToPlay(bool &active);
 		
 		void toogleHelpDisplay(bool &_active);
+		void toogleAboutDisplay(bool& _active);
+
 		void ShowRecordingDurationTime();
 
 		/// Methods to manage XML

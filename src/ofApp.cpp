@@ -1743,8 +1743,8 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
 
 		
-		anechoicEnableControl.set(false);
-		stateAnechoicProcess = false;
+		//anechoicEnableControl.set(false);
+		//stateAnechoicProcess = false;
 		stateBinauralSpatialisation = false;
 	}
 	else
@@ -1754,8 +1754,8 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
 
 		
-		anechoicEnableControl.set(true);
-		stateAnechoicProcess = true;
+		//anechoicEnableControl.set(true);
+		//stateAnechoicProcess = true;
 		stateBinauralSpatialisation = true;
 	}
 

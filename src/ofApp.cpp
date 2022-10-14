@@ -1725,11 +1725,7 @@ void ofApp::changeHRTF(bool& _active)
 	if (setupDone == false) return;
 
 	if (!stopState) systemSoundStream.stop();
-	///////////////////////
 	
-
-	///////////////////////
-		
 	string pathData = ofToDataPath("", false);
 
 	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new HRTF");
@@ -1741,10 +1737,8 @@ void ofApp::changeHRTF(bool& _active)
 		if (fileExtension == "SOFA")
 		{
 			string pathData = openFileResult.getPath();
-	
 			char* charFilename = new char[pathData.length() + 1];
 			strcpy(charFilename, pathData.c_str());
-			//cout << "Load new HRTF File " << charFilename << endl << endl;
 			bool specifiedDelays;
 			bool sofaLoadResult = HRTF::CreateFromSofa(pathData, listener, specifiedDelays);
 
@@ -1766,7 +1760,8 @@ void ofApp::changeHRTF(bool& _active)
 			return;
 		}
 	}
-	else {
+	else 
+	{
 		ofLogError() << "Couldn't load file";
 		if (!stopState) systemSoundStream.start();
 		return;

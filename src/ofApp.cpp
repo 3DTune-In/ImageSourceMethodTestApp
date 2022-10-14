@@ -1489,6 +1489,7 @@ void ofApp::changeAudioToPlay(bool &_active)
 			strcpy(charFilename, pathData.c_str());
 			source1Wav.resetSamplesVector();
 			source1Wav.LoadWav(charFilename);
+			cout << "Load new WAV File " << charFilename << endl << endl;
 		}
 		else
 		{
@@ -1720,10 +1721,58 @@ void ofApp::toggleAnechoic(bool &_active)
 
 void ofApp::changeHRTF(bool& _active)
 {
-	if (!changeHRTFControl)
+	changeHRTFControl = false;
+	if (setupDone == false) return;
+
+	if (!stopState) systemSoundStream.stop();
+	///////////////////////
+	
+
+	///////////////////////
+		
+	string pathData = ofToDataPath("", false);
+
+	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new HRTF");
+	//Check if the user opened a file
+	if (openFileResult.bSuccess) {
+		ofFile file(openFileResult.getPath());
+		ofLogVerbose("The file exists - now checking the type via file extension");
+		string fileExtension = ofToUpper(file.getExtension());
+		if (fileExtension == "SOFA")
+		{
+			string pathData = openFileResult.getPath();
+	
+			char* charFilename = new char[pathData.length() + 1];
+			strcpy(charFilename, pathData.c_str());
+			//cout << "Load new HRTF File " << charFilename << endl << endl;
+			bool specifiedDelays;
+			bool sofaLoadResult = HRTF::CreateFromSofa(pathData, listener, specifiedDelays);
+
+			if (!sofaLoadResult) {
+				cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
+				if (!stopState) systemSoundStream.start();
+				return;
+			}
+			else
+			{
+				cout << "Load new HRTF File " << pathData << endl  << endl;
+			}
+		}
+		else
+		{
+			ofLogError() << "Extension must be SOFA";
+			if (!stopState) systemSoundStream.start();
+			cout << "Load new HRTF File " << pathData << endl << endl;
+			return;
+		}
+	}
+	else {
+		ofLogError() << "Couldn't load file";
+		if (!stopState) systemSoundStream.start();
 		return;
-	else
-		changeHRTFControl = false;
+	}
+	
+	if (!stopState) systemSoundStream.start();
 }
 
 void ofApp::toggleBinauralSpatialisation(bool& _active)
@@ -1742,9 +1791,6 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
 
-		
-		//anechoicEnableControl.set(false);
-		//stateAnechoicProcess = false;
 		stateBinauralSpatialisation = false;
 	}
 	else
@@ -1753,9 +1799,6 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
 
-		
-		//anechoicEnableControl.set(true);
-		//stateAnechoicProcess = true;
 		stateBinauralSpatialisation = true;
 	}
 

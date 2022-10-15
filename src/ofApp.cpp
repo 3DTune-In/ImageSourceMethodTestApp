@@ -523,44 +523,93 @@ void ofApp::draw() {
 
 	}
 
+	leftPanel.draw();
+
 	if (!boolToogleDisplayAbout)
 	{
+		int width = 1050;
+		int height = 470;
+		int leftSide = (ofGetWidth() / 2) - width / 2;
+		int upSide = ofGetHeight() / 2 - height / 2;
+		int upPos = 20;
 
 		ofPushStyle();
-		ofSetColor(50, 150);
-		ofRect((ofGetWidth()/2)-300, ofGetHeight()/4, 660, 300);
+		ofSetColor(50, 230);
+		ofRect(leftSide, upSide, width, height);
+		ofNoFill();
+		ofSetColor(200, 200);
+		ofDrawRectangle(leftSide, upSide, width, height);
 		ofPopStyle();
-		char numberOfImagesStr[255];
-		sprintf(numberOfImagesStr, "Version: 1.0.0");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 +30, ofGetHeight()/4 +20);
-		sprintf(numberOfImagesStr, "Copyright: ");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +50);
-		sprintf(numberOfImagesStr, "Authors: Fabian Arrebola, Daniel Gonzalez-Toledo, Paula Garcia-Jimenez");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +80);
-		sprintf(numberOfImagesStr, "         Luis Molina-Tanco, Maria Cuevas-Rodriguez, Arcadio Reyes-Lecuona");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +100);
 
-		sprintf(numberOfImagesStr, "M. Cuevas-Rodriguez et al., 3D Tune-In Toolkit:");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +130);
-		sprintf(numberOfImagesStr, "An open - source library for real - time binaural spatialisation,");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight() / 4 +150);
-		sprintf(numberOfImagesStr, "PLoS One, vol. 14, no. 3, p. e0211899, Mar. 2019.");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight() / 4 +170);
+		char string[255];
+
+		sprintf(string, "ABOUT IMAGE SOURCE METHOD (ISM) SIMULATOR");
+		upPos += 5;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
+		sprintf(string, "Version: 1.0.0");
+		upPos += 40;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
+		sprintf(string, "Copyright (c) University of Malaga. Contact email: areyes@uma.es.");
+		upPos += 30; 
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
+		sprintf(string, "This software is available under GPLv3 license at https://github.com/3DTune-In/ImageSourceMethodTestApp");
+		upPos += 30;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
+		sprintf(string, "The ISM Simulator is a demostrator of the capabilities of the 3D Tune-In Toolkit to simulate eary reflections using the Image");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "Source Method. The application interface has been developed by Fabian Arrebola and Arcadio Reyes-Lecuona, and includes the ");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "3D Tune-In Toolkit library, developed and maintained by the 3DI-DIANA Team at the University of Malaga (Currently formed by ");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "Daniel González-Toledo, María Cuevas-Rodríguez, Luis Molina Tanco and Fabián Arrebola), under the coordination of Arcadio ");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "Reyes-Lecuona (University of Malaga) and Lorenzo Picinali (Imperial College London)");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
+		sprintf(string, "The 3D tune-In Toolkit is a standard C++ library for audio spatialisation and simulation using headphones, available at ");
+		upPos += 30;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "https://github.com/3DTune-In/3dti_AudioToolkit. Technical details about the 3D Tune-In Toolkit spatialiser are described in:");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "    - Cuevas-Rodríguez M, Picinali L, González-Toledo D, Garre C, de la Rubia-Cuestas E, Molina-Tanco L and Reyes-Lecuona A. (2019)");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "      3D Tune-In Toolkit: An open-source library for real-time binaural spatialisation. PLOS ONE 14(3): e0211899. ");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 		
-		sprintf(numberOfImagesStr, "This work has been partially funded by the Ministry of Science and Technology");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +200);
-		sprintf(numberOfImagesStr, "within the National R&D Plan through the SAVLab project");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +220);
-		sprintf(numberOfImagesStr, "Virtual Spatial Audio Laboratory (PID2019-107854GB-I00)");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +240);
-		sprintf(numberOfImagesStr, "and by the European Union, within the framework program Horizon 2020");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +260);
-		sprintf(numberOfImagesStr, "through the SONICOM project (agreement No. 101017743)");
-		ofDrawBitmapString(numberOfImagesStr, (ofGetWidth() / 2) - 300 + 30, ofGetHeight()/4 +280);
-		 
+		sprintf(string, "You may use this software to generate 3D sounds or room IR without additional restrictions to those imposed by the license of ");
+		upPos += 30;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "the original audio or room geometry. You are not compelled to make any mention to this software when using or distributing ");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "those audio files, but we would highly appreciate if you might kindly acknowledge this ISM simulator and the 3D Tune-In Toolkit.");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
+		sprintf(string, "This work has been partially funded by the Ministry of Science and Technology within the National R&D Plan through the SAVLab ");
+		upPos += 30;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "project Virtual Spatial Audio Laboratory (PID2019-107854GB-I00) and by the European Union, within the framework program ");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+		sprintf(string, "Horizon 2020 through the SONICOM project (agreement No. 101017743)");
+		upPos += 20;
+		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
+
 	}
 
-	leftPanel.draw();
 }
 
 //--------------------------------------------------------------

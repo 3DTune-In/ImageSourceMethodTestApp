@@ -1433,10 +1433,17 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		Common::CTransform sourcePosition;
 		sourcePosition.SetPosition(imageSourceLocationList.at(i));
 		tempSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
-		tempSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+		if (stateBinauralSpatialisation)
+		{
+			tempSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
+		}
+		else
+		{
+			tempSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);	// Choosing no spatialisation mode for anechoic processing
+		}
 		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-		tempSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+		tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
 		tempImageSourceDSPList.push_back(tempSourceDSP);
@@ -1837,20 +1844,14 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 	if (stateBinauralSpatialisation)
 	{
 		anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
-		for (int i = 0; i < imageSourceDSPList.size(); i++)
-			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
-
 		stateBinauralSpatialisation = false;
 	}
 	else
 	{
 		anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
-		for (int i = 0; i < imageSourceDSPList.size(); i++)
-			imageSourceDSPList.at(i)->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
-
 		stateBinauralSpatialisation = true;
 	}
-
+	imageSourceDSPList = reCreateImageSourceDSP();
 }
 
 
@@ -1946,6 +1947,11 @@ void ofApp::OfflineWavRecordOneLoopIteration(int _bufferSize)
 	recordBuffer.left.resize(_bufferSize);
 	recordBuffer.right.resize(_bufferSize);
 	audioProcess(recordBuffer, _bufferSize);
+	for (int i = 0; i < recordBuffer.left.size(); i++) {
+		if (abs(recordBuffer.left[i]) > 1.0 || abs(recordBuffer.right[i]) > 1.0) {
+			cout << "SAMPLES OUT OF RANGE!" << "\n";
+		}
+	}
 	wavWriter.AppendToFile(recordBuffer);
 	//offlineRecordBuffers++;
 }

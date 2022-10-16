@@ -289,13 +289,18 @@ void ofApp::draw() {
 
 		if (offlineRecordBuffers == 0) {
 			
-			string pathData = ofToDataPath("", true);
-			string filename2, fileNameUsr;
+//			string pathData = ofToDataPath("", true);
+			string fileNameUsr;
 			if (boolRecordingIR)
-				fileNameUsr = ofSystemTextBoxDialog("File to save Response Impulse", filename2 = "");
+			{
+				ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
+				fileNameUsr = saveFileResult.getPath();
+			}
 			else
-				fileNameUsr = ofSystemTextBoxDialog("File to save the recording", filename2 = "");
-		
+			{
+				ofFileDialogResult saveFileResult = ofSystemSaveDialog("sample.wav", "Save output audio");
+				fileNameUsr = saveFileResult.getPath();
+			}
 			if (fileNameUsr.size() > 0) {				
 				StartWavRecord(fileNameUsr+".wav", 16);                        // Open wav file
 				startRecordingOfflineTime = std::chrono::high_resolution_clock::now();

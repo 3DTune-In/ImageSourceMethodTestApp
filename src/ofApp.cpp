@@ -354,7 +354,7 @@ void ofApp::draw() {
 			offlineRecordIteration++;
 		}
 		if (offlineRecordBuffers != 0)
-			recordingPercent = 0 + (100 * offlineRecordIteration) / offlineRecordBuffers;
+			recordingPercent = 0 + (100 * float(offlineRecordIteration)) / offlineRecordBuffers;
 
 		if (recordingPercent >= 100.0f){
 			stopRecordingOfflineTime = std::chrono::high_resolution_clock::now();

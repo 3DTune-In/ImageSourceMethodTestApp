@@ -1597,12 +1597,7 @@ void ofApp::playToStop(bool &_active)
 {
 	if (setupDone == false) return;
 		
-	if (!playToStopControl && !stopToPlayControl && !playState && stopState)
-	{
-		playToStopControl.set("Stop", true);
-		stopToPlayControl.set("Play", false);
-	}
-	else if (playToStopControl && playState)
+	if (playToStopControl && playState)
 	{
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 		systemSoundStream.stop();
@@ -1624,12 +1619,7 @@ void ofApp::stopToPlay(bool &_active)
 {
 	if (setupDone == false) return;
 		
-	if (!playToStopControl && !stopToPlayControl && playState && !stopState)
-	{
-		playToStopControl.set("Stop", false);
-		stopToPlayControl.set("Play", true);
-	}
-	else if (stopToPlayControl && stopState) {
+	if (stopToPlayControl && stopState) {
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
 		stopState = false;
 		playState = true;

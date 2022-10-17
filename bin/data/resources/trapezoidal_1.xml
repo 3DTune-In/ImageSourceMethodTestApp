@@ -1,14 +1,14 @@
-<?xml version="1.1" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ROOMGEOMETRY>
    <CORNERS>
-        <CORNER _3Dpoint=" 2.1, 2.1,-1.1"/>
-        <CORNER _3Dpoint=" 2.1,-2.1,-1.1"/>
-        <CORNER _3Dpoint=" 2.1,-2.1, 1.1"/>
-        <CORNER _3Dpoint=" 2.1, 2.1, 1.1"/>
-        <CORNER _3Dpoint="-1.1,-3.1,-1.1"/>
-        <CORNER _3Dpoint="-2.1, 2.1,-1.1"/>
-        <CORNER _3Dpoint="-2.1, 2.1, 1.1"/>
-        <CORNER _3Dpoint="-1.1,-3.1, 1.1"/>
+        <CORNER _3Dpoint=" 2.0, 2.0,-1.0"/>
+        <CORNER _3Dpoint=" 2.0,-2.0,-1.0"/>
+        <CORNER _3Dpoint=" 2.0,-2.0, 1.0"/>
+        <CORNER _3Dpoint=" 2.0, 2.0, 1.0"/>
+        <CORNER _3Dpoint="-1.0,-3.0,-1.0"/>
+        <CORNER _3Dpoint="-2.0, 2.0,-1.0"/>
+        <CORNER _3Dpoint="-2.0, 2.0, 1.0"/>
+        <CORNER _3Dpoint="-1.0,-3.0, 1.0"/>
     </CORNERS>
 	
     <WALLS>

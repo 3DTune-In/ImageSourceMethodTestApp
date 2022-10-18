@@ -206,18 +206,19 @@ void ofApp::setup() {
 	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
 	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
 
-	/* The system starts its execution in PLAY mode
-       playState = true;
-       stopState = false;
+	/*
+	// The system starts its execution in PLAY mode
+    playState = true;
+    stopState = false;
 
-       stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-       leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
+    stopToPlayControl.addListener(this, &ofApp::stopToPlay);
+    leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
 
-       playToStopControl.addListener(this, &ofApp::playToStop);
-       leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
-    */
-
-//The system starts its execution in STOP mode
+    playToStopControl.addListener(this, &ofApp::playToStop);
+    leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
+	*/
+		
+	//The system starts its execution in STOP mode
 	playState = false;
 	stopState = true;
 
@@ -228,7 +229,7 @@ void ofApp::setup() {
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("Stop", true));
-	
+	    	
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", 1, 1, MAX_SECONDS_TO_RECORD));
 
@@ -287,8 +288,10 @@ void ofApp::draw() {
 		//int bufferSize = 512;
 		int bufferSize = myCore.GetAudioState().bufferSize;
 
+
+
 		if (offlineRecordBuffers == 0) {
-			
+
 //			string pathData = ofToDataPath("", true);
 			string fileNameUsr;
 			if (boolRecordingIR)
@@ -325,7 +328,7 @@ void ofApp::draw() {
 			}
 
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
-			systemSoundStream.stop();
+			if (!stopState) systemSoundStream.stop();
 			environment->ResetReverbBuffers();
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 
@@ -1600,7 +1603,8 @@ void ofApp::playToStop(bool &_active)
 	if (playToStopControl && playState)
 	{
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
-		systemSoundStream.stop();
+		if (!stopState) systemSoundStream.stop();
+		
 		environment->ResetReverbBuffers();
 		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 
@@ -1608,8 +1612,14 @@ void ofApp::playToStop(bool &_active)
 
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->ResetSourceBuffers();
+	
 		stopState = true;
 		playState = false;
+		playToStopControl.set("Stop", true);
+		stopToPlayControl.set("Play", false);
+	}
+	else if (!playToStopControl && stopState)
+	{
 		playToStopControl.set("Stop", true);
 		stopToPlayControl.set("Play", false);
 	}
@@ -1619,24 +1629,30 @@ void ofApp::stopToPlay(bool &_active)
 {
 	if (setupDone == false) return;
 		
-	if (stopToPlayControl && stopState) {
+	if (stopToPlayControl && stopState) 
+	{
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
 		stopState = false;
 		playState = true;
 		source1Wav.setInitialPosition();
 		systemSoundStream.start();
-		stopToPlayControl.set("Play", true);
 		playToStopControl.set("Stop", false);
+		stopToPlayControl.set("Play", true);
+		
+	}
+	else if (!stopToPlayControl && playState) 
+	{
+		playToStopControl.set("Stop", false);
+		stopToPlayControl.set("Play", true);
 	}
 }
 
 void ofApp::changeRoomGeometry(bool &_active)
 {
-	if (!changeRoomGeometryControl)   
-		return;                   
-	else 
-		changeRoomGeometryControl = false;
-#if 1 
+	changeRoomGeometryControl = false;
+
+	if (setupDone == false) return;
+
 	if (!stopState) systemSoundStream.stop();
 
 	ISM::RoomGeometry newRoom;
@@ -1722,33 +1738,38 @@ void ofApp::changeRoomGeometry(bool &_active)
 		}
 	}
 	////////////////////////////////////////////////
+	
 	ISMHandler->setupArbitraryRoom(newRoom);
-
+	
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	guiActiveWalls.resize(numWalls);
 
 	for (int i = 0; i < numWalls; i++)
 	{
-		guiActiveWalls.at(i) = true;
+		if (guiActiveWalls.at(i) == false) 	guiActiveWalls.at(i) = true;
 	}
 
 	//Absortion as vector
 	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-	//////////////////////////////////
+	
+	mainRoom = ISMHandler->getRoom();
+	
+	//listener located in the center of the room
 	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-
 	Common::CVector3 listenerLocation(roomCenter);
 	Common::CTransform listenerPosition = Common::CTransform();
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
 
-	imageSourceDSPList = reCreateImageSourceDSP();
-
-	mainRoom = ISMHandler->getRoom();
+	//mainRoom = ISMHandler->getRoom();
+	//imageSourceDSPList = reCreateImageSourceDSP();
+		
+	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
+	
 
 	if (!stopState) systemSoundStream.start();
-#endif
+	
 }
 
 void ofApp::toggleWall(bool &_active)

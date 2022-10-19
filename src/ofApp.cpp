@@ -271,6 +271,7 @@ void ofApp::setup() {
 	// Profilling
 	profilling = false;
 	setupDone = true;
+
 }
 
 
@@ -413,7 +414,7 @@ void ofApp::draw() {
 
 	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
-	if (!stopState) {
+	if (1 /* !stopState */) {
 		//draw image sources (only if play state)
 		for (int i = 0; i < imageSourceDataList.size(); i++)
 		{
@@ -1768,7 +1769,14 @@ void ofApp::changeRoomGeometry(bool &_active)
 	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
 	
 
-	if (!stopState) systemSoundStream.start();
+	//if (!stopState) systemSoundStream.start();
+	lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
+	stopState = false;
+	playState = true;
+	source1Wav.setInitialPosition();
+	systemSoundStream.start();
+	playToStopControl.set("Stop", false);
+	stopToPlayControl.set("Play", true);
 	
 }
 
@@ -1851,6 +1859,7 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		return;
 	}
 		
+	if (!stopState) systemSoundStream.stop();
 
 	if (stateBinauralSpatialisation)
 	{
@@ -1862,7 +1871,10 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
 		stateBinauralSpatialisation = true;
 	}
+	
 	imageSourceDSPList = reCreateImageSourceDSP();
+
+	if (!stopState) systemSoundStream.start();
 }
 
 

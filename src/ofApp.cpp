@@ -206,18 +206,20 @@ void ofApp::setup() {
 	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
 	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
 
+	
 	/*
-	// The system starts its execution in PLAY mode
-    playState = true;
-    stopState = false;
+	//The system starts its execution in PLAY mode
+	playState = true;
+	stopState = false;
 
-    stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-    leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
+	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
+	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
 
-    playToStopControl.addListener(this, &ofApp::playToStop);
-    leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
+	playToStopControl.addListener(this, &ofApp::playToStop);
+	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
 	*/
-		
+	
+	
 	//The system starts its execution in STOP mode
 	playState = false;
 	stopState = true;
@@ -229,6 +231,7 @@ void ofApp::setup() {
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("Stop", true));
+	
 	    	
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", 1, 1, MAX_SECONDS_TO_RECORD));
@@ -407,10 +410,14 @@ void ofApp::draw() {
 	//draw anechoic source
 	ofPushStyle();
 	ofSetColor(255, 50, 200, 50);
-	Common::CVector3 sourceLocation = ISMHandler->getSourceLocation();
-	ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
-	ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z,
-		listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
+
+	if (stateAnechoicProcess)
+	{
+		Common::CVector3 sourceLocation = ISMHandler->getSourceLocation();
+		ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
+		ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z,
+			listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
+	}
 
 	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
@@ -2064,7 +2071,7 @@ int ofApp::OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds)
 
 	// Convert number of samples into number of buffers
 	int numberOfBuffers = ceil(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded up
-	//int numberOfBuffers = floor(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded down
+    //int numberOfBuffers = floor(durationInSamples / myCore.GetAudioState().bufferSize);	// rounded down
 
 	offlineRecordIteration = 0;
 

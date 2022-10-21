@@ -16,3 +16,7 @@ bin/hdf*.dll
 bin/libcurl.dll
 bin/zlib1.dll
 bin/netcdf.dll
+
+# Installer
+Installer/ISM Simulator Installer/Release/
+!Installer/redist/*

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1525
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32929.386
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "image_source_method", "image_source_method.vcxproj", "{7FD42DF7-442E-479A-BA76-D0022F99702A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -16,6 +16,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3DTI_Toolkit_ResourceManager", "3DTI_Toolkit_ResourceManager\3DTI_Toolkit_ResourceManager.vcxproj", "{CAC1614C-FACF-45E4-883E-C882558A9DFF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsofa", "..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\build\win\libsofa.vcxproj", "{BD65F1EB-AF1B-483F-8BF2-08C5AD7E9BC1}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ISM Simulator Installer", "..\Installer\ISM Simulator Installer\ISM Simulator Installer.vdproj", "{161E6CD4-DBDD-4B88-9005-C847F7DABD36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{BD65F1EB-AF1B-483F-8BF2-08C5AD7E9BC1}.Release|Win32.Build.0 = Release|Win32
 		{BD65F1EB-AF1B-483F-8BF2-08C5AD7E9BC1}.Release|x64.ActiveCfg = Release|x64
 		{BD65F1EB-AF1B-483F-8BF2-08C5AD7E9BC1}.Release|x64.Build.0 = Release|x64
+		{161E6CD4-DBDD-4B88-9005-C847F7DABD36}.Debug|Win32.ActiveCfg = Debug
+		{161E6CD4-DBDD-4B88-9005-C847F7DABD36}.Debug|x64.ActiveCfg = Debug
+		{161E6CD4-DBDD-4B88-9005-C847F7DABD36}.Release|Win32.ActiveCfg = Release
+		{161E6CD4-DBDD-4B88-9005-C847F7DABD36}.Release|x64.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

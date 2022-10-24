@@ -134,7 +134,7 @@ void ofApp::setup() {
 	//Absortion as vector
 	ISMHandler->setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
 
-	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	ISMHandler->setReflectionOrder(0);
 
 	mainRoom = ISMHandler->getRoom();
 
@@ -164,7 +164,7 @@ void ofApp::setup() {
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
 	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 	
-	fullPath = pathResources + "\\" + "speech_female.wav";
+	fullPath = pathResources + "\\" + "speech_female_5seg.wav";
 	const char* _filePath = fullPath.c_str();
 	LoadWavFile(source1Wav, _filePath);
 	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
@@ -275,6 +275,9 @@ void ofApp::setup() {
 	profilling = false;
 	setupDone = true;
 
+	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	imageSourceDSPList = reCreateImageSourceDSP();
+
 }
 
 
@@ -335,11 +338,12 @@ void ofApp::draw() {
 			if (!stopState) systemSoundStream.stop();
 			environment->ResetReverbBuffers();
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
-
-			imageSourceDSPList = reCreateImageSourceDSP();
 			
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
 				imageSourceDSPList.at(i)->ResetSourceBuffers();	
+
+			//imageSourceDSPList = reCreateImageSourceDSP();
+
 
 			if (boolRecordingIR)
 			{
@@ -1235,7 +1239,7 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 #if 1
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	
-	lock_guard < mutex > lock(audioMutex);
+	//lock_guard < mutex > lock(audioMutex);
 	
 	// The requested frame size is not allways supported by the audio driver:
 	if (myCore.GetAudioState().bufferSize != bufferSize)
@@ -1466,6 +1470,8 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDS
 {
 	for (int i = 0; i < imageSourceDSPList.size(); i++)					//Revome old sourcesDSP
 		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
+
+	imageSourceDSPList.clear();
 	imageSourceDSPList = createImageSourceDSP();						//Create new sourceDSP
 	return imageSourceDSPList;
 }
@@ -1660,7 +1666,8 @@ void ofApp::changeRoomGeometry(bool &_active)
 	changeRoomGeometryControl = false;
 
 	if (setupDone == false) return;
-
+	
+	//lock_guard < mutex > lock(audioMutex);
 	if (!stopState) systemSoundStream.stop();
 
 	ISM::RoomGeometry newRoom;
@@ -1749,6 +1756,28 @@ void ofApp::changeRoomGeometry(bool &_active)
 	
 	ISMHandler->setupArbitraryRoom(newRoom);
 	
+	
+	//Absortion as vector
+	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+	ISMHandler->setReflectionOrder(0);
+
+	mainRoom = ISMHandler->getRoom();
+	imageSourceDSPList = reCreateImageSourceDSP();
+
+	//listener located in the center of the room
+	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
+	Common::CVector3 listenerLocation(roomCenter);
+	Common::CTransform listenerPosition = Common::CTransform();
+	listenerPosition.SetPosition(listenerLocation);
+	listener->SetListenerTransform(listenerPosition);
+
+	moveSource(Common::CVector3(0, 0, 0));
+			
+	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
+	imageSourceDSPList = reCreateImageSourceDSP();
+		
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	guiActiveWalls.resize(numWalls);
 
@@ -1757,33 +1786,20 @@ void ofApp::changeRoomGeometry(bool &_active)
 		if (guiActiveWalls.at(i) == false) 	guiActiveWalls.at(i) = true;
 	}
 
-	//Absortion as vector
-	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-	
-	mainRoom = ISMHandler->getRoom();
-	
-	//listener located in the center of the room
-	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-	Common::CVector3 listenerLocation(roomCenter);
-	Common::CTransform listenerPosition = Common::CTransform();
-	listenerPosition.SetPosition(listenerLocation);
-	listener->SetListenerTransform(listenerPosition);
-
 	//mainRoom = ISMHandler->getRoom();
-	//imageSourceDSPList = reCreateImageSourceDSP();
-		
-	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
-	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
-	
+	if (!stopState) systemSoundStream.start();
 
-	//if (!stopState) systemSoundStream.start();
-	lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers			
+	cout << "Load new ROOM" << endl << endl;
+
+#if 0
+//lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
 	stopState = false;
 	playState = true;
 	source1Wav.setInitialPosition();
 	systemSoundStream.start();
 	playToStopControl.set("Stop", false);
 	stopToPlayControl.set("Play", true);
+#endif
 	
 }
 

@@ -164,7 +164,7 @@ void ofApp::setup() {
 	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
 	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 	
-	fullPath = pathResources + "\\" + "speech_female_5seg.wav";
+	fullPath = pathResources + "\\" + "speech_female.wav";
 	const char* _filePath = fullPath.c_str();
 	LoadWavFile(source1Wav, _filePath);
 	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
@@ -341,9 +341,6 @@ void ofApp::draw() {
 			
 			for (int i = 0; i < imageSourceDSPList.size(); i++)
 				imageSourceDSPList.at(i)->ResetSourceBuffers();	
-
-			//imageSourceDSPList = reCreateImageSourceDSP();
-
 
 			if (boolRecordingIR)
 			{
@@ -1515,6 +1512,12 @@ void ofApp::recordIrOffline(bool &_active)
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	recordOfflineIRControl = false;
+
+	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
 }
 
 void ofApp::recordWavOffline(bool& _active)
@@ -1525,6 +1528,12 @@ void ofApp::recordWavOffline(bool& _active)
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	recordOfflineWAVControl = false;
+
+	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
 }
 
 void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
@@ -1622,11 +1631,10 @@ void ofApp::playToStop(bool &_active)
 		environment->ResetReverbBuffers();
 		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 
-		imageSourceDSPList = reCreateImageSourceDSP();
-
+		//imageSourceDSPList = reCreateImageSourceDSP();
 		for (int i = 0; i < imageSourceDSPList.size(); i++)
 			imageSourceDSPList.at(i)->ResetSourceBuffers();
-	
+			
 		stopState = true;
 		playState = false;
 		playToStopControl.set("Stop", true);
@@ -1667,8 +1675,14 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	if (setupDone == false) return;
 	
-	//lock_guard < mutex > lock(audioMutex);
+	lock_guard < mutex > lock(audioMutex);
+
 	if (!stopState) systemSoundStream.stop();
+
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
 
 	ISM::RoomGeometry newRoom;
 
@@ -1776,6 +1790,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 			
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
+	mainRoom = ISMHandler->getRoom();
 	imageSourceDSPList = reCreateImageSourceDSP();
 		
 	int numWalls = ISMHandler->getRoom().getWalls().size();
@@ -1787,7 +1802,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	}
 
 	//mainRoom = ISMHandler->getRoom();
-	if (!stopState) systemSoundStream.start();
+	//if (!stopState) systemSoundStream.start();
 
 	cout << "Load new ROOM" << endl << endl;
 

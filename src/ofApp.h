@@ -149,9 +149,7 @@ private:
 		std::chrono::steady_clock::time_point stopRecordingOfflineTime;
 
 		bool setupDone;
-
-		bool firstFrameProcessed;                 //FIXME         
-									
+								
 		/// Methods to handle Audio
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
 		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);

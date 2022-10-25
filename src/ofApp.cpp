@@ -275,8 +275,6 @@ void ofApp::setup() {
 	profilling = false;
 	setupDone = true;
 
-	firstFrameProcessed = false;                                //FIXME
-
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	imageSourceDSPList = reCreateImageSourceDSP();
 
@@ -345,8 +343,8 @@ void ofApp::draw() {
 				imageSourceDSPList.at(i)->ResetSourceBuffers();	
 
 			if (boolRecordingIR)
-			{                                                                                        //FIXME
-				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR, bufferSize );      //Save initial wav file
+			{                                                                                        
+				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
 			}
 			source1Wav.setInitialPosition(); //Now the wav file is always recorded from the beginning
 		}
@@ -1249,13 +1247,7 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	bOutput.left.resize(bufferSize);
 	bOutput.right.resize(bufferSize);
 
-	if (firstFrameProcessed)                                //FIXME
-	   audioProcess(bOutput, bufferSize);
-	else
-	{
-		firstFrameProcessed = true;
-		return;
-	}
+	audioProcess(bOutput, bufferSize);
 				
 	// Build float array from output buffer
 	int i = 0;
@@ -1814,10 +1806,6 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	cout << "Load new ROOM" << endl << endl;
 
-	firstFrameProcessed = false;                     //FIXME
-
-
-
 #if 0
 //lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
 	stopState = false;
@@ -1902,9 +1890,6 @@ void ofApp::changeHRTF(bool& _active)
 		return;
 	}
 
-	firstFrameProcessed = false;                                //FIXME
-
-	
 	//if (!stopState) systemSoundStream.start();
 }
 

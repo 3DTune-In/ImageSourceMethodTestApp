@@ -275,6 +275,8 @@ void ofApp::setup() {
 	profilling = false;
 	setupDone = true;
 
+	firstFrameProcessed = false;                                //FIXME
+
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	imageSourceDSPList = reCreateImageSourceDSP();
 
@@ -343,8 +345,8 @@ void ofApp::draw() {
 				imageSourceDSPList.at(i)->ResetSourceBuffers();	
 
 			if (boolRecordingIR)
-			{
-				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
+			{                                                                                        //FIXME
+				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR, bufferSize );      //Save initial wav file
 			}
 			source1Wav.setInitialPosition(); //Now the wav file is always recorded from the beginning
 		}
@@ -376,7 +378,7 @@ void ofApp::draw() {
 				boolRecordingIR = false;
 			}
 			source1Wav.setInitialPosition();
-			if (!stopState) systemSoundStream.start();
+			if (!stopState && playState) systemSoundStream.start();
 		}
 		ofPopStyle();		
 		return;
@@ -1237,7 +1239,7 @@ int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	
 	//lock_guard < mutex > lock(audioMutex);
-	
+
 	// The requested frame size is not allways supported by the audio driver:
 	if (myCore.GetAudioState().bufferSize != bufferSize)
 		return;
@@ -1247,7 +1249,13 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
 	bOutput.left.resize(bufferSize);
 	bOutput.right.resize(bufferSize);
 
-	audioProcess(bOutput, bufferSize);
+	if (firstFrameProcessed)                                //FIXME
+	   audioProcess(bOutput, bufferSize);
+	else
+	{
+		firstFrameProcessed = true;
+		return;
+	}
 				
 	// Build float array from output buffer
 	int i = 0;
@@ -1806,6 +1814,10 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	cout << "Load new ROOM" << endl << endl;
 
+	firstFrameProcessed = false;                     //FIXME
+
+
+
 #if 0
 //lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
 	stopState = false;
@@ -1843,7 +1855,12 @@ void ofApp::changeHRTF(bool& _active)
 	if (setupDone == false) return;
 
 	if (!stopState) systemSoundStream.stop();
-	
+
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+		
 	string pathData = ofToDataPath("", false);
 
 	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new HRTF");
@@ -1884,8 +1901,11 @@ void ofApp::changeHRTF(bool& _active)
 		if (!stopState) systemSoundStream.start();
 		return;
 	}
+
+	firstFrameProcessed = false;                                //FIXME
+
 	
-	if (!stopState) systemSoundStream.start();
+	//if (!stopState) systemSoundStream.start();
 }
 
 void ofApp::toggleBinauralSpatialisation(bool& _active)

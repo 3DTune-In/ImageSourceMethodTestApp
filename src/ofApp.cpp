@@ -360,6 +360,8 @@ void ofApp::draw() {
 		while ((aux = ofGetElapsedTimeMillis() - frameStart) < frameDurationInMilliseconds)		{
 			OfflineWavRecordOneLoopIteration(bufferSize);  //audioProcess + wavWriter_AppendToFile + offlineRecordBuffers++
 			offlineRecordIteration++;
+			if (offlineRecordIteration == offlineRecordBuffers) 
+				break;
 		}
 		if (offlineRecordBuffers != 0)
 			recordingPercent = 0 + (100 * float(offlineRecordIteration)) / offlineRecordBuffers;
@@ -2093,7 +2095,7 @@ void ofApp::StopWavRecord()
 	lock_guard < mutex > lock(audioMutex);	 // Avoids race conditions with audio thread when cleaning buffers
 
 	if (wavWriter.IsWriting())
-		EndWavRecord();
+	    EndWavRecord();
 
 	environment->ResetReverbBuffers();				//Clean reverb buffers
 }

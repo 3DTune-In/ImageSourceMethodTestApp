@@ -181,7 +181,9 @@ void ofApp::setup() {
 	logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
 	titleFont.load(pathResources + "\\" + "Verdana.ttf", 32);
 	logoSAVLab.loadImage(pathResources + "\\" + "SAVLab.png");
-	logoSAVLab.resize(logoSAVLab.getWidth() / 10, logoSAVLab.getHeight() / 10);
+	logoSAVLab.resize(logoSAVLab.getWidth() / 14, logoSAVLab.getHeight() / 14);
+	logoSONICOM.loadImage(pathResources + "\\" + "SONICOM.png");
+	logoSONICOM.resize(logoSONICOM.getWidth() / 19, logoSONICOM.getHeight() / 19);
 
 	leftPanel.disableHeader();
 	leftPanel.setup(pathResources + "\\", "config.xml", 20, 150);
@@ -471,13 +473,15 @@ void ofApp::draw() {
 	titleFont.drawString(title, ofGetWidth() / 2 - titleFont.stringWidth(title) / 2, 85);
 
 	/// Logo of the SAVLab project
-	logoSAVLab.draw(ofGetWidth() - 300, 20);
+	logoSAVLab.draw(ofGetWidth() - 260, 20);
+	/// Logo of the SONICOM project
+	logoSONICOM.draw(ofGetWidth() - 250, 100);
 	/// This work has been partially funded by the Spanish project Spatial Audio Virtual Laboratory (SAVLab) - PID2019-107854GB-I00, Ministerio de Ciencia e Innovación
-	ofDrawBitmapString("This work has been partially", ofGetWidth() - 280, 140);
 	ofDrawBitmapString("funded by the Spanish project", ofGetWidth() - 280, 155);
 	ofDrawBitmapString("Spatial Audio Virtual Laboratory", ofGetWidth() - 280, 170);
 	ofDrawBitmapString("(SAVLab) - PID2019-107854GB-I00", ofGetWidth() - 280, 185);
-	ofDrawBitmapString("Ministerio de Ciencia e Innovacion", ofGetWidth() - 280, 200);
+	ofDrawBitmapString("and the European project H2020", ofGetWidth() - 280, 200);
+	ofDrawBitmapString("SONICOM (agreement No. 101017743)", ofGetWidth() - 280, 215);
 
 	/// print number of visible images
 	ofPushStyle();

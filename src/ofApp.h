@@ -76,6 +76,7 @@ private:
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
 		ofImage logoSAVLab;
+		ofImage logoSONICOM;
 
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;

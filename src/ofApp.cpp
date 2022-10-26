@@ -327,22 +327,25 @@ void ofApp::draw() {
 			if (boolRecordingIR)
 			{
 				offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
-				cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+				//cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
 			}
 			else
 			{                                                           //Calculates the number of buffers associated with the size of the wav file
 				unsigned long long samplesVectorSize = source1Wav.getSizeSamplesVector();
 				offlineRecordBuffers = ceil(samplesVectorSize / myCore.GetAudioState().bufferSize);
-				cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+				//cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
 			}
 
 			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
 			if (!stopState) systemSoundStream.stop();
 			environment->ResetReverbBuffers();
 			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+			anechoicSourceDSP->DisableDistanceAttenuationSmoothingAnechoic();
 			
-			for (int i = 0; i < imageSourceDSPList.size(); i++)
-				imageSourceDSPList.at(i)->ResetSourceBuffers();	
+			for (int i = 0; i < imageSourceDSPList.size(); i++) {
+				imageSourceDSPList.at(i)->ResetSourceBuffers();
+				imageSourceDSPList.at(i)->DisableDistanceAttenuationSmoothingAnechoic();
+			}
 
 			if (boolRecordingIR)
 			{                                                                                        
@@ -380,6 +383,11 @@ void ofApp::draw() {
 				boolRecordingIR = false;
 			}
 			source1Wav.setInitialPosition();
+			anechoicSourceDSP->EnableDistanceAttenuationSmoothingAnechoic();
+			for (int i = 0; i < imageSourceDSPList.size(); i++) {
+				imageSourceDSPList.at(i)->EnableDistanceAttenuationSmoothingAnechoic();
+			}
+
 			if (!stopState && playState) systemSoundStream.start();
 		}
 		ofPopStyle();		

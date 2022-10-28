@@ -78,17 +78,8 @@ void ofApp::setup() {
 	ISM::RoomGeometry trapezoidal;
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-	/*
-	string pathData = ofToDataPath("", true); 
-	string fileName = pathData + "\\trapezoidal_3.xml";
-	if (!xml.load(pathData+"\\trapezoidal_3.xml"))
-	{
-		ofLogError() << "Couldn't load file";
-	}
-	*/
 
-	//"trapezoidal_3.xml"  "theater_room.xml";
-	fullPath = pathResources + "\\" + "trapezoidal_1.xml";
+	fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";

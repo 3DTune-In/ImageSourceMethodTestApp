@@ -37,7 +37,7 @@
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
 # define INITIAL_REFLECTION_ORDER 3
-# define INITIAL_DIST_SILENCED_FRAMES  1000
+# define INITIAL_DIST_SILENCED_FRAMES  500
 # define FRAME_RATE 60
 
 class ofApp : public ofBaseApp{
@@ -127,6 +127,7 @@ private:
 		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
 		bool bDisableReverb;                                                                         // true;
 		int numberOfSilencedFrames = 0;
+		int numberOfSilencedSamples = 0;
 		int secondsToRecordIR = 1;
 
 		std::vector<ofSoundDevice> deviceList;

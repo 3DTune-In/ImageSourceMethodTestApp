@@ -17,7 +17,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 8
-#define MAX_DIST_SILENCED_FRAMES 1000
+#define MAX_DIST_SILENCED_FRAMES 500
 #define MIN_DIST_SILENCED_FRAMES 2
 #define MAX_SECONDS_TO_RECORD 30
 
@@ -117,7 +117,16 @@ void ofApp::setup() {
 		}
 	}
 			
-	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM		
+	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM	
+
+	// setup maxDistanceSourcesToListener and numberOfSilencedFrames
+	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
+	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
+	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
+	numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
+	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
+
+
 	ISMHandler->setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
 	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
@@ -148,12 +157,6 @@ void ofApp::setup() {
 	
 	// setup of the image sources
 	imageSourceDSPList = createImageSourceDSP();
-
-	// setup maxDistanceSourcesToListener and numberOfSilencedFrames
-	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
-	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
-	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(maxDistanceSourcesToListener);
-	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 	
 	fullPath = pathResources + "\\" + "speech_female.wav";
 	const char* _filePath = fullPath.c_str();
@@ -192,14 +195,13 @@ void ofApp::setup() {
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
 
-	//reverbEnableControl.addListener(this, &ofApp::toggleReverb);
-	//leftPanel.add(reverbEnableControl.set("REVERB", false));
-	bDisableReverb = true;
-
 	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
 	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
 
-	
+	reverbEnableControl.addListener(this, &ofApp::toggleReverb);
+	leftPanel.add(reverbEnableControl.set("REVERB", false));
+	bDisableReverb = true;
+		
 	/*
 	//The system starts its execution in PLAY mode
 	playState = true;
@@ -494,7 +496,7 @@ void ofApp::draw() {
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
 	sprintf(numberOfImagesStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
 	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
-#if 0
+//#if 0
 	if (!bDisableReverb) 
 	{
  	    sprintf(numberOfImagesStr, "Number of silences frames: %d", numberOfSilencedFrames);
@@ -505,7 +507,7 @@ void ofApp::draw() {
 		sprintf(numberOfImagesStr, "Reverb Disabled");
 		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
 	}
-#endif
+//#endif
 	
 	if (!boolToogleDisplayHelp)
 	{
@@ -665,7 +667,8 @@ void ofApp::keyPressed(int key){
 		break;
 	case OF_KEY_INSERT:
 		numberOfSilencedFrames++;
-		if (numberOfSilencedFrames > 250) numberOfSilencedFrames = 250;
+		if (numberOfSilencedFrames > 251) numberOfSilencedFrames = 251;
+		numberOfSilencedSamples = numberOfSilencedFrames * myCore.GetAudioState().bufferSize;
 		/*int numberOfSilencedFrames;
 		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
 		numberOfSilencedFrames++;
@@ -675,6 +678,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_DEL:
 		numberOfSilencedFrames--;
 		if (numberOfSilencedFrames < 0) numberOfSilencedFrames = 0;
+		numberOfSilencedSamples = numberOfSilencedFrames * myCore.GetAudioState().bufferSize;
 		/*int numberOfSilencedFrames;
 		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
 		numberOfSilencedFrames--;
@@ -1072,7 +1076,7 @@ void ofApp::keyPressed(int key){
 		else
 			cout << "BinauralSpatialisation Disabled" << "\n";
 
-#if 0
+//#if 0
 		if (!bDisableReverb)
 		{
 			cout << "Reverb Enabled" << "\n";
@@ -1080,7 +1084,7 @@ void ofApp::keyPressed(int key){
 		}
 		else
 			cout << "Reverb Disabled" << "\n";
-#endif
+//#endif
 
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
 		
@@ -1326,7 +1330,7 @@ void ofApp::processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
 
 	// Reverberation processing of direct path
-	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedFrames);
+	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedSamples);
 	// Adding reverberated sound to the direct path
 	//bufferReverb.left.ApplyGain(0.25);
 	//bufferReverb.right.ApplyGain(0.25);
@@ -1504,7 +1508,8 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	if (!stopState) systemSoundStream.stop();
 		
 	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
-	numberOfSilencedFrames = ISMHandler->calculateNumOfSilencedFrames(_maxDistanceSourcesToListener);
+	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(_maxDistanceSourcesToListener);
+	numberOfSilencedFrames = numberOfSilencedSamples / myCore.GetAudioState().bufferSize;
 	imageSourceDSPList = reCreateImageSourceDSP();
 	if (!stopState) systemSoundStream.start();
 }

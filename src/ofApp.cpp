@@ -17,9 +17,15 @@ Common::CTimeMeasure startOfflineRecord;
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 8
-#define MAX_DIST_SILENCED_FRAMES 500
-#define MIN_DIST_SILENCED_FRAMES 2
+#define MAX_DIST_SILENCED_FRAMES 500          //meters
+#define MIN_DIST_SILENCED_FRAMES 2            //meters
+#define INITIAL_DIST_SILENCED_FRAMES 20       //meters
 #define MAX_SECONDS_TO_RECORD 30
+
+#define MAX_WIN_SLOPE 50                                          //mseg
+#define MIN_WIN_SLOPE 5.82        //mseg
+#define INITIAL_WIN_SLOPE 40  //mseg
+#define MIN_WIN_THRESHOLD 5.84     //mseg
 
 
 //--------------------------------------------------------------
@@ -72,8 +78,6 @@ void ofApp::setup() {
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
 	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
 	
-	//environment->SetNumberOfSilencedFrames(9);
-	
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
@@ -119,13 +123,34 @@ void ofApp::setup() {
 			
 	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM	
 
-	// setup maxDistanceSourcesToListener and numberOfSilencedFrames
+	// Setup maxDistanceSourcesToListener and numberOfSilencedFrames
 	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
-	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener);
+	ISMHandler->setMaxDistanceImageSources (maxDistanceSourcesToListener, millisec2meters((float)INITIAL_WIN_SLOPE));
 	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
-	numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
+	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
 	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
 
+	// Setup windowThreshold and windowSlope
+	   //Get BRIRLength
+	windowSlopeWidth = INITIAL_WIN_SLOPE;
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	int samplesWindowSlope = millisec2samples(windowSlopeWidth);
+	if (numberOfSilencedSamples + samplesWindowSlope/2 > BRIRLength) 
+	{
+		numberOfSilencedSamples = BRIRLength - samplesWindowSlope/2;
+		maxDistanceSourcesToListener = (float) samples2meters(numberOfSilencedSamples);
+		maxDistanceImageSourcesToListenerControl = maxDistanceSourcesToListener;
+		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, millisec2meters(windowSlopeWidth));
+	}
+		
+	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
+
+	// Setup windowThreshold
+	float windowThreshold = float(numberOfSilencedSamples) / (float)myCore.GetAudioState().sampleRate;
+	
+	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0);
+
+	numberOfSilencedFrames = floor((numberOfSilencedSamples - windowSlopeWidth/2) / myCore.GetAudioState().bufferSize);
 
 	ISMHandler->setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
@@ -190,8 +215,8 @@ void ofApp::setup() {
 	leftPanel.add(reflectionOrderControl.set("Relection Order (+/-)", INITIAL_REFLECTION_ORDER, 0, MAX_REFLECTION_ORDER));
 	
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
-	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, 2, MAX_DIST_SILENCED_FRAMES));
-
+	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, MIN_DIST_SILENCED_FRAMES, MAX_DIST_SILENCED_FRAMES));
+		
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
 
@@ -201,7 +226,17 @@ void ofApp::setup() {
 	reverbEnableControl.addListener(this, &ofApp::toggleReverb);
 	leftPanel.add(reverbEnableControl.set("REVERB", false));
 	bDisableReverb = true;
-		
+
+
+	//// Setup windowThreshold and windowSlope
+	windowSlopeControl.addListener(this, &ofApp::changeWindowSlope);
+	leftPanel.add(windowSlopeControl.set("WinSlople (ms)", INITIAL_WIN_SLOPE, MIN_WIN_SLOPE, MAX_WIN_SLOPE));
+
+	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0);
+
+/*++++* /
+
+	
 	/*
 	//The system starts its execution in PLAY mode
 	playState = true;
@@ -665,6 +700,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_PAGE_DOWN:
 		scale*=1.1;
 		break;
+#if 0
 	case OF_KEY_INSERT:
 		numberOfSilencedFrames++;
 		if (numberOfSilencedFrames > 251) numberOfSilencedFrames = 251;
@@ -684,9 +720,19 @@ void ofApp::keyPressed(int key){
 		numberOfSilencedFrames--;
 		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
+#endif
+
 	case OF_KEY_HOME: // OF_KEY_PAGE_UP:
 		if (maxDistanceImageSourcesToListenerControl < MAX_DIST_SILENCED_FRAMES) {
 			maxDistanceImageSourcesToListenerControl++;
+			if (!stopState) systemSoundStream.stop();
+						
+			float windowThreshold = 0.001 * meters2millisec(maxDistanceImageSourcesToListenerControl);
+			environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth));
+			ISMHandler->setMaxDistanceImageSources(maxDistanceImageSourcesToListenerControl, millisec2meters(windowSlopeWidth));
+
+			imageSourceDSPList = reCreateImageSourceDSP();
+			if (!stopState) systemSoundStream.start();
 		}
 		break;
 
@@ -694,6 +740,14 @@ void ofApp::keyPressed(int key){
 		if (maxDistanceImageSourcesToListenerControl > MIN_DIST_SILENCED_FRAMES) 
 		{
 			maxDistanceImageSourcesToListenerControl--;
+			if (!stopState) systemSoundStream.stop();
+			
+			float windowThreshold = 0.001 * meters2millisec(maxDistanceImageSourcesToListenerControl);
+			environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth));
+			ISMHandler->setMaxDistanceImageSources(maxDistanceImageSourcesToListenerControl, millisec2meters(windowSlopeWidth));
+
+			imageSourceDSPList = reCreateImageSourceDSP();
+			if (!stopState) systemSoundStream.start();
 		}
 		break;
 		
@@ -1506,13 +1560,177 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	if (setupDone == false) return;
 
 	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	float maxDistanceSourcesToListener = _maxDistanceSourcesToListener;
+
+	int numSamplesThreshold = meters2samples(maxDistanceSourcesToListener);
+	int numsamplesWindowSlope = millisec2samples(windowSlopeWidth);
+	int numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope/2;
+
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	if (numSamplesTotal > BRIRLength)
+	{   // WindowThreshold + WindowSlope must be less than BRIR duration
+		numSamplesTotal = BRIRLength - numsamplesWindowSlope;
+		maxDistanceSourcesToListener = samples2meters(numSamplesTotal);
+		maxDistanceImageSourcesToListenerControl = maxDistanceSourcesToListener;
+	}
 		
-	ISMHandler->setMaxDistanceImageSources(_maxDistanceSourcesToListener);
-	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(_maxDistanceSourcesToListener);
-	numberOfSilencedFrames = numberOfSilencedSamples / myCore.GetAudioState().bufferSize;
+	if ( numSamplesThreshold - numsamplesWindowSlope/2 <= 0)
+	{   // WindowSlope too wide and WindowThreshold too low
+		//  WindowSlope*0.5 (half-window size to implement the "crossfade") must be less than the Threshold
+		numsamplesWindowSlope = meters2samples(MIN_DIST_SILENCED_FRAMES)-2;   //window is reduced
+		numSamplesThreshold = meters2samples(MIN_DIST_SILENCED_FRAMES)+2;
+		maxDistanceSourcesToListener = samples2meters(numSamplesThreshold);
+		maxDistanceImageSourcesToListenerControl = maxDistanceSourcesToListener;
+		windowSlopeWidth = samples2millisec(numsamplesWindowSlope);
+		windowSlopeControl = windowSlopeWidth;
+	}
+	//
+	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
+	if (windowSlopeInMeters < MIN_DIST_SILENCED_FRAMES)
+	{	//windowSlope expressed in meters must be greater than the minimum distance
+		windowSlopeInMeters = MIN_DIST_SILENCED_FRAMES;
+	}
+
+	if (maxDistanceSourcesToListener - (windowSlopeInMeters / 2.0) < 0)
+	{ //maxDistanceSourcesToListener must exceed half the WindowSlope in meters
+		windowSlopeInMeters = MIN_DIST_SILENCED_FRAMES;
+	}
+	
+	windowSlopeWidth = meters2millisec(windowSlopeInMeters);
+	windowSlopeControl = windowSlopeWidth;
+
+	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
+		
+	numberOfSilencedFrames = floor((numberOfSilencedSamples - numsamplesWindowSlope/2) / myCore.GetAudioState().bufferSize);
+	if (numberOfSilencedFrames < 0)
+	{   // NumberOfSilencedFrames cannot be negative
+		numberOfSilencedFrames = 0;
+		windowSlopeWidth = INITIAL_WIN_SLOPE;
+		windowSlopeControl = INITIAL_WIN_SLOPE;
+	}
+
+	float windowThreshold = 0.001 * meters2millisec(maxDistanceSourcesToListener);
+	environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth));
+	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
+
 	imageSourceDSPList = reCreateImageSourceDSP();
+
 	if (!stopState) systemSoundStream.start();
 }
+
+
+void ofApp::changeWindowSlope(int& _windowSlope)
+{
+	if (setupDone == false) return;
+
+	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	float windowSlope = (float) _windowSlope;
+	
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	float maxDistanceSourcesToListener = ISMHandler->getMaxDistanceImageSources();
+
+	if (millisec2meters(windowSlope) >= 2 * maxDistanceSourcesToListener)  // 
+	{	//  WindowSlope (window size to implement the "crossfade") must be less than the Threshold
+		windowSlope = meters2millisec(maxDistanceSourcesToListener); //millisecs
+	}
+
+	int numSamplesThreshold = meters2samples(float (maxDistanceSourcesToListener));
+	int numSamplesWindowSlope = millisec2samples(float(_windowSlope) / 2);
+	int numSamplesTotal = numSamplesThreshold + numSamplesWindowSlope;
+
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	if (numSamplesTotal > BRIRLength)
+	{   // WindowThreshold + WindowSlope must be less than BRIR duration
+		windowSlopeControl = MIN_WIN_SLOPE; //millisecs
+		_windowSlope = MIN_WIN_SLOPE;       //millisecs
+	}
+
+	if (numSamplesWindowSlope/2 + 1 >= numSamplesThreshold)
+	{  // NumSamples of windowSlope/2 must be greater than the NumSamples of Threshold
+		numSamplesWindowSlope = numSamplesThreshold-2;
+		_windowSlope = samples2millisec(numSamplesWindowSlope);
+		windowSlopeControl = _windowSlope;
+	}
+
+	windowSlopeWidth = _windowSlope;
+	
+	float windowThreshold = ((float)(maxDistanceSourcesToListener)) / soundSpeed;
+
+	numberOfSilencedFrames = floor((numberOfSilencedSamples - numSamplesWindowSlope) / myCore.GetAudioState().bufferSize);
+	if (numberOfSilencedFrames < 0)
+	{  // NumberOfSilencedFrames cannot be negative 
+		numberOfSilencedFrames = 0;
+		windowSlopeWidth = MIN_WIN_SLOPE;
+		windowSlopeControl = MIN_WIN_SLOPE;
+	}
+
+	environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth));
+	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
+	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
+
+	imageSourceDSPList = reCreateImageSourceDSP();
+
+	if (!stopState) systemSoundStream.start();
+}
+
+int ofApp::millisec2samples(float _millisec)
+{
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	int samples = floor((_millisec * sampleRate ) / 1000.0);
+
+	return samples;
+}
+
+float ofApp::samples2millisec(float _samples)
+{
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	float millisec = (_samples * 1000.0) / sampleRate;
+
+	return millisec;
+}
+
+int ofApp::meters2samples(float _meters)
+{
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	int samples = floor((_meters * sampleRate) / soundSpeed);
+	
+	return samples;
+}
+
+float ofApp::samples2meters (float _samples)
+{
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	float meters = (_samples * soundSpeed) / sampleRate;
+	return meters;
+}
+
+float ofApp::millisec2meters(float _millisec)
+{
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	float meters = soundSpeed * _millisec / 1000;
+	return meters;
+}
+
+float ofApp::meters2millisec(float _meters)
+{
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	float millisec = (_meters * 1000) / soundSpeed;
+	return millisec;
+}
+
 
 void ofApp::recordIrOffline(bool &_active)
 {

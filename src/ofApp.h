@@ -37,7 +37,6 @@
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
 # define INITIAL_REFLECTION_ORDER 3
-# define INITIAL_DIST_SILENCED_FRAMES  500
 # define FRAME_RATE 60
 
 class ofApp : public ofBaseApp{
@@ -85,6 +84,7 @@ private:
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
+		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<bool> recordOfflineWAVControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
@@ -129,6 +129,8 @@ private:
 		int numberOfSilencedFrames = 0;
 		int numberOfSilencedSamples = 0;
 		int secondsToRecordIR = 1;
+
+		float windowSlopeWidth;  //millisec
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
@@ -180,6 +182,7 @@ private:
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
 		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
+		void changeWindowSlope(int &windowSlope);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
 		void toggleAnechoic(bool& active);
@@ -218,4 +221,11 @@ private:
 
 		void resetAudio();
 
+		// functions for conversion into samples
+		int millisec2samples(float _millisec);
+		float samples2millisec(float _samples);
+		int meters2samples(float meters);
+		float samples2meters(float _samples);
+		float millisec2meters(float _millesec);
+		float meters2millisec(float _meters);
 };

@@ -18,14 +18,14 @@ Common::CTimeMeasure startOfflineRecord;
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 8
 #define MAX_DIST_SILENCED_FRAMES 500          //meters
-#define MIN_DIST_SILENCED_FRAMES 2            //meters
+#define MIN_DIST_SILENCED_FRAMES 1            //meters
 #define INITIAL_DIST_SILENCED_FRAMES 20       //meters
 #define MAX_SECONDS_TO_RECORD 30
 
-#define MAX_WIN_SLOPE 50                                          //mseg
-#define MIN_WIN_SLOPE 5.82        //mseg
-#define INITIAL_WIN_SLOPE 40  //mseg
-#define MIN_WIN_THRESHOLD 5.84     //mseg
+#define MAX_WIN_SLOPE 50            //mseg
+#define MIN_WIN_SLOPE 5.82/2        //mseg
+#define INITIAL_WIN_SLOPE 40        //mseg
+#define MIN_WIN_THRESHOLD 5.84/2    //mseg
 
 
 //--------------------------------------------------------------
@@ -139,7 +139,7 @@ void ofApp::setup() {
 	{
 		numberOfSilencedSamples = BRIRLength - samplesWindowSlope/2;
 		maxDistanceSourcesToListener = (float) samples2meters(numberOfSilencedSamples);
-		maxDistanceImageSourcesToListenerControl = maxDistanceSourcesToListener;
+		maxDistanceImageSourcesToListenerControl.set (maxDistanceSourcesToListener);
 		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, millisec2meters(windowSlopeWidth));
 	}
 		
@@ -216,7 +216,7 @@ void ofApp::setup() {
 	
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
 	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, MIN_DIST_SILENCED_FRAMES, MAX_DIST_SILENCED_FRAMES));
-		
+				
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
 
@@ -227,8 +227,12 @@ void ofApp::setup() {
 	leftPanel.add(reverbEnableControl.set("REVERB", false));
 	bDisableReverb = true;
 
-
 	//// Setup windowThreshold and windowSlope
+	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);
+	leftPanel.add(winThresholdControl.set("WinThreshold (ms)", (INITIAL_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
+		(MIN_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
+		(MAX_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed()));
+
 	windowSlopeControl.addListener(this, &ofApp::changeWindowSlope);
 	leftPanel.add(windowSlopeControl.set("WinSlople (ms)", INITIAL_WIN_SLOPE, MIN_WIN_SLOPE, MAX_WIN_SLOPE));
 
@@ -723,34 +727,37 @@ void ofApp::keyPressed(int key){
 #endif
 
 	case OF_KEY_HOME: // OF_KEY_PAGE_UP:
-		if (maxDistanceImageSourcesToListenerControl < MAX_DIST_SILENCED_FRAMES) {
-			maxDistanceImageSourcesToListenerControl++;
-			if (!stopState) systemSoundStream.stop();
-						
-			float windowThreshold = 0.001 * meters2millisec(maxDistanceImageSourcesToListenerControl);
-			environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth));
-			ISMHandler->setMaxDistanceImageSources(maxDistanceImageSourcesToListenerControl, millisec2meters(windowSlopeWidth));
-
-			imageSourceDSPList = reCreateImageSourceDSP();
-			if (!stopState) systemSoundStream.start();
-		}
-		break;
-
-	case OF_KEY_END: //OF_KEY_PAGE_DOWN:
-		if (maxDistanceImageSourcesToListenerControl > MIN_DIST_SILENCED_FRAMES) 
+	{
+		if (maxDistanceImageSourcesToListenerControl.get() < MAX_DIST_SILENCED_FRAMES)
 		{
-			maxDistanceImageSourcesToListenerControl--;
 			if (!stopState) systemSoundStream.stop();
-			
-			float windowThreshold = 0.001 * meters2millisec(maxDistanceImageSourcesToListenerControl);
-			environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth));
-			ISMHandler->setMaxDistanceImageSources(maxDistanceImageSourcesToListenerControl, millisec2meters(windowSlopeWidth));
 
+			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
+			
+			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
+			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
+			
 			imageSourceDSPList = reCreateImageSourceDSP();
 			if (!stopState) systemSoundStream.start();
 		}
 		break;
-		
+	}
+	case OF_KEY_END: //OF_KEY_PAGE_DOWN:
+	{
+		if (maxDistanceImageSourcesToListenerControl.get() > MIN_DIST_SILENCED_FRAMES)
+		{
+			if (!stopState) systemSoundStream.stop();
+
+			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
+			
+			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
+			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
+			
+			imageSourceDSPList = reCreateImageSourceDSP();
+			if (!stopState) systemSoundStream.start();
+		}
+		break;
+	}
 	case 'k': //Moves the source left (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
@@ -1555,6 +1562,7 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 	if (!stopState) systemSoundStream.start();
 }
 
+
 void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 {
 	if (setupDone == false) return;
@@ -1576,7 +1584,7 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	{   // WindowThreshold + WindowSlope must be less than BRIR duration
 		numSamplesTotal = BRIRLength - numsamplesWindowSlope;
 		maxDistanceSourcesToListener = samples2meters(numSamplesTotal);
-		maxDistanceImageSourcesToListenerControl = maxDistanceSourcesToListener;
+		maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
 	}
 		
 	if ( numSamplesThreshold - numsamplesWindowSlope/2 <= 0)
@@ -1585,7 +1593,7 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 		numsamplesWindowSlope = meters2samples(MIN_DIST_SILENCED_FRAMES)-2;   //window is reduced
 		numSamplesThreshold = meters2samples(MIN_DIST_SILENCED_FRAMES)+2;
 		maxDistanceSourcesToListener = samples2meters(numSamplesThreshold);
-		maxDistanceImageSourcesToListenerControl = maxDistanceSourcesToListener;
+		maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
 		windowSlopeWidth = samples2millisec(numsamplesWindowSlope);
 		windowSlopeControl = windowSlopeWidth;
 	}
@@ -1620,7 +1628,22 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 
 	imageSourceDSPList = reCreateImageSourceDSP();
 
+	winThresholdControl.set("WinThreshold (ms)", (maxDistanceSourcesToListener * 1000) / myCore.GetMagnitudes().GetSoundSpeed());
+
+	maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
+		
 	if (!stopState) systemSoundStream.start();
+}
+
+void ofApp::changeWinThreshold(int& _windowThresold)
+{
+	if (setupDone == false) return;
+
+	float windowThresold = _windowThresold;
+	float maxDistanceSourcesToListener = (windowThresold * myCore.GetMagnitudes().GetSoundSpeed()) / 1000;
+
+	maxDistanceImageSourcesToListenerControl.set((int)maxDistanceSourcesToListener);
+
 }
 
 

@@ -84,6 +84,7 @@ private:
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
+		ofParameter<int> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<bool> recordOfflineWAVControl;
@@ -182,6 +183,7 @@ private:
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
 		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
+		void changeWinThreshold(int& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();

@@ -19,13 +19,13 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_REFLECTION_ORDER 8
 #define MAX_DIST_SILENCED_FRAMES 500          //meters
 #define MIN_DIST_SILENCED_FRAMES 1            //meters
-#define INITIAL_DIST_SILENCED_FRAMES 20       //meters
+#define INITIAL_DIST_SILENCED_FRAMES 15       //meters
 #define MAX_SECONDS_TO_RECORD 30
 
-#define MAX_WIN_SLOPE 50            //mseg
-#define MIN_WIN_SLOPE 5.82/2        //mseg
-#define INITIAL_WIN_SLOPE 40        //mseg
-#define MIN_WIN_THRESHOLD 5.84/2    //mseg
+#define MAX_WIN_SLOPE 50                      //mseg
+#define MIN_WIN_SLOPE 2.91                    //mseg
+#define INITIAL_WIN_SLOPE 20                  //mseg
+#define MIN_WIN_THRESHOLD 2.92                //mseg
 
 
 //--------------------------------------------------------------
@@ -133,6 +133,7 @@ void ofApp::setup() {
 	// Setup windowThreshold and windowSlope
 	   //Get BRIRLength
 	windowSlopeWidth = INITIAL_WIN_SLOPE;
+	reverbGainLinear = 1.0;
 	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
 	int samplesWindowSlope = millisec2samples(windowSlopeWidth);
 	if (numberOfSilencedSamples + samplesWindowSlope/2 > BRIRLength) 
@@ -148,7 +149,7 @@ void ofApp::setup() {
 	// Setup windowThreshold
 	float windowThreshold = float(numberOfSilencedSamples) / (float)myCore.GetAudioState().sampleRate;
 	
-	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0);
+	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0, reverbGainLinear);
 
 	numberOfSilencedFrames = floor((numberOfSilencedSamples - windowSlopeWidth/2) / myCore.GetAudioState().bufferSize);
 
@@ -228,6 +229,10 @@ void ofApp::setup() {
 	bDisableReverb = true;
 
 	//// Setup windowThreshold and windowSlope
+
+	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
+	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -12, 12));
+
 	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);
 	leftPanel.add(winThresholdControl.set("WinThreshold (ms)", (INITIAL_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
 		(MIN_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
@@ -236,7 +241,7 @@ void ofApp::setup() {
 	windowSlopeControl.addListener(this, &ofApp::changeWindowSlope);
 	leftPanel.add(windowSlopeControl.set("WinSlople (ms)", INITIAL_WIN_SLOPE, MIN_WIN_SLOPE, MAX_WIN_SLOPE));
 
-	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0);
+	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0, reverbGainLinear);
 
 /*++++* /
 
@@ -1623,7 +1628,7 @@ void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
 	}
 
 	float windowThreshold = 0.001 * meters2millisec(maxDistanceSourcesToListener);
-	environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth));
+	environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
 
 	imageSourceDSPList = reCreateImageSourceDSP();
@@ -1698,7 +1703,7 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 		windowSlopeControl = MIN_WIN_SLOPE;
 	}
 
-	environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth));
+	environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth), reverbGainLinear);
 	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
 
@@ -1706,6 +1711,28 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 
 	if (!stopState) systemSoundStream.start();
 }
+
+void ofApp::changeReverbGain(int& _reverbGain)
+{
+	if (setupDone == false) return;
+
+	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	reverbGainControl.set(_reverbGain);
+	float reverGaindB = _reverbGain;
+	reverbGainLinear = pow(10.0, ((reverGaindB) / 20.0));
+
+	float windowThreshold = winThresholdControl.get();
+	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
+
+	if (!stopState) systemSoundStream.start();
+
+}
+
 
 int ofApp::millisec2samples(float _millisec)
 {

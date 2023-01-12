@@ -84,6 +84,7 @@ private:
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
 		ofParameter<int> maxDistanceImageSourcesToListenerControl;
+		ofParameter<int> reverbGainControl;
 		ofParameter<int> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
@@ -132,6 +133,7 @@ private:
 		int secondsToRecordIR = 1;
 
 		float windowSlopeWidth;  //millisec
+		float reverbGainLinear;  //linear gain for reverb tail 
 
 		std::vector<ofSoundDevice> deviceList;
 		ofSoundStream systemSoundStream;
@@ -185,6 +187,7 @@ private:
 		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
 		void changeWinThreshold(int& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
+		void changeReverbGain(int& reverbGain);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
 		void toggleAnechoic(bool& active);

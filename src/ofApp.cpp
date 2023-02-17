@@ -19,12 +19,12 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_REFLECTION_ORDER 8
 #define MAX_DIST_SILENCED_FRAMES 500          //meters
 #define MIN_DIST_SILENCED_FRAMES 1            //meters
-#define INITIAL_DIST_SILENCED_FRAMES 15       //meters
+#define INITIAL_DIST_SILENCED_FRAMES 40       //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
 #define MIN_WIN_SLOPE 2.91                    //mseg
-#define INITIAL_WIN_SLOPE 20                  //mseg
+#define INITIAL_WIN_SLOPE 4                  //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
 
@@ -60,6 +60,7 @@ void ofApp::setup() {
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
+	
 	string fullPath = pathResources + "\\" + "hrtf.sofa";  //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";  // To test the Filterbank
 	bool specifiedDelays;
@@ -83,7 +84,8 @@ void ofApp::setup() {
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
-	fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
+	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
+	fullPath = pathResources + "\\" + "lab_A1_AbsorLow.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -166,7 +168,7 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
-	Common::CVector3 initialLocation(1, 0, 0);
+	Common::CVector3 initialLocation(1.2, 0, 0);
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -270,17 +272,19 @@ void ofApp::setup() {
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("Stop", true));
-	
-	    	
+	   	
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
 	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", 1, 1, MAX_SECONDS_TO_RECORD));
 
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("Save IR", false));
 
+	recordOfflineIRScanControl.addListener(this, &ofApp::recordIrSeriesOffline);
+	leftPanel.add(recordOfflineIRScanControl.set("Generate IR series", false));
+
 	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
 	leftPanel.add(recordOfflineWAVControl.set("Record (offline)", false));
-		
+	
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("Load audio", false));
 
@@ -309,7 +313,11 @@ void ofApp::setup() {
 	recordingPercent = 0.0f;
 	offlineRecordIteration = 0;
 	offlineRecordBuffers = 0;
-	frameRate = ofGetFrameRate();		
+	frameRate = ofGetFrameRate();	
+
+	recordingOfflineSeries = false;
+	numberIRScan = 0;
+
 	// Profilling
 	profilling = false;
 	setupDone = true;
@@ -322,7 +330,8 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	
+	//float width = ofGetWidth();
+	//float height = ofGetHeight();
 }
 
 //--------------------------------------------------------------
@@ -342,15 +351,46 @@ void ofApp::draw() {
 			string fileNameUsr;
 			if (boolRecordingIR)
 			{
-				ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
-				fileNameUsr = saveFileResult.getPath();
+				if (!recordingOfflineSeries) // save a single file
+				{
+					ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
+				    fileNameUsr = saveFileResult.getPath();
+				}
+				else                       // save a set of files
+				{
+					string pathData = ofToDataPath("");
+					string pathResources = ofToDataPath("resources");
+					fileNameUsr = pathResources + "\\SeriesIr\\";
+				}		
 			}
 			else
 			{
 				ofFileDialogResult saveFileResult = ofSystemSaveDialog("sample.wav", "Save output audio");
 				fileNameUsr = saveFileResult.getPath();
 			}
-			if (fileNameUsr.size() > 0) {				
+			if (fileNameUsr.size() > 0) {
+				if (reverbEnableControl && reflectionOrderControl.get()==0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
+				else if (reverbEnableControl && reflectionOrderControl.get() > 0) fileNameUsr = fileNameUsr + "t"; // Hybrid
+				else fileNameUsr = fileNameUsr + "i";                                                              // ISM
+
+				//reflection order
+				fileNameUsr = fileNameUsr + "IrRO" + std::to_string(reflectionOrderControl);
+
+				//pruning distance
+				if (maxDistanceImageSourcesToListenerControl<10)
+				    fileNameUsr = fileNameUsr + "DP0" + std::to_string(maxDistanceImageSourcesToListenerControl);
+				else
+					fileNameUsr = fileNameUsr + "DP" + std::to_string(maxDistanceImageSourcesToListenerControl);
+
+				//window width
+				if (windowSlopeControl < 10)
+					fileNameUsr = fileNameUsr + "W0" + std::to_string(windowSlopeControl);
+				else
+					fileNameUsr = fileNameUsr + "W" + std::to_string(windowSlopeControl);
+
+				if (reverbEnableControl && reflectionOrderControl.get() > 0)
+					fileNameUsr = fileNameUsr + "HYB";
+
 				StartWavRecord(fileNameUsr+".wav", 16);                        // Open wav file
 				startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
 			}
@@ -427,7 +467,29 @@ void ofApp::draw() {
 
 			if (!stopState && playState) systemSoundStream.start();
 		}
-		ofPopStyle();		
+		
+		// iteratively recording multiple impulse responses
+
+		if (recordingOfflineSeries && (numberIRScan > 0) && recordingPercent >= 100.0f)
+		{ 
+			numberIRScan--;
+
+			if (numberIRScan == 0) {
+				recordingOfflineSeries = false;
+			}
+			else {
+				recordOfflineIRControl.set(true);
+				ofApp::recordIrOffline(recordingOfflineSeries);
+
+				if (!stopState) systemSoundStream.stop();
+				int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
+				ofApp::changeMaxDistanceImageSources(maxDistanceISM);
+				imageSourceDSPList = reCreateImageSourceDSP();
+				if (!stopState) systemSoundStream.start();
+			}
+		}
+
+		ofPopStyle();
 		return;
 	}
 
@@ -1798,6 +1860,21 @@ void ofApp::recordIrOffline(bool &_active)
 	stopToPlayControl.set("Play", false);
 }
 
+void ofApp::recordIrSeriesOffline(bool& _active)
+{
+	recordingOfflineSeries = true;
+	recordOfflineIRScanControl = false;
+
+	if (setupDone == false) return;
+
+	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(10); // 10m
+	int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3);   // 3m
+	ofApp::changeMaxDistanceImageSources(maxDistanceISM);
+	numberIRScan = 48;                                                      // 3m - 50m
+	ofApp::recordIrOffline(recordingOfflineSeries);
+
+}
+
 void ofApp::recordWavOffline(bool& _active)
 {
 	recordingOffline = true;               
@@ -1890,7 +1967,8 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
+	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
+	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources

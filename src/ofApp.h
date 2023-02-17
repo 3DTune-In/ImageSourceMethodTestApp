@@ -63,6 +63,7 @@ private:
 	    // Record to WAV
 	    WavWriter wavWriter;
 	    bool recordingOffline=false;
+		bool recordingOfflineSeries = false;
 		bool boolRecordingIR = false;
 	    float recordingPercent;
 	    int offlineRecordIteration = 0;
@@ -88,6 +89,7 @@ private:
 		ofParameter<int> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
+		ofParameter<bool> recordOfflineIRScanControl;
 		ofParameter<bool> recordOfflineWAVControl;
 		ofParameter<int> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
@@ -131,6 +133,7 @@ private:
 		int numberOfSilencedFrames = 0;
 		int numberOfSilencedSamples = 0;
 		int secondsToRecordIR = 1;
+		int numberIRScan = 0;
 
 		float windowSlopeWidth;  //millisec
 		float reverbGainLinear;  //linear gain for reverb tail 
@@ -194,6 +197,7 @@ private:
 		void toggleBinauralSpatialisation(bool& active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
+		void recordIrSeriesOffline(bool& active);
 		void recordWavOffline(bool& active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);

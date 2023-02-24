@@ -33,10 +33,11 @@
 #include "WavWriter.h"
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 
 # define LENGTH_OF_NORMALS 0.2
 # define DEFAULT_SCALE 20
-# define INITIAL_REFLECTION_ORDER 3
+# define INITIAL_REFLECTION_ORDER 10
 # define FRAME_RATE 60
 
 class ofApp : public ofBaseApp{

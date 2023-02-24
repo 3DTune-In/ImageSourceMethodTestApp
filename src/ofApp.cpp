@@ -16,15 +16,15 @@ Common::CTimeMeasure startOfflineRecord;
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
-#define MAX_REFLECTION_ORDER 8
+#define MAX_REFLECTION_ORDER 40
 #define MAX_DIST_SILENCED_FRAMES 500          //meters
 #define MIN_DIST_SILENCED_FRAMES 1            //meters
-#define INITIAL_DIST_SILENCED_FRAMES 40       //meters
+#define INITIAL_DIST_SILENCED_FRAMES 3       //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
 #define MIN_WIN_SLOPE 2.91                    //mseg
-#define INITIAL_WIN_SLOPE 4                  //mseg
+#define INITIAL_WIN_SLOPE 10                  //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
 
@@ -85,7 +85,7 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	fullPath = pathResources + "\\" + "lab_A1_AbsorLow.xml";
+	fullPath = pathResources + "\\" + "lab_B1_AbsorLow.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -493,6 +493,7 @@ void ofApp::draw() {
 		return;
 	}
 
+	
 	//////////////////////////////////////begin of 3D drawing//////////////////////////////////////
 	ofPushMatrix();
 	ofScale(scale);
@@ -512,7 +513,9 @@ void ofApp::draw() {
 	ofLine(0, 0, 0, 0, 0, 1);
 	ofPopStyle();
 
-	drawRoom(mainRoom, reflectionOrderControl, 255);
+
+	int ordReflectDraw = reflectionOrderControl;
+	drawRoom(mainRoom, std::min(ordReflectDraw, 3), 255);
 
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
@@ -533,7 +536,7 @@ void ofApp::draw() {
 
 	int numberOfVisibleImages = 0;
 	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
-	if (1 /* !stopState */) {
+	if (!stopState) {
 		//draw image sources (only if play state)
 		for (int i = 0; i < imageSourceDataList.size(); i++)
 		{
@@ -1155,6 +1158,24 @@ void ofApp::keyPressed(int key){
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
 		break;
+
+	case 'T':
+	{
+		std::vector<ISM::ImageSourceData> images = ISMHandler->getImageSourceData();
+
+		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
+
+		int numberOfVisibleImages = 0;
+		for (int i = 0; i < images.size(); i++)
+		{
+			if (images.at(i).visible) numberOfVisibleImages++;
+		}
+		cout << "Total images = " << images.size();
+		cout << " -- " << numberOfVisibleImages << " visible" << "\n";
+
+		break;
+	}
+
 	case 't': //Test
 		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
 		auto w2 = std::setw(2);
@@ -1215,8 +1236,9 @@ void ofApp::keyPressed(int key){
 //#endif
 
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
-		
+	
 		break;
+
 	}
 }
 
@@ -1867,10 +1889,13 @@ void ofApp::recordIrSeriesOffline(bool& _active)
 
 	if (setupDone == false) return;
 
+	anechoicSourceDSP->DisableAnechoicProcess();
+	stateAnechoicProcess = false;
+
 	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(10); // 10m
 	int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3);   // 3m
 	ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-	numberIRScan = 48;                                                      // 3m - 50m
+	numberIRScan = 33;                                                      // 3m-35m range      
 	ofApp::recordIrOffline(recordingOfflineSeries);
 
 }

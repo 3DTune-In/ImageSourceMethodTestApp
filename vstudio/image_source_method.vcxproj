@@ -121,7 +121,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\boost_circular_buffer;..\3dti_AudioToolkit\3dti_Toolkit;..\3dti_AudioToolkit\3dti_ResourceManager;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\cereal\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\addons\ofxOsc\libs;..\..\addons\ofxOsc\libs\oscpack;..\..\addons\ofxOsc\libs\oscpack\src;..\..\addons\ofxOsc\libs\oscpack\src\ip;..\..\addons\ofxOsc\libs\oscpack\src\ip\posix;..\..\addons\ofxOsc\libs\oscpack\src\ip\win32;..\..\addons\ofxOsc\libs\oscpack\src\osc;..\..\addons\ofxOsc\src;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\boost_circular_buffer;..\3dti_AudioToolkit\3dti_Toolkit;..\3dti_AudioToolkit\3dti_ResourceManager;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\cereal\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
@@ -164,7 +164,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\3dti_AudioToolkit\3dti_Toolkit;..\3dti_AudioToolkit\3dti_ResourceManager;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\cereal\include;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\boost_circular_buffer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\addons\ofxOsc\libs;..\..\addons\ofxOsc\libs\oscpack;..\..\addons\ofxOsc\libs\oscpack\src;..\..\addons\ofxOsc\libs\oscpack\src\ip;..\..\addons\ofxOsc\libs\oscpack\src\ip\posix;..\..\addons\ofxOsc\libs\oscpack\src\ip\win32;..\..\addons\ofxOsc\libs\oscpack\src\osc;..\..\addons\ofxOsc\src;..\3dti_AudioToolkit\3dti_Toolkit;..\3dti_AudioToolkit\3dti_ResourceManager;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\cereal\include;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\boost_circular_buffer</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -176,7 +176,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <AdditionalDependencies>3DTI_Toolkit.lib;3DTI_Toolkit_ResourceManager.lib;libsofa_x64.lib;libcurl_imp_x64.lib;libhdf5_hl_x64.lib;libhdf5_x64.lib;netcdf_x64.lib;zlib_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\lib;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\dependencies\lib\win;$(ProjectDir)\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\lib;..\3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\dependencies\lib\win;..\..\..\addons\ofxOsc\libs;..\..\..\addons\ofxOsc\libs\oscpack\src\ip\win32;..\..\..\addons\ofxOsc\libs\oscpack\src\ip;$(ProjectDir)\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
     <PostBuildEvent>
@@ -194,6 +194,18 @@
     <ClCompile Include="..\..\addons\ofxGui\src\ofxSlider.cpp" />
     <ClCompile Include="..\..\addons\ofxGui\src\ofxSliderGroup.cpp" />
     <ClCompile Include="..\..\addons\ofxGui\src\ofxToggle.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\IpEndpointName.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\win32\NetworkingUtils.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\win32\UdpSocket.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscOutboundPacketStream.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscPrintReceivedElements.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscReceivedElements.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscTypes.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\src\ofxOscBundle.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\src\ofxOscMessage.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\src\ofxOscParameterSync.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\src\ofxOscReceiver.cpp" />
+    <ClCompile Include="..\..\addons\ofxOsc\src\ofxOscSender.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\ofApp.cpp" />
     <ClCompile Include="..\src\SoundSource.cpp" />
@@ -212,7 +224,29 @@
     <ClInclude Include="..\..\addons\ofxGui\src\ofxSlider.h" />
     <ClInclude Include="..\..\addons\ofxGui\src\ofxSliderGroup.h" />
     <ClInclude Include="..\..\addons\ofxGui\src\ofxToggle.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\IpEndpointName.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\NetworkingUtils.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\PacketListener.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\TimerListener.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\UdpSocket.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\MessageMappingOscPacketListener.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscException.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscHostEndianness.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscOutboundPacketStream.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscPacketListener.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscPrintReceivedElements.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscReceivedElements.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\osc\OscTypes.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOsc.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscArg.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscBundle.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscMessage.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscParameterSync.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscReceiver.h" />
+    <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscSender.h" />
     <ClInclude Include="..\src\ofApp.h" />
+    <ClInclude Include="..\src\OscCommand.hpp" />
+    <ClInclude Include="..\src\OscManager.hpp" />
     <ClInclude Include="..\src\SoundSource.h" />
     <ClInclude Include="..\src\WavWriter.h" />
   </ItemGroup>

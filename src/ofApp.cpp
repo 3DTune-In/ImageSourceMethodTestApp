@@ -1,8 +1,6 @@
 #include "ofApp.h"
 
-//#define SAMPLERATE 44100
-#define BUFFERSIZE 512
-// TEST PROFILER CLASS
+
 #define USE_PROFILER
 #ifdef USE_PROFILER
 #include <Windows.h>
@@ -29,6 +27,7 @@ Common::CTimeMeasure startOfflineRecord;
 
 
 //--------------------------------------------------------------
+// TODO Separate all the code within this setup method into several methods
 void ofApp::setup() {
 	
 	setupDone = false;
@@ -46,7 +45,7 @@ void ofApp::setup() {
 	Common::TAudioStateStruct audioState;	                            // Audio State struct declaration
 	//audioState.bufferSize = myCore.GetAudioState().bufferSize;		// Setting buffer size 
 	audioState.bufferSize = BUFFERSIZE;			                        // Setting buffer size 
-	audioState.sampleRate = myCore.GetAudioState().sampleRate;   		// Setting frame rate 
+	audioState.sampleRate = SAMPLERATE;						   			// Setting frame rate 
 	myCore.SetAudioState(audioState);									// Applying configuration to core
 	myCore.SetHRTFResamplingStep(15);								    // Setting 15-degree resampling step for HRTF
 
@@ -325,6 +324,8 @@ void ofApp::setup() {
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	imageSourceDSPList = reCreateImageSourceDSP();
 
+	// OSC
+	oscManager.Setup(OSC_DEFAULT_TARGET_PORT, OSC_DEFAULT_TARGET_IP, OSC_DEFAULT_LISTEN_PORT, std::bind(&ofApp::OscCallback, this, std::placeholders::_1));	
 }
 
 
@@ -332,6 +333,9 @@ void ofApp::setup() {
 void ofApp::update() {
 	//float width = ofGetWidth();
 	//float height = ofGetHeight();
+
+	// OSC
+	oscManager.ReceiveOSCCommand();
 }
 
 //--------------------------------------------------------------
@@ -740,20 +744,18 @@ void ofApp::draw() {
 		sprintf(string, "Horizon 2020 through the SONICOM project (agreement No. 101017743)");
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
-
 	}
-
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
+void ofApp::keyPressed(int key) {
 
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 
 	float distanceNearestWall;
 	bool state;
-		
+
 	switch (key)
 	{
 	case OF_KEY_LEFT:
@@ -769,10 +771,10 @@ void ofApp::keyPressed(int key){
 		elevation--;
 		break;
 	case OF_KEY_PAGE_UP:
-	    scale*=0.9;
+		scale *= 0.9;
 		break;
 	case OF_KEY_PAGE_DOWN:
-		scale*=1.1;
+		scale *= 1.1;
 		break;
 #if 0
 	case OF_KEY_INSERT:
@@ -784,7 +786,7 @@ void ofApp::keyPressed(int key){
 		numberOfSilencedFrames++;
 		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
 		break;
-		
+
 	case OF_KEY_DEL:
 		numberOfSilencedFrames--;
 		if (numberOfSilencedFrames < 0) numberOfSilencedFrames = 0;
@@ -803,10 +805,10 @@ void ofApp::keyPressed(int key){
 			if (!stopState) systemSoundStream.stop();
 
 			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
-			
+
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
-			
+
 			imageSourceDSPList = reCreateImageSourceDSP();
 			if (!stopState) systemSoundStream.start();
 		}
@@ -819,10 +821,10 @@ void ofApp::keyPressed(int key){
 			if (!stopState) systemSoundStream.stop();
 
 			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
-			
+
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
-			
+
 			imageSourceDSPList = reCreateImageSourceDSP();
 			if (!stopState) systemSoundStream.start();
 		}
@@ -891,7 +893,7 @@ void ofApp::keyPressed(int key){
 		listenerLocation = listenerTransform.GetPosition();
 		mainRoom = ISMHandler->getRoom();
 		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state==false)
+		if (state == false)
 		{
 			listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
 			listener->SetListenerTransform(listenerTransform);
@@ -932,7 +934,7 @@ void ofApp::keyPressed(int key){
 			listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
 			listener->SetListenerTransform(listenerTransform);
 		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();	
+		Common::CVector3 Location = ISMHandler->getSourceLocation();
 		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
@@ -964,13 +966,13 @@ void ofApp::keyPressed(int key){
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case '+': //increases the reflection order 
-		if(reflectionOrderControl<MAX_REFLECTION_ORDER) reflectionOrderControl++;
+		if (reflectionOrderControl < MAX_REFLECTION_ORDER) reflectionOrderControl++;
 		break;
 	case '-': //decreases the reflection order 
 		if (reflectionOrderControl > 0) reflectionOrderControl--;
 		break;
 	case '1': //enable/disable wall number 1 
-		if (guiActiveWalls.size() > 0) 
+		if (guiActiveWalls.size() > 0)
 		{
 			guiActiveWalls.at(0) = !guiActiveWalls.at(0);
 			refreshActiveWalls();
@@ -1043,7 +1045,7 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_F1://ABSORTION -- null
 	{
 		if (!stopState) systemSoundStream.stop();
-		
+
 		int numWalls = ISMHandler->getRoom().getWalls().size();
 		for (int i = 0; i < numWalls; i++) {
 			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -1051,26 +1053,26 @@ void ofApp::keyPressed(int key){
 		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 
 		imageSourceDSPList = reCreateImageSourceDSP();
-		
+
 		mainRoom = ISMHandler->getRoom();
 		if (!stopState) systemSoundStream.start();
 		break;
 	}
 #endif
-	
+
 	case 'y': //increase room's length
 		if (!stopState) systemSoundStream.stop();
-		
+
 		shoeboxLength += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-				
+
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		
+
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1078,16 +1080,16 @@ void ofApp::keyPressed(int key){
 	case 'b': //decrease room's length
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxLength > 3.0)  shoeboxLength -= 0.5;
-		
+
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		
+
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		
+
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1095,16 +1097,16 @@ void ofApp::keyPressed(int key){
 	case 'g': //decrease room's width
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxWidth > 3.0) shoeboxWidth -= 0.5;
-		
+
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		
+
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		
+
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1114,14 +1116,14 @@ void ofApp::keyPressed(int key){
 		shoeboxWidth += 0.5;
 
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		
+
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		
+
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1130,14 +1132,14 @@ void ofApp::keyPressed(int key){
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxHeight > 2.5) shoeboxHeight -= 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		
+
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		
+
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1146,14 +1148,14 @@ void ofApp::keyPressed(int key){
 		if (!stopState) systemSoundStream.stop();
 		shoeboxHeight += 0.5;
 		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-		
+
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-		
+
 		mainRoom = ISMHandler->getRoom();
 		imageSourceDSPList = reCreateImageSourceDSP();
 		if (!stopState) systemSoundStream.start();
@@ -1177,6 +1179,7 @@ void ofApp::keyPressed(int key){
 	}
 
 	case 't': //Test
+	{
 		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
 		auto w2 = std::setw(2);
 		auto w5 = std::setw(5);
@@ -1188,9 +1191,9 @@ void ofApp::keyPressed(int key){
 		float freq = 62.5;
 		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
 		{
-			if(freq < 100) { cout << ' '; }
-			if(freq < 1000) { cout << ((int) freq) << "Hz "; }
-			else { cout << w2 << ((int) (freq / 1000)) << "kHz "; }
+			if (freq < 100) { cout << ' '; }
+			if (freq < 1000) { cout << ((int)freq) << "Hz "; }
+			else { cout << w2 << ((int)(freq / 1000)) << "kHz "; }
 			freq *= 2;
 		}
 		cout << "|    X       Y       Z  |  \n";
@@ -1202,7 +1205,7 @@ void ofApp::keyPressed(int key){
 			cout << "|   " << data.at(i).reflectionWalls.size();												//print number of reflection needed for this source
 			cout << "   | ";
 			for (int j = 0; j < NUM_BAND_ABSORTION; j++)
-			{ 
+			{
 				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";	//print abortion coefficientes for a source
 			}
 			cout << "| " << w6 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";			//print source location
@@ -1215,9 +1218,9 @@ void ofApp::keyPressed(int key){
 		cout << "Shoebox \n";
 		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
 
-		if (stateAnechoicProcess) 
+		if (stateAnechoicProcess)
 			cout << "AnechoicProcess Enabled" << "\n";
-		else 
+		else
 			cout << "AnechoicProcess Disabled" << "\n";
 
 		if (stateBinauralSpatialisation)
@@ -1225,7 +1228,7 @@ void ofApp::keyPressed(int key){
 		else
 			cout << "BinauralSpatialisation Disabled" << "\n";
 
-//#if 0
+		//#if 0
 		if (!bDisableReverb)
 		{
 			cout << "Reverb Enabled" << "\n";
@@ -1233,12 +1236,19 @@ void ofApp::keyPressed(int key){
 		}
 		else
 			cout << "Reverb Disabled" << "\n";
-//#endif
+		//#endif
 
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
-	
+
 		break;
 
+	}
+	case 'z':
+	{			
+		// TODO Delete me, just for testing
+		SendOSCMessageToMatlab_Ready();
+		break;
+	}
 	}
 }
 
@@ -2525,3 +2535,46 @@ void ofApp::ShowRecordingDurationTime() {
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stopRecordingOfflineTime - startRecordingOfflineTime);
 	std::cout << "Time taken to do the recording offline: " << duration.count() << " milliseconds" << endl;
 }
+
+// OSC
+void ofApp::OscCallback(const ofxOscMessage& message) {
+
+	if (message.getAddress() == "/play")					OscCallBackPlay();
+	else if (message.getAddress() == "/stop")				OscCallBackStop();
+	else if (message.getAddress() == "/playAndRecord")		OscCallBackPlayAndRecord();
+	else if (message.getAddress() == "/coefficients")		OscCallBackCoefficients(message);
+	
+	
+	else std::cout << "Message OSC not recognised " << message << std::endl;
+}
+
+void ofApp::OscCallBackPlay() {	
+	std::cout << "Received Play"<< std::endl;
+}
+
+void ofApp::OscCallBackStop() {
+	std::cout << "Received Stop" << std::endl;
+}
+
+void ofApp::OscCallBackPlayAndRecord() {
+	std::cout << "Received Play And Record" << std::endl;
+}
+
+void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
+	
+	message.getNumArgs();
+	std::vector<float> v;
+	
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		v.push_back(message.getArgAsFloat(i));
+	}
+
+	// DO whatever
+	std::cout<<v[0]<<","<<v[1]<<"," << v[2] << "," << v[3] << "," << v[4] << "," << v[5] << "," << v[6] << v[7] << "," << v[8] << "," << v[9] << std::endl;
+}
+
+void ofApp::SendOSCMessageToMatlab_Ready() {
+	oscManager.SendOSCCommand_ToMatlab();
+}
+
+

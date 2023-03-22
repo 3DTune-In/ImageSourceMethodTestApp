@@ -221,9 +221,6 @@
     <ClInclude Include="..\..\addons\ofxOsc\libs\oscpack\src\ip\UdpSocket.h">
       <Filter>addons\ofxOsc\libs\oscpack\src\ip</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\OscCommand.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\OscManager.hpp">
       <Filter>src</Filter>
     </ClInclude>

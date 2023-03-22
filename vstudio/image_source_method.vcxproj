@@ -245,7 +245,6 @@
     <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscReceiver.h" />
     <ClInclude Include="..\..\addons\ofxOsc\src\ofxOscSender.h" />
     <ClInclude Include="..\src\ofApp.h" />
-    <ClInclude Include="..\src\OscCommand.hpp" />
     <ClInclude Include="..\src\OscManager.hpp" />
     <ClInclude Include="..\src\SoundSource.h" />
     <ClInclude Include="..\src\WavWriter.h" />

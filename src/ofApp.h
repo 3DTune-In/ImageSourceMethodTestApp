@@ -22,6 +22,10 @@
 
 #include "ofMain.h"
 #include <iomanip>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <HRTF/HRTFFactory.h>
 #include <HRTF/HRTFCereal.h>
@@ -31,14 +35,22 @@
 #include "ISM/ISM.h"
 #include "ofxGui\src\ofxGui.h"
 #include "WavWriter.h"
-#include <cstring>
-#include <iostream>
-#include <algorithm>
+#include "OscManager.hpp"
+#include "ofxOsc.h"
 
-# define LENGTH_OF_NORMALS 0.2
-# define DEFAULT_SCALE 20
-# define INITIAL_REFLECTION_ORDER 10
-# define FRAME_RATE 60
+
+#define SAMPLERATE 44100
+#define BUFFERSIZE 512
+
+#define LENGTH_OF_NORMALS 0.2
+#define DEFAULT_SCALE 20
+#define INITIAL_REFLECTION_ORDER 10
+#define FRAME_RATE 60
+
+#define OSC_DEFAULT_TARGET_IP "127.0.0.1"
+#define OSC_DEFAULT_TARGET_PORT 12301
+#define OSC_DEFAULT_LISTEN_PORT 12300
+
 
 class ofApp : public ofBaseApp{
 
@@ -160,7 +172,11 @@ private:
 		std::chrono::steady_clock::time_point stopRecordingOfflineTime;
 
 		bool setupDone;
-								
+		
+		COscManager oscManager;					// OSC Manager
+
+
+
 		/// Methods to handle Audio
 		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
 		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);
@@ -238,4 +254,14 @@ private:
 		float samples2meters(float _samples);
 		float millisec2meters(float _millesec);
 		float meters2millisec(float _meters);
+
+		
+		// OSC CallBack
+		void OscCallback(const ofxOscMessage& message);		
+		void OscCallBackPlay();
+		void OscCallBackStop();
+		void OscCallBackPlayAndRecord();
+		void OscCallBackCoefficients(const ofxOscMessage& message);
+		
+		void SendOSCMessageToMatlab_Ready();
 };

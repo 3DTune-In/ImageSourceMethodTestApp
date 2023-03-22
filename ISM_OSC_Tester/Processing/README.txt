@@ -1,0 +1,2 @@
+- Abrir en processing los dos scripts: BiTA OSC Tester y Input
+- Ejecutarlo y enviar comando usando la pantalla emergente. Para enviar un nuevo comando pulsar la tecla espacio del teclado (importante hacerlo "sobre" la ventana de comandos emergete del processing)

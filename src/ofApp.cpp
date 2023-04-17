@@ -11,6 +11,9 @@ Common::CProfilerDataSet dsProcessFrameTime;
 Common::CTimeMeasure startOfflineRecord;
 #endif
 
+#define NUMBER_IRSCAN   22 //36
+#define INI_DIST_IRSCAN 3
+
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
@@ -84,7 +87,7 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	fullPath = pathResources + "\\" + "lab_B1_AbsorLow.xml";
+	fullPath = pathResources + "\\" + "lab_B1_AbsorIt20.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -177,8 +180,12 @@ void ofApp::setup() {
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
 	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	//stateAnechoicProcess = true;                  //Is set to true in the method in toggleAnechoic             
+	//stateAnechoicProcess = true;                  //Is set to true in the method in toggleAnechoic        
+
+
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	//anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
+
 	anechoicSourceDSP->EnableDistanceAttenuationReverb();
 	anechoicSourceDSP->EnablePropagationDelay();
 	
@@ -480,6 +487,9 @@ void ofApp::draw() {
 
 			if (numberIRScan == 0) {
 				recordingOfflineSeries = false;
+				// TODO Delete me, just for testing
+				// Send msg to matlab
+				SendOSCMessageToMatlab_Ready();
 			}
 			else {
 				recordOfflineIRControl.set(true);
@@ -1041,7 +1051,7 @@ void ofApp::keyPressed(int key) {
 			refreshActiveWalls();
 		}
 		break;
-#if 0
+//#if 0
 	case OF_KEY_F1://ABSORTION -- null
 	{
 		if (!stopState) systemSoundStream.stop();
@@ -1058,7 +1068,23 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) systemSoundStream.start();
 		break;
 	}
-#endif
+	case OF_KEY_F2://ABSORTION -- 0.7
+	{
+		if (!stopState) systemSoundStream.stop();
+
+		int numWalls = ISMHandler->getRoom().getWalls().size();
+		for (int i = 0; i < numWalls; i++) {
+			absortionsWalls.at(i) = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 };
+		}
+		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+
+		imageSourceDSPList = reCreateImageSourceDSP();
+
+		mainRoom = ISMHandler->getRoom();
+		if (!stopState) systemSoundStream.start();
+		break;
+	}
+//#endif
 
 	case 'y': //increase room's length
 		if (!stopState) systemSoundStream.stop();
@@ -1625,6 +1651,7 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
 		tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
+		//tempSourceDSP->DisableDistanceAttenuationAnechoic();
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
 		tempImageSourceDSPList.push_back(tempSourceDSP);
@@ -1902,10 +1929,11 @@ void ofApp::recordIrSeriesOffline(bool& _active)
 	anechoicSourceDSP->DisableAnechoicProcess();
 	stateAnechoicProcess = false;
 
-	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(10); // 10m
-	int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3);   // 3m
+	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3); // 3m
+	//numberIRScan = 33;                                                    // 3m -35m range      
+	int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(INI_DIST_IRSCAN);
+	numberIRScan = NUMBER_IRSCAN;                                       
 	ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-	numberIRScan = 33;                                                      // 3m-35m range      
 	ofApp::recordIrOffline(recordingOfflineSeries);
 
 }
@@ -2564,17 +2592,27 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 	
 	message.getNumArgs();
 	std::vector<float> v;
+	std::vector<float> absorWall ={0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	
 	for (int i = 0; i < message.getNumArgs(); i++) {
 		v.push_back(message.getArgAsFloat(i));
 	}
-
+	int numWalls = ISMHandler->getRoom().getWalls().size();
+	for (int i = 0; i < numWalls - 2; i++) {
+		//absortionsWalls.at(i) = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 };
+		for (int k = 0; k < 9; k++){
+			absorWall[k] = v[i*9 + k];
+	     }
+		absortionsWalls.at(i) = absorWall;
+	}
+	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	// DO whatever
 	std::cout<<v[0]<<","<<v[1]<<"," << v[2] << "," << v[3] << "," << v[4] << "," << v[5] << "," << v[6] << v[7] << "," << v[8] << "," << v[9] << std::endl;
+	std::cout << v[10] << "," << v[11] << "," << v[12] << "," << v[13] << "," << v[14] << "," << v[15] << "," << v[16] << v[17] << "," << v[18] << "," << v[19] << std::endl;
+
+	recordOfflineIRScanControl.set(true);
 }
 
 void ofApp::SendOSCMessageToMatlab_Ready() {
 	oscManager.SendOSCCommand_ToMatlab();
 }
-
-

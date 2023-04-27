@@ -3,7 +3,7 @@
 %
 %% Before executing this Script: 
 % In offApp.c the following parameters must be updated
-%    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1
+%    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1slopeMax
 %    #define INI_DIST_IRSCAN  YY  = DpMin
 % The ISM simulator has to be executed N times (from DpMin to DpMax)
 % with the following parameters:
@@ -46,12 +46,11 @@
 %        (wIRs*.wav, iIRs*.wav, BRIR.wav)
 
 %% MAX ITERATIONS 
-ITER_MAX = 21;
+ITER_MAX = 31;
 EPSILON_OBJ =0.0000000000001; 
 %% PRUNING DISTANCES
-DpMax=35; DpMin=3;
-DpMinFit = 25;
-;                   %% small distance values are not parsed
+DpMax=36; DpMin=3;
+DpMinFit = 25;                   %% small distance values are not parsed
 % DpMax=18; DpMin=3;
 % DpMinFit = 10;                 %% small distance values are not parsed
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
@@ -139,6 +138,7 @@ Bhi=[  88     176      353      707      1414       2828       5657       11314 
 %% Working loop
 rng('default');
 iLoop = 0;
+fitSlopes=false;
 while ( iLoop < ITER_MAX)
     disp(iLoop);
     %% Folder with impulse responses
@@ -345,21 +345,25 @@ while ( iLoop < ITER_MAX)
     epsilon = EPSILON_OBJ;
     slopes=zeros(1,9);
     ordO=zeros(1,9);
+    slopeMax=0;
     for j=1:NB
         slopes(1,j) = gofpArray(j).p1;
         ordO(1,j)   = gofpArray(j).p2;
         slopeB = slopes (1,j);
+        if (abs(slopeB)>slopeMax)
+            slopeMax=abs(slopeB);
+        end
         ordOB = ordO (1,j);
         if (abs (slopeB)  > 0)
             % for k=1:4    %excluding ceil and floor
-             for k=1:4
+             for k=1:6
                 newAbsorb = absorbData (k,j) + slopeB*alfa; 
                 if newAbsorb > 0.0 && newAbsorb < 1.0
                     absorbData (k,j) = newAbsorb;
                 elseif newAbsorb < 0.0
-                    absorbData (k,j) = 0.05;
+                    absorbData (k,j) = 0.;
                 elseif newAbsorb > 1.0
-                    absorbData (k,j) = 0.95;
+                    absorbData (k,j) = 1.0;
                 end
             end 
         end
@@ -397,21 +401,27 @@ while ( iLoop < ITER_MAX)
             end  
         end
     end
-%     %% update absorption values
-%     absorbData1= absorbData0;
-%     absorbData0 = absorbData2;
 
-    %% send new abssortion values 
-    absorbDataT = absorbData2';
-    walls_absor = absorbDataT(:);
-    SendCoefficientsVectorToISM(connectionToISM, walls_absor'); 
-    
-    vSlope = sprintf(formatSlope,slopes);
+    vSlope = sprintf(formatSlope,slopes0);
     disp(vSlope);
+    vSlope = sprintf(formatSlope,slopes1);
+    disp(vSlope);
+    vAbsor = sprintf(formatAbsor,absorbData0(1,:));
+    disp(vAbsor);
+    vAbsor = sprintf(formatAbsor,absorbData1(1,:));
+    disp(vAbsor);
     vAbsor = sprintf(formatAbsor,absorbData2(1,:));
     disp(vAbsor);
 
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
+    %% send new abssortion values 
+    if ( slopeMax > 0.003)
+       absorbDataT = absorbData2';
+       walls_absor = absorbDataT(:);
+       SendCoefficientsVectorToISM(connectionToISM, walls_absor'); 
+       message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    else
+       fitSlopes=true;
+    end
     % disp(message);
     % pause (1)
 %% ------------------------------
@@ -426,7 +436,7 @@ while ( iLoop < ITER_MAX)
         nameFile= 'FiInfSlopes';
         save(fullfile( current_folder,   nameFile), 'slopes');
         nameFile= 'FiInfAbsorb';
-        save(fullfile( current_folder,   nameFile), 'absorbData2');
+        save(fullfile( current_folder,   nameFile), 'absorbData1');
 
         % copy files
         copyfile(fullfile( current_folder,'BR*'), new_folder);
@@ -440,6 +450,11 @@ while ( iLoop < ITER_MAX)
         close all;
     end
     iLoop=iLoop+1;
+
+    if (fitSlopes == true)
+        break;
+    end
+
 end
 
 % Close, doesn't work properly

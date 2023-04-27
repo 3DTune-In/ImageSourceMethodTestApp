@@ -1,73 +1,27 @@
-%% Generates the results associated with the behavior of the
-%% ISM+Convolution hybrid system of the 3DTI toolkit.
-%
-%% Before executing this Script: 
-% In offApp.c the following parameters must be updated
-%    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1
-%    #define INI_DIST_IRSCAN  YY  = DpMin
-% The ISM simulator has to be executed N times (from DpMin to DpMax)
-% with the following parameters:
-%    OR=0, Direct Path=No, REVERB=YES.
-% To do this, the user must press "Generate IR Series", a command that
-% generates the N impulse responses (by convolution and with windowing)
-% associated with the different pruning distances from DpMin to DpMax.
-% These impulse responses will be stored in N files (w*.wav)
-% These files must be located in the folder:
-% 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-% The BRIR.wav file must also be located in this folder (BRIR obtained with
-% a pruning distance of 1 meter).
-%
-%% This script:
-%  1) Open a connection to send messages to ISM simulator
-%  2) Send initial absortions to ISM simulator. 
-%     This causes the ISM simulator to run N times (from DpMin to DpMax) 
-%     with the following parameters: OR=10, Direct Path=No, REVERB=No. 
-%     Therefore, the ISM simulator generates the N impulse responses 
-%     (ISM with windowing) associated with the different pruning distances 
-%     from DpMin to DpMax. These impulse responses will be stored in  
-%     N files (i*.wav) located in ...\SeriresIr folder.
-%  3) Wait msg from ISM (this indicates that ISM has finished its N
-%     executions)
-%% 4) Working Loop:
-%     With the 2N+1 files with Impulse Response (IR) in the folder
-%  4.1) Calculate total and partial energies for each IR
-%  4.2) Calculate BRIR energy. Total and partial (for each band)
-%  4.3) Plot: Total Energy for 2N IRs: ISM, Windowed, BRIR-Windowed
-%  4.4) Plot: Total Factor: SQRT(e_TotalIsm/(eBRIR-e_TotalWin))
-%  4.5) Plot: Partial Energies (per band): ISM, Windowed, BRIR-Windowed
-%  4.6) Plot: Partial Factor (per band): SQRT(E_BandIsm(j)/E_BandBrir_Win(j));
-%  4.7) Curve Fitting: Fit for each Band. 
-%       Calculates slope for each band. Plot slopes
-%  4.8) Update slopes and calculate and update absortions 
-%  4.9) Send new absortions to ISM
-%  4.10) Wait msg from ISM  (this indicates that ISM has finished its N
-%        executions)
-%  4.11) Create new folder to save slopes, absortions and IRs files 
-%        (wIRs*.wav, iIRs*.wav, BRIR.wav)
+
 
 %% MAX ITERATIONS 
-ITER_MAX = 21;
-EPSILON_OBJ =0.0000000000001; 
+ITER_MAX = 41;
+EPSILON_OBJ = 0.00001;
 %% PRUNING DISTANCES
-DpMax=35; DpMin=3;
-DpMinFit = 25;
-;                   %% small distance values are not parsed
+DpMax=28; DpMin=3;
+DpMinFit = 22;                   %% small distance values are not parsed
 % DpMax=18; DpMin=3;
-% DpMinFit = 10;                 %% small distance values are not parsed
+% DpMinFit = 10;                   %% small distance values are not parsed
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
 L=1; R=2;                        % Channel
 %% ABSORTIONS
 %% Pablo+40 iteraciones
-% absorbData = [
-% 0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
-% 0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
-% 0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
-% 0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
-% 0.400000000000000	0.400000000000000	0.300000000000000	0.200000000000000	0.170000000000000	0.150000000000000	0.100000000000000	0.100000000000000	0.200000000000000;
-% 0.200000000000000	0.200000000000000	0.250000000000000	0.350000000000000	0.500000000000000	0.300000000000000	0.250000000000000	0.400000000000000	0.400000000000000;];
+absorbData = [
+0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
+0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
+0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
+0.338909689799483	0.259871841453028	0.479960669046509	0.0297859988099942	0.466584244231692	0.600776234389392	0.643694649952930	0.609525467569185	0.777059824182964;
+0.400000000000000	0.400000000000000	0.300000000000000	0.200000000000000	0.170000000000000	0.150000000000000	0.100000000000000	0.100000000000000	0.200000000000000;
+0.200000000000000	0.200000000000000	0.250000000000000	0.350000000000000	0.500000000000000	0.300000000000000	0.250000000000000	0.400000000000000	0.400000000000000;];
 
-% %% Pablo absortions
+% %% Pablo
 % absorbData = [
 % 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
 % 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
@@ -76,24 +30,44 @@ L=1; R=2;                        % Channel
 % 0.40 0.40 0.30  0.20  0.17  0.15    0.10  0.10  0.20;
 % 0.20 0.20 0.25  0.35  0.50  0.30    0.25  0.40  0.40;];
 
-absorbData = [
-0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-0.30 0.30 0.30  0.30  0.30  0.30    0.30  0.30  0.30;
-0.30 0.30 0.30  0.30  0.30  0.30    0.30  0.30  0.30;];
-
-absorbData0 = absorbData;
-absorbData1 = absorbData;
-absorbData2 = absorbData;
-
-slopes0 = zeros(1,9);
-slopes1 = zeros(1,9);
-slopes2 = zeros(1,9);
-
 formatSlope = "Slope: %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f ";
 formatAbsor = "Absor: %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f ";
+
+% absorbData = [
+% 0.273770719640980	0.459839482885110	0.376930025779702	0.678683111774911	0.454277859851608	0.438749508816753	0.743301756520415	0.671431054228773	0.695195234887130;
+% 0.273770719640980	0.459839482885110	0.376930025779702	0.678683111774911	0.454277859851608	0.438749508816753	0.743301756520415	0.671431054228773	0.695195234887130;
+% 0.273770719640980	0.459839482885110	0.376930025779702	0.678683111774911	0.454277859851608	0.438749508816753	0.743301756520415	0.671431054228773	0.695195234887130;
+% 0.273770719640980	0.459839482885110	0.376930025779702	0.678683111774911	0.454277859851608	0.438749508816753	0.743301756520415	0.671431054228773	0.695195234887130;
+% 0.273770719640980	0.459839482885110	0.376930025779702	0.678683111774911	0.454277859851608	0.438749508816753	0.743301756520415	0.671431054228773	0.695195234887130;
+% 0.273770719640980	0.459839482885110	0.376930025779702	0.678683111774911	0.454277859851608	0.438749508816753	0.743301756520415	0.671431054228773	0.695195234887130;
+% ];
+
+% absorbData = [
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% ];
+
+% absorbData = [
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.273770719640980	0.318712325323339	0.376930025779702	0.473766749877195	0.327961993934912	0.318844957942948	0.687702087073435	0.647533206059719	0.695195234887130;
+% 0.100000000000000	0.100000000000000	0.150000000000000	0.100000000000000	0.100000000000000	0.0500000000000000	0.200000000000000	0.300000000000000	0.300000000000000;
+% 0.300000000000000	0.100000000000000	0.250000000000000	0.250000000000000	0.200000000000000	0.150000000000000	0.200000000000000	0.300000000000000	0.300000000000000;
+% ];
+
+
+
+% absorbData = [0.10 0.10 0.24 0.32 0.39 0.53 0.38 0.38 0.38;
+%               0.10 0.10 0.24 0.32 0.39 0.53 0.38 0.38 0.38;
+%               0.10 0.10 0.24 0.32 0.39 0.53 0.38 0.38 0.38;
+%               0.10 0.10 0.24 0.32 0.39 0.53 0.38 0.38 0.38;
+%               0.10 0.10 0.15 0.10 0.10 0.05 0.20 0.30 0.30;
+%               0.30 0.10 0.25 0.25 0.20 0.15 0.20 0.30 0.30;];
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -122,6 +96,8 @@ SendCoefficientsVectorToISM(connectionToISM, walls_absor');
 %% Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
 disp(message);
+
+
 
 %%   BANDS
 %    62,5    125     250      500      1000       2000       4000       8000       16000
@@ -289,7 +265,7 @@ while ( iLoop < ITER_MAX)
         factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L));
         plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
     end
-    %ylim([0.0 2.5]); grid;
+    ylim([0.0 2.5]); grid;
     xlabel('Distance (m)');  ylabel('Factor');
     legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
     title('Factor per Band vs Pruning Distance');
@@ -331,7 +307,7 @@ while ( iLoop < ITER_MAX)
         p=plot(fitObj, xft,Fft, '--o');
         p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
     end
-    %ylim([0.0 2.5]);
+    ylim([0.0 2.5]);
     xlabel('Distance (m)');  ylabel('Factor');
     legend( leg, 'Location','northwest'); grid;
     title('CURVE FIT (9B)- Factor per Band vs Pruning Distance');
@@ -339,83 +315,54 @@ while ( iLoop < ITER_MAX)
 
 
     %% -----------------------------------------------------------------
-    %% Extrac slopes and new absortions to send to ISM
-    alfa = 0.3;
+    %% Extrac slopes to send to ISM
+    alfa = 0.5;
     %epsilon = 0.00001;
     epsilon = EPSILON_OBJ;
     slopes=zeros(1,9);
-    ordO=zeros(1,9);
     for j=1:NB
         slopes(1,j) = gofpArray(j).p1;
-        ordO(1,j)   = gofpArray(j).p2;
         slopeB = slopes (1,j);
-        ordOB = ordO (1,j);
-        if (abs (slopeB)  > 0)
+        if abs (slopeB)  > epsilon
             % for k=1:4    %excluding ceil and floor
              for k=1:4
-                newAbsorb = absorbData (k,j) + slopeB*alfa; 
-                if newAbsorb > 0.0 && newAbsorb < 1.0
-                    absorbData (k,j) = newAbsorb;
-                elseif newAbsorb < 0.0
+                newAbsor = absorbData (k,j) + slopeB*alfa; 
+                if newAbsor > 0.0 && newAbsor < 1.0
+                    absorbData (k,j) = newAbsor;
+                elseif newAbsor < 0.0
                     absorbData (k,j) = 0.05;
-                elseif newAbsorb > 1.0
+                elseif newAbsor > 1.0
                     absorbData (k,j) = 0.95;
                 end
             end 
         end
     end 
-    %% update calculated slopes
-    slopes0=slopes1;
-    slopes1=slopes;
-    %slopes2=slopes;
-    %% update absorption values
-    
-    absorbData0 = absorbData1;
-    absorbData1 = absorbData2;
+    %% Send slopes to ISM
+    % SendCoefficientsVectorToISM(connectionToISM, slopes);
 
-    if (iLoop < 2 )
-        %% first new absortions
-       absorbData2 = absorbData;            
-    else
-        %% calculate new absorptions
-        for j=1:NB
-            if (abs (slopes0(1,j) - slopes1(1,j) ) > 0.0000000000001)
-                %newAbsorb = (ordO(1,j) - slopes0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(slopes1(1,j)-slopes0(1,j))+absorbData0(1,j);
-                newAbsorb = (-slopes0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(slopes1(1,j)-slopes0(1,j))+absorbData0(1,j);     
-            else 
-                newAbsorb = absorbData2(1,j);
-                disp('equal slopes values' ); 
-            end
+    %% Send points to ISM
+%     points=zeros(1,9);
+%     for j=1:NB
+%         points(1,j) = gofpArray(j).p2;
+%     end 
+%     SendCoefficientsVectorToISM(connectionToISM, points);
 
-            if (newAbsorb < 0.0)
-                newAbsorb = 0.0;
-            elseif (newAbsorb > 1.0)
-                newAbsorb = 1.0;
-            end
-            for k=1:6
-                absorbData2 (k,j) = newAbsorb;
-            end  
-        end
-    end
-%     %% update absorption values
-%     absorbData1= absorbData0;
-%     absorbData0 = absorbData2;
-
-    %% send new abssortion values 
-    absorbDataT = absorbData2';
+    %% Send new absortions
+    absorbDataT = absorbData';
     walls_absor = absorbDataT(:);
     SendCoefficientsVectorToISM(connectionToISM, walls_absor'); 
-    
+
     vSlope = sprintf(formatSlope,slopes);
     disp(vSlope);
-    vAbsor = sprintf(formatAbsor,absorbData2(1,:));
+    vAbsor = sprintf(formatAbsor,absorbData(1,:));
     disp(vAbsor);
 
     message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-    % disp(message);
+    %disp(message);
+        
     % pause (1)
 %% ------------------------------
-    b = mod( iLoop , 4 ) ;
+    b = mod( iLoop , 10 ) ;
     if (b==0)
         % actual folder
         current_folder = pwd;
@@ -426,7 +373,7 @@ while ( iLoop < ITER_MAX)
         nameFile= 'FiInfSlopes';
         save(fullfile( current_folder,   nameFile), 'slopes');
         nameFile= 'FiInfAbsorb';
-        save(fullfile( current_folder,   nameFile), 'absorbData2');
+        save(fullfile( current_folder,   nameFile), 'absorbData');
 
         % copy files
         copyfile(fullfile( current_folder,'BR*'), new_folder);

@@ -15,19 +15,21 @@
 
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\DpMinFitresources\IR\H_20230116'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\IR\P_20230207AbsorLowW20ms'
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr'
+
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\LabRectanOr15'
 %cd 'D:\3DTI_of_v0.11.2_vs2017_release\of_v0.11.2_vs2017_release\METODO_IMAGENES\vstudio';
 
 %Folder with impulse responses
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\AbsorP5';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit 22_walls_6_it6\4';
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\0';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_36 DpMin_3 DpMinFit_25 iter_21\4'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_30 DpMin_15 DpMinFit_18'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_28 DpMin_3 DpMinFit_16_alfa_05\40';
 %% PRUNING DISTANCES
-DpMax=24; DpMin=3;
-DpMinFit = 16;                   %% small distance values are not parsed
+DpMax=36; DpMin=3;
+DpMinFit = 25;                   %% small distance values are not parsed
 %DpMax=40; DpMin=10;
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
@@ -152,7 +154,7 @@ legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
 figure;                                          
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
 plot (x, Factor,'b--*');
-%ylim([0.0 1.5]);
+ylim([0.0 1.1]);
 xlabel('Distance (m)');  
 ylabel('Factor'); 
 title('Factor (total) vs Pruning Distance');  
@@ -196,6 +198,7 @@ for j=1:NB
     plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
 grid;
+ylim([0.0 2.5]);
 xlabel('Distance (m)');  ylabel('Factor'); 
 legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
 title('Factor per Band vs Pruning Distance');  
@@ -237,7 +240,7 @@ for j=1:NB
    p=plot(fitObj, xft,Fft, '--o');
    p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
 end   
-
+ylim([0.0 2.2]);
 xlabel('Distance (m)');  ylabel('Factor'); 
 legend( leg, 'Location','northwest'); grid;
 title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 

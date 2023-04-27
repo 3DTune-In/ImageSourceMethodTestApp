@@ -11,7 +11,7 @@ Common::CProfilerDataSet dsProcessFrameTime;
 Common::CTimeMeasure startOfflineRecord;
 #endif
 
-#define NUMBER_IRSCAN   22 //36
+#define NUMBER_IRSCAN   34 //36
 #define INI_DIST_IRSCAN 3
 
 
@@ -65,6 +65,7 @@ void ofApp::setup() {
 	
 	string fullPath = pathResources + "\\" + "hrtf.sofa";  //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";  // To test the Filterbank
+
 	bool specifiedDelays;
 	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
 	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);                 //VSTUDIO
@@ -87,7 +88,7 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	fullPath = pathResources + "\\" + "lab_B1_AbsorIt20.xml";
+	fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -2598,7 +2599,7 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 		v.push_back(message.getArgAsFloat(i));
 	}
 	int numWalls = ISMHandler->getRoom().getWalls().size();
-	for (int i = 0; i < numWalls - 2; i++) {
+	for (int i = 0; i < numWalls; i++) {
 		//absortionsWalls.at(i) = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 };
 		for (int k = 0; k < 9; k++){
 			absorWall[k] = v[i*9 + k];
@@ -2607,8 +2608,15 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 	}
 	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	// DO whatever
-	std::cout<<v[0]<<","<<v[1]<<"," << v[2] << "," << v[3] << "," << v[4] << "," << v[5] << "," << v[6] << v[7] << "," << v[8] << "," << v[9] << std::endl;
-	std::cout << v[10] << "," << v[11] << "," << v[12] << "," << v[13] << "," << v[14] << "," << v[15] << "," << v[16] << v[17] << "," << v[18] << "," << v[19] << std::endl;
+	//std::cout<< v[0]  << "," << v[1]  <<","  << v[2]  << "," << v[3]  << "," << v[4]  << "," << v[5]  << "," << v[6]  << ","  << v[7]  << "," << v[8] << std::endl;
+	//std::cout<< v[36] << "," << v[37] << "," << v[38] << "," << v[39] << "," << v[40] << "," << v[41] << "," << v[42] << "," << v[43] << "," << v[44] << std::endl;
+	//std::cout<< v[45] << "," << v[46] << "," << v[47] << "," << v[48] << "," << v[49] << "," << v[50] << "," << v[51] << ","  << v[52] << "," << v[53] << std::endl;
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 9; j++) {
+			std::cout << absortionsWalls.at(i).at(j) << ", ";
+		}
+		std::cout << std::endl;
+	}
 
 	recordOfflineIRScanControl.set(true);
 }

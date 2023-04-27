@@ -1,6 +1,11 @@
 %% Generates the results associated with the behavior of the
 %% ISM+Convolution hybrid system of the 3DTI toolkit.
 %
+% In this version, the tests can be considered finished before carrying out 
+% all the preset iterations. To do this, a threshold is added that is 
+% associated with the maximum slope allowed for the frequency bands.
+% Below this threshold the iterative loop stops.
+%
 %% Before executing this Script: 
 % In offApp.c the following parameters must be updated
 %    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1slopeMax

@@ -1,6 +1,10 @@
 %% Generates the results associated with the behavior of the
 %% ISM+Convolution hybrid system of the 3DTI toolkit.
 %
+% In this version the slope of the total energy curve is also taken into 
+% account to finish the loop. Furthermore, the maximum change in slope 
+% is limited to a constant The constant is set by the user.
+%
 %% Before executing this Script: 
 % In offApp.c the following parameters must be updated
 %    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1

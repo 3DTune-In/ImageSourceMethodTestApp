@@ -1,6 +1,10 @@
 %% Generates the results associated with the behavior of the
 %% ISM+Convolution hybrid system of the 3DTI toolkit.
 %
+% In the previous version the limit to change the absorption value was 
+% a constant. Now, the limit is reduced if the slope of a band changes 
+% its sign (from positive to negative and from negative to positive).
+%
 %% Before executing this Script: 
 % In offApp.c the following parameters must be updated
 %    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1

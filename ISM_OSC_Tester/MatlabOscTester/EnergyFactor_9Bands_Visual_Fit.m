@@ -21,15 +21,15 @@
 
 %Folder with impulse responses
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\AbsorP5';
-%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit 22_walls_6_it6\4';
-%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\0';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_35 DpMin_3 DpMinFit_18 4iter_100\100';
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\12';
+cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_36 DpMin_3 DpMinFit_25 iter_18\18';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_36 DpMin_3 DpMinFit_25 iter_21\4'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_30 DpMin_15 DpMinFit_18'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_28 DpMin_3 DpMinFit_16_alfa_05\40';
 %% PRUNING DISTANCES
-DpMax=36; DpMin=3;
-DpMinFit = 25;                   %% small distance values are not parsed
+DpMax=35; DpMin=3;
+DpMinFit = 18;                   %% small distance values are not parsed
 %DpMax=40; DpMin=10;
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
@@ -154,7 +154,7 @@ legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
 figure;                                          
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
 plot (x, Factor,'b--*');
-ylim([0.0 1.1]);
+ylim([0.0 1.5]);
 xlabel('Distance (m)');  
 ylabel('Factor'); 
 title('Factor (total) vs Pruning Distance');  
@@ -240,7 +240,7 @@ for j=1:NB
    p=plot(fitObj, xft,Fft, '--o');
    p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
 end   
-ylim([0.0 2.2]);
+ylim([0.0 1.8]);
 xlabel('Distance (m)');  ylabel('Factor'); 
 legend( leg, 'Location','northwest'); grid;
 title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 

@@ -262,6 +262,11 @@ private:
 		void OscCallBackStop();
 		void OscCallBackPlayAndRecord();
 		void OscCallBackCoefficients(const ofxOscMessage& message);
-		
+		void OscCallBackReverbGain(const ofxOscMessage& message);
+		void OscCallBackDistMaxImgs(const ofxOscMessage& message);
+		void OscCallBackReflectionOrder(const ofxOscMessage& message);
+		void OscCallBackDirectPathEnable(const ofxOscMessage& message);
+		void OscCallBackReverbEnable(const ofxOscMessage& message);
+		void OscCallBackSaveIR();
 		void SendOSCMessageToMatlab_Ready();
 };

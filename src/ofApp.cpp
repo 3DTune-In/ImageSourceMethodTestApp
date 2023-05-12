@@ -88,7 +88,8 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";
+	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";
+	fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -364,9 +365,13 @@ void ofApp::draw() {
 			if (boolRecordingIR)
 			{
 				if (!recordingOfflineSeries) // save a single file
-				{
-					ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
-				    fileNameUsr = saveFileResult.getPath();
+				{	
+					//ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
+				    //fileNameUsr = saveFileResult.getPath();
+					//// TODO just for testing delete and replace with the previous code that is as comments
+					string pathData = ofToDataPath("");
+					string pathResources = ofToDataPath("resources");
+					fileNameUsr = pathResources + "\\SeriesIr\\";
 				}
 				else                       // save a set of files
 				{
@@ -2572,13 +2577,14 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/stop")				OscCallBackStop();
 	else if (message.getAddress() == "/playAndRecord")		OscCallBackPlayAndRecord();
 	else if (message.getAddress() == "/coefficients")		OscCallBackCoefficients(message);
-	
-	
-	else std::cout << "Message OSC not recognised " << message << std::endl;
-}
+	else if (message.getAddress() == "/reverbGain")		    OscCallBackReverbGain(message);
+	else if (message.getAddress() == "/distMaxImgs")		OscCallBackDistMaxImgs(message);
+	else if (message.getAddress() == "/reflectionOrder")	OscCallBackReflectionOrder(message);
+	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
+	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
+	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
 
-void ofApp::OscCallBackPlay() {	
-	std::cout << "Received Play"<< std::endl;
+	else std::cout << "Message OSC not recognised " << message << std::endl;
 }
 
 void ofApp::OscCallBackStop() {
@@ -2620,6 +2626,100 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 
 	recordOfflineIRScanControl.set(true);
 }
+
+void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	float reverbGainLinear = message.getArgAsFloat(0);
+	std::cout << "Received ReverbGain Comand"<<",  "<< reverbGainLinear << std::endl;
+
+	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	float windowThreshold = winThresholdControl.get();
+	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
+		
+	SendOSCMessageToMatlab_Ready();	
+	if (!stopState) systemSoundStream.start();
+}
+
+
+void ofApp::OscCallBackDistMaxImgs(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	int maxDistImagesToListener = message.getArgAsInt(0);  //getArgAsFloat(0);	
+	std::cout << "Received DistanceMaxImages Comand"",  "<< maxDistImagesToListener << std::endl;
+	changeMaxDistanceImageSources(maxDistImagesToListener);	
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	int reflectionOrder = message.getArgAsInt(0);  
+	std::cout << "Received ReflectionOrderComand" ",  " << reflectionOrder << std::endl;
+	reflectionOrderControl.set(reflectionOrder);
+	changeReflectionOrder(reflectionOrder);
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackSaveIR() {
+	std::cout << "Received Save IR" << std::endl;
+	recordOfflineIRControl.set(true);
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DirectPathEnableDisable Comand" ",  " << state << std::endl;
+
+	if (state){
+		anechoicSourceDSP->EnableAnechoicProcess();
+		stateAnechoicProcess = true;
+		anechoicEnableControl.set(true);
+	}
+	else {
+		anechoicSourceDSP->DisableAnechoicProcess();
+		stateAnechoicProcess = false;
+		anechoicEnableControl.set(false);
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DirectPathEnableDisable Comand" ",  " << state << std::endl;
+
+	if (state) {
+		reverbEnableControl.set(true);
+		bDisableReverb = false;
+	}
+	else {
+		reverbEnableControl.set(false);
+		bDisableReverb = true;
+	}
+
+	if (!stopState) systemSoundStream.stop();
+	anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+	imageSourceDSPList = reCreateImageSourceDSP();
+	for (int i = 0; i < imageSourceDSPList.size(); i++)
+		imageSourceDSPList.at(i)->ResetSourceBuffers();
+	environment->ResetReverbBuffers();
+	if (!stopState) systemSoundStream.start();
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackPlay() {
+	std::cout << "Received Play" << std::endl;
+}
+
 
 void ofApp::SendOSCMessageToMatlab_Ready() {
 	oscManager.SendOSCCommand_ToMatlab();

@@ -270,7 +270,7 @@ while ( iLoop < ITER_MAX)
     xlabel('Distance (m)');
     ylabel('Factor');
     title('Factor (total) vs Pruning Distance');
-    legend('SQRT(e_TotalIsm/(eBRIR-e_Totalwin))', 'Location','southeast');
+    legend('SQRT(eTotalIsm/(eBRIR-eTotalWin))', 'Location','southeast');
     grid;
     %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed
 %    figure; hold on;
@@ -386,10 +386,10 @@ while ( iLoop < ITER_MAX)
                 newAbsorb = absorbData (k,j) + slopeB*alfa; 
                 if newAbsorb > 0.0 && newAbsorb < 1.0
                     absorbData (k,j) = newAbsorb;
-                elseif newAbsorb < 0.0
-                    absorbData (k,j) = 1.0;
-                elseif newAbsorb > 1.0
-                    absorbData (k,j) = 0.90;
+                elseif newAbsorb <= 0.0
+                    absorbData (k,j) = 0.075;
+                elseif newAbsorb >= 1.0
+                    absorbData (k,j) = 0.925;
                 end
             end 
         end
@@ -425,15 +425,15 @@ while ( iLoop < ITER_MAX)
                 end
 
             else 
-                newAbsorb =  absorbData(1,j);
+                newAbsorb =  absorbData1(1,j)+slopes1(1,j); %%%%%%%%%%%
                 % disp('very similar slopes values' ); 
                 disp (newAbsorb);
             end
 
             if (newAbsorb <= 0.0)
-                newAbsorb = 0.10;
+                newAbsorb = 0.075;
             elseif (newAbsorb >= 1.0)
-                newAbsorb = 0.90;
+                newAbsorb = 0.925;
             end
             for k=1:6
                 absorbData2 (k,j) = newAbsorb;
@@ -467,9 +467,9 @@ while ( iLoop < ITER_MAX)
     end
     % disp(message);
     % pause (1)
-%% ------------------------------
+%% ----------- ------------------
     b = mod( iLoop , 4 ) ;
-    if (b==0)
+    if (b==0)|| fitSlopes == true
         % actual folder
         current_folder = pwd;
         % new folder
@@ -489,7 +489,7 @@ while ( iLoop < ITER_MAX)
     end
 %% -------------------------------
 
-    if (iLoop<ITER_MAX-1)
+    if (iLoop<ITER_MAX-1 && fitSlopes == false)
         close all;
     end
     iLoop=iLoop+1;

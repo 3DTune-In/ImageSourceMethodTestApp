@@ -18,46 +18,20 @@ listenPort = 12301;
 receiver = InitOscServer(listenPort);
 [receiver osc_listener] = AddListenerAddress(receiver, '/ready');
 
-%% Enable Diasable Direct Path
-SendDirectPathEnableToISM(connectionToISM, false);
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Enable Disable Reverb
-SendReverbEnableToISM(connectionToISM, false);
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Send WindowSlope
-SendWindowSlopeToISM(connectionToISM, 5); 
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Send MaxDistImages
-SendDistMaxImgsIntToISM(connectionToISM, 18); 
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Send Reflection Order 
-SendReflecionOrderToISM(connectionToISM, 4); 
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Send ReverbGain
-SendReverbGainToISM(connectionToISM, 0.6); 
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Send Save IR comand
-SendSaveIRToISM(connectionToISM)
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
+%% configureHybrid (connectionToISM, , receiver, osc_listener, 
+%%                                                        DirPth, RevPth, Slope, DistMax, RefOrd, RGain, SaveIR)
+%% w file 
+configureHybrid (connectionToISM, receiver, osc_listener, false, true,    10,    35,      0,      0.6,   true);
+pause(0.1);
+%% t file
+configureHybrid (connectionToISM, receiver, osc_listener, false, true,    10,    35,     10,      0.6,   true);
+pause(0.1);
+%% i file
+configureHybrid (connectionToISM, receiver, osc_listener, false, false,   10,    35,     10,      1.0,   true);
+pause(0.1);
+%% BRIR
+configureHybrid (connectionToISM, receiver, osc_listener, false, true,    2,    1,        0,      0.6,   true);
+pause(0.1);
 
 % Close, doesn't work properly
 CloseOscServer(receiver, osc_listener);
@@ -69,6 +43,62 @@ CloseOscServer(receiver, osc_listener);
 function connectionToISM = InitConnectionToISM(port)
     connectionToISM = udp('127.0.0.1',port);
     fopen(connectionToISM);   
+end
+
+%% configureHybrid
+function configureHybrid (connectionToISM, receiver, osc_listener, ...
+                         DP, RP, Slope, DistMax, RO, RGain, saveIR)
+
+    %% Enable Diasable Direct Path
+    SendDirectPathEnableToISM(connectionToISM, DP);
+    % Waiting msg from ISM
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message);
+    pause(0.1);
+    
+    %% Enable Disable Reverb
+    SendReverbEnableToISM(connectionToISM, RP);
+    % Waiting msg from ISM
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message);
+    pause(0.1);
+    
+    %% Send WindowSlope
+    SendWindowSlopeToISM(connectionToISM, Slope);
+    % Waiting msg from ISM
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message);
+    pause(0.1);
+    
+    %% Send MaxDistImages
+    SendDistMaxImgsIntToISM(connectionToISM, DistMax);
+    % Waiting msg from ISM
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message);
+    pause(0.1);
+    
+    %% Send Reflection Order
+    SendReflecionOrderToISM(connectionToISM, RO);
+    % Waiting msg from ISM
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message);
+    pause(0.1);
+    
+    %% Send ReverbGain
+    SendReverbGainToISM(connectionToISM, RGain);
+    % Waiting msg from ISM
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message);
+    pause(0.1);
+    
+    if saveIR == true
+       %% Send Save IR comand
+       SendSaveIRToISM(connectionToISM)
+       message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+       disp(message);
+    end  
+    pause(0.1);
+
 end
 
 %% Send DistanceMaxImagesListener to the OSC server (ISM)

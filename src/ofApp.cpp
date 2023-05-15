@@ -508,6 +508,11 @@ void ofApp::draw() {
 				if (!stopState) systemSoundStream.start();
 			}
 		}
+		else if (!recordingOfflineSeries && (numberIRScan == 0) && recordingPercent >= 100.0f) {
+			// TODO Delete me, just for testing
+			// Send msg to matlab
+			SendOSCMessageToMatlab_Ready();
+		}
 
 		ofPopStyle();
 		return;
@@ -2579,6 +2584,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/coefficients")		OscCallBackCoefficients(message);
 	else if (message.getAddress() == "/reverbGain")		    OscCallBackReverbGain(message);
 	else if (message.getAddress() == "/distMaxImgs")		OscCallBackDistMaxImgs(message);
+	else if (message.getAddress() == "/windowSlope")		OscCallBackWindowSlope(message);
 	else if (message.getAddress() == "/reflectionOrder")	OscCallBackReflectionOrder(message);
 	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
 	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
@@ -2651,16 +2657,26 @@ void ofApp::OscCallBackDistMaxImgs(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	int maxDistImagesToListener = message.getArgAsInt(0);  //getArgAsFloat(0);	
-	std::cout << "Received DistanceMaxImages Comand"",  "<< maxDistImagesToListener << std::endl;
+	std::cout << "Received DistanceMaxImages Comand"<<",  "<< maxDistImagesToListener << std::endl;
 	changeMaxDistanceImageSources(maxDistImagesToListener);	
 	SendOSCMessageToMatlab_Ready();
 }
+
+void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	int newWindowSlope = message.getArgAsInt(0);  //getArgAsFloat(0);	
+	std::cout << "Received WindowSlope Comand"<<",  " << newWindowSlope << std::endl;
+	changeWindowSlope(newWindowSlope);
+	SendOSCMessageToMatlab_Ready();
+}
+
 
 void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	int reflectionOrder = message.getArgAsInt(0);  
-	std::cout << "Received ReflectionOrderComand" ",  " << reflectionOrder << std::endl;
+	std::cout << "Received ReflectionOrder Comand" << ",  " << reflectionOrder << std::endl;
 	reflectionOrderControl.set(reflectionOrder);
 	changeReflectionOrder(reflectionOrder);
 	SendOSCMessageToMatlab_Ready();
@@ -2669,14 +2685,14 @@ void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
 void ofApp::OscCallBackSaveIR() {
 	std::cout << "Received Save IR" << std::endl;
 	recordOfflineIRControl.set(true);
-	SendOSCMessageToMatlab_Ready();
+	//SendOSCMessageToMatlab_Ready();
 }
 
 void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received DirectPathEnableDisable Comand" ",  " << state << std::endl;
+	std::cout << "Received DirectPathEnableDisable Comand" << ",  " << state << std::endl;
 
 	if (state){
 		anechoicSourceDSP->EnableAnechoicProcess();
@@ -2695,7 +2711,7 @@ void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received DirectPathEnableDisable Comand" ",  " << state << std::endl;
+	std::cout << "Received ReverbPathEnableDisable Comand" << ",  " << state << std::endl;
 
 	if (state) {
 		reverbEnableControl.set(true);

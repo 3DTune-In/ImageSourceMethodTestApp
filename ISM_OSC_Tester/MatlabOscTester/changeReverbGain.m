@@ -18,20 +18,14 @@ listenPort = 12301;
 receiver = InitOscServer(listenPort);
 [receiver osc_listener] = AddListenerAddress(receiver, '/ready');
 
-%% Enable Diasable Direct Path
+%% Diasable Direct Path
 SendDirectPathEnableToISM(connectionToISM, false);
 % Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
 disp(message);
 
-%% Enable Disable Reverb
-SendReverbEnableToISM(connectionToISM, false);
-% Waiting msg from ISM
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-disp(message);
-
-%% Send WindowSlope
-SendWindowSlopeToISM(connectionToISM, 5); 
+%% Enable Reverb
+SendReverbEnableToISM(connectionToISM, true);
 % Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
 disp(message);
@@ -54,7 +48,7 @@ SendReverbGainToISM(connectionToISM, 0.6);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
 disp(message);
 
-%% Send Save IR comand
+%% Send Save IR
 SendSaveIRToISM(connectionToISM)
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
 disp(message);
@@ -76,10 +70,6 @@ function SendDistMaxImgsIntToISM(u, vint)
     oscsend(u,'/distMaxImgs','i',vint);    
 end
 
-%% Send WindowSlope to the OSC server (ISM)
-function SendWindowSlopeToISM(u, vint)
-    oscsend(u,'/windowSlope','i',vint);    
-end
 %% Send ReflectionOrder to the OSC server (ISM)
 function SendReflecionOrderToISM(u, vint)
     oscsend(u,'/reflectionOrder','i',vint);    

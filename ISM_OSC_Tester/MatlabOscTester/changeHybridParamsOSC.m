@@ -1,11 +1,46 @@
 
+absorbData = [
+0.36519 0.78804 0.92500 0.78672 0.90509 0.92500 0.84871 0.90446 0.93436; 
+0.36519 0.78804 0.92500 0.78672 0.90509 0.92500 0.84871 0.90446 0.93436; 
+0.36519 0.78804 0.92500 0.78672 0.90509 0.92500 0.84871 0.90446 0.93436; 
+0.36519 0.78804 0.92500 0.78672 0.90509 0.92500 0.84871 0.90446 0.93436; 
+0.36519 0.78804 0.92500 0.78672 0.90509 0.92500 0.84871 0.90446 0.93436; 
+0.36519 0.78804 0.92500 0.78672 0.90509 0.92500 0.84871 0.90446 0.93436; ];
+
 % absorbData = [
-% 0.35463 0.625 0.50109 0.68979 0.50432 0.40638 0.72474 0.665354 0.846824;
-% 0.35463 0.625 0.50109 0.68979 0.50432 0.40638 0.72474 0.665354 0.846824;
-% 0.35463 0.625 0.50109 0.68979 0.50432 0.40638 0.72474 0.665354 0.846824;
-% 0.35463 0.625 0.50109 0.68979 0.50432 0.40638 0.72474 0.665354 0.846824;
-% 0.35463 0.625 0.50109 0.68979 0.50432 0.40638 0.72474 0.665354 0.846824;
-% 0.35463 0.625 0.50109 0.68979 0.50432 0.40638 0.72474 0.665354 0.846824;];
+% 0.35463 1.0 0.50109 1.0 0.50432 1.0 0.72474 1.0 0.846824;
+% 0.35463 1.0 0.50109 1.0 0.50432 1.0 0.72474 1.0 0.846824;
+% 0.35463 1.0 0.50109 1.0 0.50432 1.0 0.72474 1.0 0.846824;
+% 0.35463 1.0 0.50109 1.0 0.50432 1.0 0.72474 1.0 0.846824;
+% 0.35463 1.0 0.50109 1.0 0.50432 1.0 0.72474 1.0 0.846824;
+% 0.35463 1.0 0.50109 1.0 0.50432 1.0 0.72474 1.0 0.846824;];
+
+% absorbData = [
+% 1.0 0.625 1.0 0.68979 1.0 0.40638 1.0 0.665354 1.0;
+% 1.0 0.625 1.0 0.68979 1.0 0.40638 1.0 0.665354 1.0;
+% 1.0 0.625 1.0 0.68979 1.0 0.40638 1.0 0.665354 1.0;
+% 1.0 0.625 1.0 0.68979 1.0 0.40638 1.0 0.665354 1.0;
+% 1.0 0.625 1.0 0.68979 1.0 0.40638 1.0 0.665354 1.0;
+% 1.0 0.625 1.0 0.68979 1.0 0.40638 1.0 0.665354 1.0;];
+
+% absorbData = [
+% 0.35463 0.625 0.50109 0.68979 0.50432 1.0 1.0 1.0 1.0;
+% 0.35463 0.625 0.50109 0.68979 0.50432 1.0 1.0 1.0 1.0;
+% 0.35463 0.625 0.50109 0.68979 0.50432 1.0 1.0 1.0 1.0;
+% 0.35463 0.625 0.50109 0.68979 0.50432 1.0 1.0 1.0 1.0;
+% 0.35463 0.625 0.50109 0.68979 0.50432 1.0 1.0 1.0 1.0;
+% 0.35463 0.625 0.50109 0.68979 0.50432 1.0 1.0 1.0 1.0;];
+
+% absorbData = [
+% 1.0 1.0 1.0 1.0 0.50432 0.40638 0.72474 0.665354 0.846824;
+% 1.0 1.0 1.0 1.0 0.50432 0.40638 0.72474 0.665354 0.846824;
+% 1.0 1.0 1.0 1.0 0.50432 0.40638 0.72474 0.665354 0.846824;
+% 1.0 1.0 1.0 1.0 0.50432 0.40638 0.72474 0.665354 0.846824;
+% 1.0 1.0 1.0 1.0 0.50432 0.40638 0.72474 0.665354 0.846824;
+% 1.0 1.0 1.0 1.0 0.50432 0.40638 0.72474 0.665354 0.846824;];
+
+
+
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -18,20 +53,69 @@ listenPort = 12301;
 receiver = InitOscServer(listenPort);
 [receiver osc_listener] = AddListenerAddress(receiver, '/ready');
 
+%%  Set Ro=3
+SendReflecionOrderToISM(connectionToISM, 3);
+% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+
+%%  Send Play and Stop ToISM
+SendPlayToISM(connectionToISM);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(1);
+SendStopToISM(connectionToISM);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(2);
+
+%% Send Initial absortions
+walls_absor = zeros(1,54);
+absorbDataT = absorbData';
+walls_absor = absorbDataT(:);
+SendAbsortionsToISM(connectionToISM, walls_absor'); 
+pause(0.2);
+%% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.1);
+
+
 %% configureHybrid (connectionToISM, , receiver, osc_listener, 
 %%                                                        DirPth, RevPth, Slope, DistMax, RefOrd, RGain, SaveIR)
+%% Enable Reverb
+SendReverbEnableToISM(connectionToISM, true);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(2);
+
 %% w file 
-configureHybrid (connectionToISM, receiver, osc_listener, false, true,    10,    35,      0,      0.6,   true);
-pause(0.1);
+configureHybrid (connectionToISM, receiver, osc_listener, false, false,    2,     5,        0,      1.0,   true);
+pause(2.0);
 %% t file
-configureHybrid (connectionToISM, receiver, osc_listener, false, true,    10,    35,     10,      0.6,   true);
-pause(0.1);
+configureHybrid (connectionToISM, receiver, osc_listener, false, false,   -1,    -1,        20,       -1,   true);
+pause(2.0);
+
+%% Disable Reverb
+SendReverbEnableToISM(connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(2);
+
 %% i file
-configureHybrid (connectionToISM, receiver, osc_listener, false, false,   10,    35,     10,      1.0,   true);
-pause(0.1);
-%% BRIR
-configureHybrid (connectionToISM, receiver, osc_listener, false, true,    2,    1,        0,      0.6,   true);
-pause(0.1);
+configureHybrid (connectionToISM, receiver, osc_listener, false, false,  -1,    -1,        -1,       -1,   true);
+pause(1);
+
+%% Reflecion Order = 0
+SendReflecionOrderToISM(connectionToISM, 0);
+% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.5);
+
+% %% BRIR
+% configureHybrid (connectionToISM, receiver, osc_listener, false, true,    2,     0.4,     0,       1.0,   true);
+% pause(0.1);
 
 % Close, doesn't work properly
 CloseOscServer(receiver, osc_listener);
@@ -49,51 +133,59 @@ end
 function configureHybrid (connectionToISM, receiver, osc_listener, ...
                          DP, RP, Slope, DistMax, RO, RGain, saveIR)
 
-    %% Enable Diasable Direct Path
-    SendDirectPathEnableToISM(connectionToISM, DP);
-    % Waiting msg from ISM
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-    disp(message);
-    pause(0.1);
+%     %% Enable Diasable Direct Path
+%     SendDirectPathEnableToISM(connectionToISM, DP);
+%     % Waiting msg from ISM
+%     message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+%     disp(message);
+%     pause(0.2);
     
-    %% Enable Disable Reverb
-    SendReverbEnableToISM(connectionToISM, RP);
-    % Waiting msg from ISM
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-    disp(message);
-    pause(0.1);
-    
-    %% Send WindowSlope
-    SendWindowSlopeToISM(connectionToISM, Slope);
-    % Waiting msg from ISM
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-    disp(message);
-    pause(0.1);
-    
+%     %% Enable Disable Reverb
+%     SendReverbEnableToISM(connectionToISM, RP);
+%     % Waiting msg from ISM
+%     message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+%     disp(message);
+%     pause(2);
+      
     %% Send MaxDistImages
-    SendDistMaxImgsIntToISM(connectionToISM, DistMax);
-    % Waiting msg from ISM
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-    disp(message);
-    pause(0.1);
+    if DistMax > 0
+        SendDistMaxImgsFloatToISM(connectionToISM, DistMax);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(2);
+    end 
+
+     %% Send WindowSlope
+    if Slope > 0
+        SendWindowSlopeToISM(connectionToISM, Slope);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(2);
+    end
+
+     %% Send ReverbGain
+    if RGain > 0
+        SendReverbGainToISM(connectionToISM, RGain);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(2);
+    end 
     
     %% Send Reflection Order
-    SendReflecionOrderToISM(connectionToISM, RO);
-    % Waiting msg from ISM
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-    disp(message);
-    pause(0.1);
-    
-    %% Send ReverbGain
-    SendReverbGainToISM(connectionToISM, RGain);
-    % Waiting msg from ISM
-    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-    disp(message);
-    pause(0.1);
+    if RO ~= -1
+        SendReflecionOrderToISM(connectionToISM, RO);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(0.5);
+    end
     
     if saveIR == true
        %% Send Save IR comand
-       SendSaveIRToISM(connectionToISM)
+       SendSaveIRToISM(connectionToISM);
        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
        disp(message);
     end  
@@ -104,6 +196,11 @@ end
 %% Send DistanceMaxImagesListener to the OSC server (ISM)
 function SendDistMaxImgsIntToISM(u, vint)
     oscsend(u,'/distMaxImgs','i',vint);    
+end
+
+%% Send DistanceMaxImagesListener to the OSC server (ISM)
+function SendDistMaxImgsFloatToISM(u, vfloat)
+    oscsend(u,'/distMaxImgs','f',vfloat);    
 end
 
 %% Send WindowSlope to the OSC server (ISM)
@@ -122,8 +219,16 @@ end
 
 %%  Send a SaveIR comand the OSC server (ISM)
 function SendSaveIRToISM(u)
-    %oscsend(u,'/3DTI-OSC/v1/source1/anechoic/nearfield','s','false');
     oscsend(u,'/saveIR','N', "");
+end
+
+%%  Send a Play comand the OSC server (ISM)
+function SendPlayToISM(u)
+    oscsend(u,'/play','N', "");
+end
+%%  Send a Stop comand the OSC server (ISM)
+function SendStopToISM(u)
+    oscsend(u,'/stop','N', "");
 end
 
 %% Send DirectPathEnable comand to the OSC server (ISM)
@@ -138,9 +243,9 @@ end
 
 
 %% Send float vector to the OSC server (ISM)
-function SendCoefficientsVectorToISM(u, coefVector)
+function SendAbsortionsToISM(u, coefVector)
     m = repmat('f',1,length(coefVector));
-    oscsend(u,'/coefficients',m, coefVector);    
+    oscsend(u,'/absortions',m, coefVector);    
 end
 
 % %% Send string to the OSC server (ISM)

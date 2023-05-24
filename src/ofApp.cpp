@@ -11,8 +11,8 @@ Common::CProfilerDataSet dsProcessFrameTime;
 Common::CTimeMeasure startOfflineRecord;
 #endif
 
-#define NUMBER_IRSCAN   34 //36
-#define INI_DIST_IRSCAN 3
+#define NUMBER_IRSCAN   13 //36
+#define INI_DIST_IRSCAN 2
 
 
 #define SOURCE_STEP 0.02f
@@ -24,8 +24,8 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
-#define MIN_WIN_SLOPE 2.91                    //mseg
-#define INITIAL_WIN_SLOPE 10                  //mseg
+#define MIN_WIN_SLOPE 2.915                    //mseg
+#define INITIAL_WIN_SLOPE 5                   //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
 
@@ -54,7 +54,7 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(0, 0, 0);
+	Common::CVector3 listenerLocation(0.2, 0.0, -0.05);
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -78,7 +78,9 @@ void ofApp::setup() {
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
+	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile; 
+	//fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
+	fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb.sofa";
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
 	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
 	
@@ -89,7 +91,8 @@ void ofApp::setup() {
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";
-	fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
+	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
+	fullPath = pathResources + "\\" + "spequena_05.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -172,7 +175,8 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
-	Common::CVector3 initialLocation(1.2, 0, 0);
+	//Common::CVector3 initialLocation(1.2, 0, 0);
+	Common::CVector3 initialLocation(-1.2, 0, -0.05);
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -182,7 +186,7 @@ void ofApp::setup() {
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
 	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	//stateAnechoicProcess = true;                  //Is set to true in the method in toggleAnechoic        
+	stateAnechoicProcess = true;                  //Is changed in the method in toggleAnechoic        
 
 
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
@@ -229,7 +233,7 @@ void ofApp::setup() {
 	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, MIN_DIST_SILENCED_FRAMES, MAX_DIST_SILENCED_FRAMES));
 				
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
-	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
+	leftPanel.add(anechoicEnableControl.set("Direct Path", false));
 
 	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
 	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
@@ -395,9 +399,9 @@ void ofApp::draw() {
 
 				//pruning distance
 				if (maxDistanceImageSourcesToListenerControl<10)
-				    fileNameUsr = fileNameUsr + "DP0" + std::to_string(maxDistanceImageSourcesToListenerControl);
+				    fileNameUsr = fileNameUsr + "DP0" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
 				else
-					fileNameUsr = fileNameUsr + "DP" + std::to_string(maxDistanceImageSourcesToListenerControl);
+					fileNameUsr = fileNameUsr + "DP" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
 
 				//window width
 				if (windowSlopeControl < 10)
@@ -502,7 +506,7 @@ void ofApp::draw() {
 				ofApp::recordIrOffline(recordingOfflineSeries);
 
 				if (!stopState) systemSoundStream.stop();
-				int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
+				float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
 				ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 				imageSourceDSPList = reCreateImageSourceDSP();
 				if (!stopState) systemSoundStream.start();
@@ -825,7 +829,7 @@ void ofApp::keyPressed(int key) {
 		{
 			if (!stopState) systemSoundStream.stop();
 
-			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
+			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
 
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
@@ -841,7 +845,7 @@ void ofApp::keyPressed(int key) {
 		{
 			if (!stopState) systemSoundStream.stop();
 
-			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
+			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
 
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
@@ -1700,7 +1704,7 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 }
 
 
-void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
+void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 {
 	if (setupDone == false) return;
 
@@ -1942,7 +1946,7 @@ void ofApp::recordIrSeriesOffline(bool& _active)
 
 	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3); // 3m
 	//numberIRScan = 33;                                                    // 3m -35m range      
-	int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(INI_DIST_IRSCAN);
+	float maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(INI_DIST_IRSCAN);
 	numberIRScan = NUMBER_IRSCAN;                                       
 	ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 	ofApp::recordIrOffline(recordingOfflineSeries);
@@ -2041,8 +2045,10 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
-	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
+	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile; //sofa_reverb140cm_quad_reverb.sofa
+	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
+	string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb.sofa";
+
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
@@ -2589,12 +2595,25 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
 	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
 	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
+	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
 
 	else std::cout << "Message OSC not recognised " << message << std::endl;
 }
 
+void ofApp::OscCallBackPlay() {
+	std::cout << "Received Play" << std::endl;
+	playToStopControl.set("Stop", false);
+	stopToPlayControl.set("Play", true);
+	
+	SendOSCMessageToMatlab_Ready();
+}
+
 void ofApp::OscCallBackStop() {
 	std::cout << "Received Stop" << std::endl;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+	
+	SendOSCMessageToMatlab_Ready();
 }
 
 void ofApp::OscCallBackPlayAndRecord() {
@@ -2640,25 +2659,27 @@ void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
 	std::cout << "Received ReverbGain Comand"<<",  "<< reverbGainLinear << std::endl;
 
 	if (!stopState) systemSoundStream.stop();
-	stopState = true;
-	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
 
 	float windowThreshold = winThresholdControl.get();
 	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
-		
-	SendOSCMessageToMatlab_Ready();	
+	imageSourceDSPList = reCreateImageSourceDSP();
 	if (!stopState) systemSoundStream.start();
+	SendOSCMessageToMatlab_Ready();
 }
 
 
 void ofApp::OscCallBackDistMaxImgs(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
-	int maxDistImagesToListener = message.getArgAsInt(0);  //getArgAsFloat(0);	
+	float maxDistImagesToListener = message.getArgAsFloat(0);  //getArgAsFloat(0);	
 	std::cout << "Received DistanceMaxImages Comand"<<",  "<< maxDistImagesToListener << std::endl;
+
+	if (!stopState) systemSoundStream.stop();
+		
 	changeMaxDistanceImageSources(maxDistImagesToListener);	
+	imageSourceDSPList = reCreateImageSourceDSP();
 	SendOSCMessageToMatlab_Ready();
 }
 
@@ -2667,7 +2688,12 @@ void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message) {
 
 	int newWindowSlope = message.getArgAsInt(0);  //getArgAsFloat(0);	
 	std::cout << "Received WindowSlope Comand"<<",  " << newWindowSlope << std::endl;
+
+	if (!stopState) systemSoundStream.stop();
+	
 	changeWindowSlope(newWindowSlope);
+	windowSlopeControl.set(newWindowSlope);
+	imageSourceDSPList = reCreateImageSourceDSP();
 	SendOSCMessageToMatlab_Ready();
 }
 
@@ -2677,15 +2703,21 @@ void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
 	
 	int reflectionOrder = message.getArgAsInt(0);  
 	std::cout << "Received ReflectionOrder Comand" << ",  " << reflectionOrder << std::endl;
+
+	if (!stopState) systemSoundStream.stop();
+	
 	reflectionOrderControl.set(reflectionOrder);
 	changeReflectionOrder(reflectionOrder);
+	imageSourceDSPList = reCreateImageSourceDSP();
 	SendOSCMessageToMatlab_Ready();
 }
 
 void ofApp::OscCallBackSaveIR() {
+
+	if (!stopState) systemSoundStream.stop();
+	
 	std::cout << "Received Save IR" << std::endl;
 	recordOfflineIRControl.set(true);
-	//SendOSCMessageToMatlab_Ready();
 }
 
 void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
@@ -2695,14 +2727,22 @@ void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
 	std::cout << "Received DirectPathEnableDisable Comand" << ",  " << state << std::endl;
 
 	if (state){
-		anechoicSourceDSP->EnableAnechoicProcess();
-		stateAnechoicProcess = true;
-		anechoicEnableControl.set(true);
+		if (anechoicEnableControl.get())
+	    ;
+		else {
+			anechoicSourceDSP->EnableAnechoicProcess();
+			//anechoicEnableControl = true;
+			stateAnechoicProcess = true;
+		}
 	}
 	else {
-		anechoicSourceDSP->DisableAnechoicProcess();
-		stateAnechoicProcess = false;
-		anechoicEnableControl.set(false);
+		if ( ! anechoicEnableControl.get())
+		;
+		else {
+			anechoicSourceDSP->DisableAnechoicProcess();
+			//anechoicEnableControl = false;
+			stateAnechoicProcess = false;
+		}
 	}
 	SendOSCMessageToMatlab_Ready();
 }
@@ -2712,7 +2752,7 @@ void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
 
 	bool state = message.getArgAsBool(0);
 	std::cout << "Received ReverbPathEnableDisable Comand" << ",  " << state << std::endl;
-
+		
 	if (state) {
 		reverbEnableControl.set(true);
 		bDisableReverb = false;
@@ -2722,20 +2762,42 @@ void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
 		bDisableReverb = true;
 	}
 
-	if (!stopState) systemSoundStream.stop();
 	anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
 	imageSourceDSPList = reCreateImageSourceDSP();
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 		imageSourceDSPList.at(i)->ResetSourceBuffers();
 	environment->ResetReverbBuffers();
-	if (!stopState) systemSoundStream.start();
+	
+	if (setupDone == false) std::chrono::milliseconds::duration(2000);
+
 	SendOSCMessageToMatlab_Ready();
 }
 
-void ofApp::OscCallBackPlay() {
-	std::cout << "Received Play" << std::endl;
-}
+void ofApp::OscCallBackAbsortions(const ofxOscMessage& message) {
 
+	message.getNumArgs();
+	std::vector<float> v;
+	std::vector<float> absorWall = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+	std::cout << "Received Absortions Comand" << std::endl;
+
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		v.push_back(message.getArgAsFloat(i));
+	}
+	int numWalls = ISMHandler->getRoom().getWalls().size();
+	for (int i = 0; i < numWalls; i++) {
+		for (int k = 0; k < 9; k++) {
+			absorWall[k] = v[i * 9 + k];
+		}
+		absortionsWalls.at(i) = absorWall;
+	}
+	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	for (int j = 0; j < 9; j++) {
+		std::cout << absortionsWalls.at(0).at(j) << ", ";
+	}
+	std::cout << std::endl;
+	SendOSCMessageToMatlab_Ready();
+}
 
 void ofApp::SendOSCMessageToMatlab_Ready() {
 	oscManager.SendOSCCommand_ToMatlab();

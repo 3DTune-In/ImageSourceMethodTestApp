@@ -50,11 +50,11 @@
 %        (wIRs*.wav, iIRs*.wav, BRIR.wav)
 
 %% MAX ITERATIONS 
-ITER_MAX = 41;
+ITER_MAX = 21;
 EPSILON_OBJ =0.0000000000001; 
 %% PRUNING DISTANCES
-DpMax=36; DpMin=3;
-DpMinFit = 25;                   %% small distance values are not parsed
+DpMax=14; DpMin=2;
+DpMinFit = 9;                   %% small distance values are not parsed
 % DpMax=18; DpMin=3;
 % DpMinFit = 10;                 %% small distance values are not parsed
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
@@ -63,7 +63,7 @@ L=1; R=2;                        % Channel
 %% ABSORTIONS
 %% 6 it
 % absorbData = [
-% 0.350852 0.796876 0.58582 0.589491 0.652339 0.386218 0.854882 0.785025 0.862635;
+% 0.350852 0.796876 0.58582 0.589491 0.552339 0.386218 0.854882 0.785025 0.862635;
 % 0.350852 0.796876 0.58582 0.589491 0.652339 0.386218 0.854882 0.785025 0.862635;
 % 0.350852 0.796876 0.58582 0.589491 0.652339 0.386218 0.854882 0.785025 0.862635;
 % 0.350852 0.796876 0.58582 0.589491 0.652339 0.386218 0.854882 0.785025 0.862635;

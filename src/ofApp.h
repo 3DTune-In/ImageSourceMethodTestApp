@@ -97,7 +97,7 @@ private:
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
-		ofParameter<int> maxDistanceImageSourcesToListenerControl;
+		ofParameter<float> maxDistanceImageSourcesToListenerControl;
 		ofParameter<int> reverbGainControl;
 		ofParameter<int> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
@@ -204,7 +204,7 @@ private:
 		/// Methods to manage GUI
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
-		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
+		void changeMaxDistanceImageSources(float &maxDistanceSourcesToListener);
 		void changeWinThreshold(int& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
 		void changeReverbGain(int& reverbGain);
@@ -262,6 +262,7 @@ private:
 		void OscCallBackStop();
 		void OscCallBackPlayAndRecord();
 		void OscCallBackCoefficients(const ofxOscMessage& message);
+		void OscCallBackAbsortions(const ofxOscMessage& message);
 		void OscCallBackReverbGain(const ofxOscMessage& message);
 		void OscCallBackDistMaxImgs(const ofxOscMessage& message);
 		void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message);

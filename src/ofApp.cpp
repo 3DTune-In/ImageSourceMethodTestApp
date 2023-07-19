@@ -11,21 +11,22 @@ Common::CProfilerDataSet dsProcessFrameTime;
 Common::CTimeMeasure startOfflineRecord;
 #endif
 
-#define NUMBER_IRSCAN   13 //36
+#define NUMBER_IRSCAN   13 //small room
 #define INI_DIST_IRSCAN 2
-
+//#define NUMBER_IRSCAN   35 //lab
+//#define INI_DIST_IRSCAN 3
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 40
 #define MAX_DIST_SILENCED_FRAMES 500          //meters
-#define MIN_DIST_SILENCED_FRAMES 1            //meters
+#define MIN_DIST_SILENCED_FRAMES 1           //meters
 #define INITIAL_DIST_SILENCED_FRAMES 3       //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
-#define MIN_WIN_SLOPE 2.915                    //mseg
-#define INITIAL_WIN_SLOPE 5                   //mseg
+#define MIN_WIN_SLOPE 2.915                   //mseg
+#define INITIAL_WIN_SLOPE 2                  //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
 
@@ -54,7 +55,9 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(0.2, 0.0, -0.05);
+	//Common::CVector3 listenerLocation(0.2, 0.0, -0.05); //small room
+	Common::CVector3 listenerLocation(0.2, -0.65, -0.05); //small room
+	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -79,8 +82,10 @@ void ofApp::setup() {
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile; 
-	//fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
-	fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb.sofa";
+	//fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";
+	fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa"; //small room
+    //fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa"; //smal room pos2
+	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
 	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
 	
@@ -93,6 +98,7 @@ void ofApp::setup() {
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
 	fullPath = pathResources + "\\" + "spequena_05.xml";
+	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -175,8 +181,8 @@ void ofApp::setup() {
 
 	// setup of the anechoic source
 	//Common::CVector3 initialLocation(13, 0, -4);
-	//Common::CVector3 initialLocation(1.2, 0, 0);
-	Common::CVector3 initialLocation(-1.2, 0, -0.05);
+	//Common::CVector3 initialLocation(1.2, 0, 0);    //lab
+	Common::CVector3 initialLocation(-1.2, 0, -0.05); //small room
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -192,7 +198,9 @@ void ofApp::setup() {
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
 	//anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
 
-	anechoicSourceDSP->EnableDistanceAttenuationReverb();
+	//anechoicSourceDSP->EnableDistanceAttenuationReverb();
+	anechoicSourceDSP->DisableDistanceAttenuationReverb();
+
 	anechoicSourceDSP->EnablePropagationDelay();
 	
 	// setup of the image sources
@@ -245,7 +253,7 @@ void ofApp::setup() {
 	//// Setup windowThreshold and windowSlope
 
 	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
-	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -12, 12));
+	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -24, 24));
 
 	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);
 	leftPanel.add(winThresholdControl.set("WinThreshold (ms)", (INITIAL_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
@@ -305,6 +313,9 @@ void ofApp::setup() {
 
 	changeHRTFControl.addListener(this, &ofApp::changeHRTF);
 	leftPanel.add(changeHRTFControl.set("Load HRTF", false));
+
+	changeBRIRControl.addListener(this, &ofApp::changeBRIR);
+	leftPanel.add(changeBRIRControl.set("Load BRIR", false));
 	
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
 	leftPanel.add(helpDisplayControl.set("Help", false));
@@ -2045,10 +2056,11 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile; //sofa_reverb140cm_quad_reverb.sofa
-	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
-	string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb.sofa";
-
+	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
+	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa_44100";   //lab
+	string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";          //small room
+	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa"; //smal room pos2
+	
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
@@ -2326,8 +2338,64 @@ void ofApp::changeHRTF(bool& _active)
 		return;
 	}
 
-	//if (!stopState) systemSoundStream.start();
+	if (!stopState) systemSoundStream.start();
 }
+
+void ofApp::changeBRIR(bool& _active)
+{
+	changeBRIRControl = false;
+	if (setupDone == false) return;
+
+	if (!stopState) systemSoundStream.stop();
+
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	string pathData = ofToDataPath("", false);
+
+	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new BRIR");
+	//Check if the user opened a file
+	if (openFileResult.bSuccess) {
+		ofFile file(openFileResult.getPath());
+		ofLogVerbose("The file exists - now checking the type via file extension");
+		string fileExtension = ofToUpper(file.getExtension());
+		if (fileExtension == "SOFA")
+		{
+			string pathData = openFileResult.getPath();
+			char* charFilename = new char[pathData.length() + 1];
+			strcpy(charFilename, pathData.c_str());
+			bool sofaLoadResult = BRIR::CreateFromSofa(pathData, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+			
+			if (!sofaLoadResult) {
+				cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
+				if (!stopState) systemSoundStream.start();
+				return;
+			}
+			else
+			{
+				cout << "Load new HRTF File " << pathData << endl << endl;
+			}
+		}
+		else
+		{
+			ofLogError() << "Extension must be SOFA";
+			if (!stopState) systemSoundStream.start();
+			cout << "Load new BRIR File " << pathData << endl << endl;
+			return;
+		}
+	}
+	else
+	{
+		ofLogError() << "Couldn't load file";
+		if (!stopState) systemSoundStream.start();
+		return;
+	}
+
+	if (!stopState) systemSoundStream.start();
+}
+
 
 void ofApp::toggleBinauralSpatialisation(bool& _active)
 {
@@ -2717,6 +2785,8 @@ void ofApp::OscCallBackSaveIR() {
 	if (!stopState) systemSoundStream.stop();
 	
 	std::cout << "Received Save IR" << std::endl;
+	float maxDistanceSourcesToListener = maxDistanceImageSourcesToListenerControl.get();
+	cout << "MaxDist =" << maxDistanceSourcesToListener << "\n";
 	recordOfflineIRControl.set(true);
 }
 

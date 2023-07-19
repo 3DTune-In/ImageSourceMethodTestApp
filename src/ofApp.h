@@ -108,6 +108,7 @@ private:
 		ofParameter<bool> changeAudioToPlayControl;
 		ofParameter<bool> changeRoomGeometryControl;
 		ofParameter<bool> changeHRTFControl;
+		ofParameter<bool> changeBRIRControl;
 		ofParameter<bool> playToStopControl;
 		ofParameter<bool> stopToPlayControl;
 
@@ -220,6 +221,7 @@ private:
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);
 		void changeHRTF(bool& active);
+		void changeBRIR(bool& active);
 		void playToStop(bool &active);
 		void stopToPlay(bool &active);
 		

@@ -1,3 +1,10 @@
+% Author: Fabian Arrebola (27/04/2023) 
+% contact: rfarrebola@uma.es
+% 3DDIANA research group. University of Malaga
+% Project: SONICOM
+% 
+% Copyright (C) 2023 Universidad de Málaga
+
 %% This script displays and renders the results associated with the 
 %% behavior of the ISM+Convolution hybrid system of the 3DTI toolkit.
 
@@ -22,10 +29,10 @@
 %Folder with impulse responses
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\AbsorP5';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_35 DpMin_3 DpMinFit_18 4iter_100\100';
-%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\12';
-%cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_36 DpMin_3 DpMinFit_25 iter_18\18';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\20';
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_36 DpMin_3 DpMinFit_25 iter_21\4'
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\20';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\20'
+%cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit_22_KU_44100\8';
+%cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit_22_KU_44100 ABSORB 04\16'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_30 DpMin_15 DpMinFit_18'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_28 DpMin_3 DpMinFit_16_alfa_05\40';
 %% PRUNING DISTANCES
@@ -54,7 +61,7 @@ Bhi=[  88     176      353      707      1414       2828       5657       11314 
 %% FILES with Impulse Response in de folder
 iFiles=dir(['i*.wav']);   % Ism files without direct path
 wFiles=dir(['w*.wav']);   % Reverb files (hybrid windowed order 0 with no direct path)
-% tFiles=dir(['t*.wav']); % Total (Reverb + Ism) files
+% tFiles=dir(['t*.wav']); % Total (Reverb + Ism) audioreadfiles
 NumFiles = length(iFiles);
 
 %% Delimitation of the number of files depending on the pruning distances to be studied
@@ -155,7 +162,7 @@ legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
 figure;                                          
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
 plot (x, Factor,'b--*');
-ylim([0.0 1.2]);
+%% ylim([0.0 1.2]);
 xlabel('Distance (m)');  
 ylabel('Factor'); 
 title('Factor (total) vs Pruning Distance');  
@@ -168,13 +175,13 @@ for j=1:NB
     y=  E_BandIsm(j,:,L);
     plot (x,y,'r--.');   %Ism
     legend('e-BandIsm', 'Location','northwest');
-    ylim([0.0 0.01*j]);    grid;
+    %% ylim([0.0 0.01*j]);    grid;
 
     subplot(NB,3,3*j-1);
     y= E_BandWin(j,:,L);
     plot (x,y,'g--.');   % Windowed
     legend('e-BandWin', 'Location','northeast');
-    ylim([0.0 0.01*j]);    grid;
+    %% ylim([0.0 0.01*j]);    grid;
 
     subplot(NB,3,3*j);
     eBand=E_BandBrir(j,L);
@@ -182,7 +189,7 @@ for j=1:NB
     E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;
     plot (x, E_BandBrir_Win(j,:,L) ,'b--.');   % Brir-Windowed
     legend('e-Brir-Win', 'Location','southeast');
-    ylim([0.0 0.01*j]);    grid;
+    %% ylim([0.0 0.01*j]);    grid;
 end
 % %% color map
 % c= [0.3333, 0.0 ,0.5; 0.6667, 0, 0.5; 1.0000, 0, 0.5; 1.0000, 0.3333, 0.5; 1.0000, 0.6667,0.5;
@@ -199,7 +206,7 @@ for j=1:NB
     plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
 grid;
-ylim([0.0 3.5]);
+%% ylim([0.0 3.5]);
 xlabel('Distance (m)');  ylabel('Factor'); 
 legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
 title('Factor per Band vs Pruning Distance');  
@@ -241,7 +248,7 @@ for j=1:NB
    p=plot(fitObj, xft,Fft, '--o');
    p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
 end   
-ylim([0.0 3.5]);
+%% ylim([0.0 3.5]);
 xlabel('Distance (m)');  ylabel('Factor'); 
 legend( leg, 'Location','northwest'); grid;
 title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 

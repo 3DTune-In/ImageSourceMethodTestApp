@@ -1,52 +1,48 @@
+% Author: Fabian Arrebola (1/06/2023) 
+% contact: rfarrebola@uma.es
+% 3DDIANA research group. University of Malaga
+% Project: SONICOM
+% 
+% Copyright (C) 2023 Universidad de Málaga
+
 %% Generates the results associated with the behavior of the
 %% ISM+Convolution hybrid system of the 3DTI toolkit.
 %
-% In the previous version the limit to change the absorption value was 
-% a constant. Now, the limit is reduced if the slope of a band changes 
-% its sign (from positive to negative and from negative to positive).
-%
-%% Before executing this Script: 
-% In offApp.c the following parameters must be updated
-%    #define NUMBER_IRSCAN    XX  = DpMax-DpMin+1
-%    #define INI_DIST_IRSCAN  YY  = DpMin
-% The ISM simulator has to be executed N times (from DpMin to DpMax)
-% with the following parameters:
-%    OR=0, Direct Path=No, REVERB=YES.
-% To do this, the user must press "Generate IR Series", a command that
-% generates the N impulse responses (by convolution and with windowing)
-% associated with the different pruning distances from DpMin to DpMax.
-% These impulse responses will be stored in N files (w*.wav)
-% These files must be located in the folder:
-% 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-% The BRIR.wav file must also be located in this folder (BRIR obtained with
-% a pruning distance of 1 meter).
+% This version adds the automation of the initial process of:
+% 1) Create the N files with the impulse responses of type W*.wav (RO=0) 
+% 2) Generate the BRIR file from a simulation with DistMax=1m (RO=0)
+% 3) Set a high reflection order (with the Reverb disabled) to iteratively 
+%    and adaptively generate I*.wav files.
 %
 %% This script:
 %  1) Open a connection to send messages to ISM simulator
-%  2) Send initial absortions to ISM simulator. 
+%  2) Generate the BRIR file from a simulation with DistMax=1m
+%  3) Generate the N files with the impulse responses of type W*.wav
+%  4) Establishes the operating conditions of the iterative phase
+%  5) Send initial absortions to ISM simulator. 
 %     This causes the ISM simulator to run N times (from DpMin to DpMax) 
 %     with the following parameters: OR=10, Direct Path=No, REVERB=No. 
 %     Therefore, the ISM simulator generates the N impulse responses 
 %     (ISM with windowing) associated with the different pruning distances 
 %     from DpMin to DpMax. These impulse responses will be stored in  
 %     N files (i*.wav) located in ...\SeriresIr folder.
-%  3) Wait msg from ISM (this indicates that ISM has finished its N
+%  6) Wait msg from ISM (this indicates that ISM has finished its N
 %     executions)
-%% 4) Working Loop:
+%% 7) Working Loop:
 %     With the 2N+1 files with Impulse Response (IR) in the folder
-%  4.1) Calculate total and partial energies for each IR
-%  4.2) Calculate BRIR energy. Total and partial (for each band)
-%  4.3) Plot: Total Energy for 2N IRs: ISM, Windowed, BRIR-Windowed
-%  4.4) Plot: Total Factor: SQRT(e_TotalIsm/(eBRIR-e_TotalWin))
-%  4.5) Plot: Partial Energies (per band): ISM, Windowed, BRIR-Windowed
-%  4.6) Plot: Partial Factor (per band): SQRT(E_BandIsm(j)/E_BandBrir_Win(j));
-%  4.7) Curve Fitting: Fit for each Band. 
+%  7.1) Calculate total and partial energies for each IR
+%  7.2) Calculate BRIR energy. Total and partial (for each band)
+%  7.3) Plot: Total Energy for 2N IRs: ISM, Windowed, BRIR-Windowed
+%  7.4) Plot: Total Factor: SQRT(e_TotalIsm/(eBRIR-e_TotalWin))
+%  7.5) Plot: Partial Energies (per band): ISM, Windowed, BRIR-Windowed
+%  7.6) Plot: Partial Factor (per band): SQRT(E_BandIsm(j)/E_BandBrir_Win(j));
+%  7.7) Curve Fitting: Fit for each Band. 
 %       Calculates slope for each band. Plot slopes
-%  4.8) Update slopes and calculate and update absortions 
-%  4.9) Send new absortions to ISM
-%  4.10) Wait msg from ISM  (this indicates that ISM has finished its N
+%  7.8) Update slopes and calculate and update absortions 
+%  7.9) Send new absortions to ISM
+%  7.10) Wait msg from ISM  (this indicates that ISM has finished its N
 %        executions)
-%  4.11) Create new folder to save slopes, absortions and IRs files 
+%  7.11) Create new folder to save slopes, absortions and IRs files 
 %        (wIRs*.wav, iIRs*.wav, BRIR.wav)
 
 %% MAX ITERATIONS 
@@ -54,7 +50,7 @@ ITER_MAX = 21;
 EPSILON_OBJ =0.0000000000001;
 %% PRUNING DISTANCES
 DpMax=14; DpMin=2;
-DpMinFit = 8;                   %% small distance values are not parsed
+DpMinFit = 9;                   %% small distance values are not parsed
 % DpMax=18; DpMin=3;
 % DpMinFit = 10;                 %% small distance values are not parsed
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
@@ -86,6 +82,14 @@ L=1; R=2;                        % Channel
 % 0.54084 0.92500 0.81802 0.52004 0.23569 0.32733 0.63962 0.53453 0.57279  ;
 % 0.54084 0.92500 0.81802 0.52004 0.23569 0.32733 0.63962 0.53453 0.57279  ;
 % 0.54084 0.92500 0.81802 0.52004 0.23569 0.32733 0.63962 0.53453 0.57279  ;];
+
+% absorbData = [
+% 0.52305 0.70175 0.92500 0.69918 0.48369 0.52562 0.81976 0.58208 0.92500;
+% 0.52305 0.70175 0.92500 0.69918 0.48369 0.52562 0.81976 0.58208 0.92500;
+% 0.52305 0.70175 0.92500 0.69918 0.48369 0.52562 0.81976 0.58208 0.92500;
+% 0.52305 0.70175 0.92500 0.69918 0.48369 0.52562 0.81976 0.58208 0.92500;
+% 0.52305 0.70175 0.92500 0.69918 0.48369 0.52562 0.81976 0.58208 0.92500;
+% 0.52305 0.70175 0.92500 0.69918 0.48369 0.52562 0.81976 0.58208 0.92500;];
 
 absorbData = [
 0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
@@ -121,19 +125,48 @@ listenPort = 12301;
 receiver = InitOscServer(listenPort);
 [receiver osc_listener] = AddListenerAddress(receiver, '/ready');
 
-%% Send Initial absortions
-% fileAbsor=zeros(1,9);
-% for j=1:6
-%     fileAbsor = absorbData(j,:);
-%     SendCoefficientsVectorToISM(connectionToISM, fileAbsor);
-% end 
+%% Reflecion Order = 0
+SendReflecionOrderToISM(connectionToISM, 0);
+% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.2);
 
-% %% Send reverb gain
-% SendReverbGainToISM(connectionToISM, 9.0);
-% % Waiting msg from ISM
-% message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-% disp(message);
-% pause(2);
+%% Enable Reverb
+SendReverbEnableToISM(connectionToISM, true);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(1);
+% configureHybrid (connectionToISM, receiver, osc_listener, 
+%                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
+%% BRIR
+configureHybrid (connectionToISM, receiver, osc_listener,      2,    1,     0,        4,   true);
+pause(0.2);
+%% Folder with impulse responses
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
+%delete   'wIrRO0DP0W02.wav';
+
+% %% set DistMax=3m, Slope=10ms,
+% configureHybrid (connectionToISM, receiver, osc_listener,      10,    3,     0,       -1,   false);
+%% set DistMax=2m, Slope=5ms,
+configureHybrid (connectionToISM, receiver, osc_listener,      5,    2,     0,       -1,   false);
+pause(0.2);
+%% Generate W-files
+for i=DpMin:DpMax
+   configureHybrid (connectionToISM, receiver, osc_listener,   -1,    i,     0,       -1,   true);
+end
+%% Disable Reverb
+SendReverbEnableToISM(connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(1);
+%% Reflecion Order = 20
+SendReflecionOrderToISM(connectionToISM, 20);
+% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.2);
 
 %% Send Initial absortions
 walls_absor = zeros(1,54);
@@ -604,7 +637,106 @@ function CloseOscServer(receiver, osc_listener)
     clear java;
 end
 
+%% configureHybrid
+function configureHybrid (connectionToISM, receiver, osc_listener, ...
+                          Slope, DistMax, RO, RGain, saveIR)
+     
+    %% Send MaxDistImages
+    if DistMax > 0
+        SendDistMaxImgsFloatToISM(connectionToISM, DistMax);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(2);
+    end 
+
+     %% Send WindowSlope
+    if Slope > 0
+        SendWindowSlopeToISM(connectionToISM, Slope);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(2);
+    end
+
+     %% Send ReverbGain
+    if RGain > 0
+        SendReverbGainToISM(connectionToISM, RGain);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(2);
+    end 
+    
+    %% Send Reflection Order
+    if RO ~= -1
+        SendReflecionOrderToISM(connectionToISM, RO);
+        % Waiting msg from ISM
+        message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+        disp(message);
+        pause(0.5);
+    end
+    
+    if saveIR == true
+       %% Send Save IR comand
+       SendSaveIRToISM(connectionToISM);
+       message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+       disp(message);
+    end  
+    pause(0.1);
+
+end
+
+%% Send DistanceMaxImagesListener to the OSC server (ISM)
+function SendDistMaxImgsIntToISM(u, vint)
+    oscsend(u,'/distMaxImgs','i',vint);    
+end
+
+%% Send DistanceMaxImagesListener to the OSC server (ISM)
+function SendDistMaxImgsFloatToISM(u, vfloat)
+    oscsend(u,'/distMaxImgs','f',vfloat);    
+end
+
+%% Send WindowSlope to the OSC server (ISM)
+function SendWindowSlopeToISM(u, vint)
+    oscsend(u,'/windowSlope','i',vint);    
+end
+%% Send ReflectionOrder to the OSC server (ISM)
+function SendReflecionOrderToISM(u, vint)
+    oscsend(u,'/reflectionOrder','i',vint);    
+end
+
 %% Send ReverbGain to the OSC server (ISM)
 function SendReverbGainToISM(u, gain)
     oscsend(u,'/reverbGain','f',gain);    
+end
+
+%%  Send a SaveIR comand the OSC server (ISM)
+function SendSaveIRToISM(u)
+    oscsend(u,'/saveIR','N', "");
+end
+
+%%  Send a Play comand the OSC server (ISM)
+function SendPlayToISM(u)
+    oscsend(u,'/play','N', "");
+end
+%%  Send a Stop comand the OSC server (ISM)
+function SendStopToISM(u)
+    oscsend(u,'/stop','N', "");
+end
+
+%% Send DirectPathEnable comand to the OSC server (ISM)
+function SendDirectPathEnableToISM(u, vbool)
+    oscsend(u,'/directPathEnable','B',vbool);    
+end
+
+%% Send ReverbEnable comand to the OSC server (ISM)
+function SendReverbEnableToISM(u, vbool)
+    oscsend(u,'/reverbEnable','B',vbool);    
+end
+
+%% Send float vector to the OSC server (ISM)
+function SendAbsortionsToISM(u, coefVector)
+    m = repmat('f',1,length(coefVector));
+    oscsend(u,'/absortions',m, coefVector);    
 end

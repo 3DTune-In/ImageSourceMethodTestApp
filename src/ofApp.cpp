@@ -636,27 +636,36 @@ void ofApp::draw() {
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, ofGetHeight()- 100, 290, 90);
+	ofRect(ofGetWidth() - 300, ofGetHeight()- 130, 290, 120);
 	ofPopStyle();
-	char numberOfImagesStr[255];
-	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 85);
-	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
-	sprintf(numberOfImagesStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
+	char messageStr[255];
+	sprintf(messageStr, "Number of visible images: %d", numberOfVisibleImages);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 115);
+	sprintf(messageStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight()-100);
+	sprintf(messageStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 85);
 //#if 0
 	if (!bDisableReverb) 
 	{
- 	    sprintf(numberOfImagesStr, "Number of silences frames: %d", numberOfSilencedFrames);
-		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
+ 	    sprintf(messageStr, "Number of silences frames: %d", numberOfSilencedFrames);
+		ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 70);
 	}
 	else
 	{
-		sprintf(numberOfImagesStr, "Reverb Disabled");
-		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
+		sprintf(messageStr, "Reverb Disabled");
+		ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 70);
 	}
 //#endif
+	sprintf(messageStr, "posListener: %.2f %.2f %.2f", listenerLocation.x, listenerLocation.y, listenerLocation.z);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 55);
+	
+	Common::CQuaternion QListener = listenerTransform.GetOrientation();
+	sprintf(messageStr, "QListener: %.2f %.2f %.2f %.2f", QListener.w, QListener.x, QListener.y, QListener.z);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 40);
+	Common::CVector3 sourceLocation = ISMHandler->getSourceLocation();
+	sprintf(messageStr, "posSource: %.2f %.2f %.2f", sourceLocation.x, sourceLocation.y, sourceLocation.z);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 25);
 	
 	if (!boolToogleDisplayHelp)
 	{
@@ -664,35 +673,35 @@ void ofApp::draw() {
 		ofSetColor(50, 150);
 		ofRect(20, ofGetHeight() - 250, 390, 355);
 		ofPopStyle();
-		char numberOfImagesStr[255];
-		sprintf(numberOfImagesStr, "Point of View Control: cursor keys");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -230);
+		char messageStr[255];
+		sprintf(messageStr, "Point of View Control: cursor keys");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() -230);
 		
-		sprintf(numberOfImagesStr, "MoveSOURCE:      'k'_Left(-X)   'i'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 210);
-		sprintf(numberOfImagesStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 190);
-		sprintf(numberOfImagesStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 170);
+		sprintf(messageStr, "MoveSOURCE:      'k'_Left(-X)   'i'_Right(+X)");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 210);
+		sprintf(messageStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 190);
+		sprintf(messageStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 170);
 
-		sprintf(numberOfImagesStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 150);
-		sprintf(numberOfImagesStr, "                 'a'_Up  (+Y)   'd'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 130);
-		sprintf(numberOfImagesStr, "                 'e'_Up  (+Z)   'x'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 110);
+		sprintf(messageStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 150);
+		sprintf(messageStr, "                 'a'_Up  (+Y)   'd'_Down (-Y)");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 130);
+		sprintf(messageStr, "                 'e'_Up  (+Z)   'x'_Down (-Z)");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 110);
 		
-		sprintf(numberOfImagesStr, "RotateLISTENER:  'A'_Left       'D'_right");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 90);
+		sprintf(messageStr, "RotateLISTENER:  'A'_Left       'D'_right");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 90);
 				
-		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 70);
-		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 50);
-		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 30);
-		sprintf(numberOfImagesStr, "Enable or disable wall: '1' '2' '3' '4' ... ");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 10);
+		sprintf(messageStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 70);
+		sprintf(messageStr, "                 'g'_Width++    'h'_Width--");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 50);
+		sprintf(messageStr, "                 'v'_Height++   'n'_Height--");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 30);
+		sprintf(messageStr, "Enable or disable wall: '1' '2' '3' '4' ... ");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 10);
 
 	}
 

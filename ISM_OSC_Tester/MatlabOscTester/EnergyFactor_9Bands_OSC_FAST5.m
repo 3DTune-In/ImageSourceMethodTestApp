@@ -49,8 +49,8 @@
 ITER_MAX = 21;
 EPSILON_OBJ =0.0000000000001;
 %% PRUNING DISTANCES
-DpMax=14; DpMin=2;
-DpMinFit = 9;                   %% small distance values are not parsed
+DpMax=15; DpMin=2;
+DpMinFit = 10;                   %% small distance values are not parsed
 % DpMax=18; DpMin=3;
 % DpMinFit = 10;                 %% small distance values are not parsed
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
@@ -137,25 +137,54 @@ SendReverbEnableToISM(connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
 pause(1);
-% configureHybrid (connectionToISM, receiver, osc_listener, 
-%                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
-%% BRIR
-configureHybrid (connectionToISM, receiver, osc_listener,      2,    1,     0,        4,   true);
-pause(0.2);
-%% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
-%delete   'wIrRO0DP0W02.wav';
+
+%%  Send Play and Stop ToISM
+SendPlayToISM(connectionToISM);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(1);
+
+SendStopToISM(connectionToISM);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.5);
+% 
+% %% BRIR
+% % configureHybrid (connectionToISM, receiver, osc_listener, 
+% %                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
+% configureHybrid (connectionToISM, receiver, osc_listener,      2,    1,       0,        -1,   true);
+% pause(0.5);
+% %% Folder with impulse responses
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+% movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
+% %delete   'wIrRO0DP01W02.wav';
 
 % %% set DistMax=3m, Slope=10ms,
 % configureHybrid (connectionToISM, receiver, osc_listener,      10,    3,     0,       -1,   false);
-%% set DistMax=2m, Slope=5ms,
-configureHybrid (connectionToISM, receiver, osc_listener,      5,    2,     0,       -1,   false);
-pause(0.2);
-%% Generate W-files
-for i=DpMin:DpMax
-   configureHybrid (connectionToISM, receiver, osc_listener,   -1,    i,     0,       -1,   true);
-end
+% 
+%% set DistMax=2m, Slope=4 ms,
+% configureHybrid (connectionToISM, receiver, osc_listener, 
+%                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
+% configureHybrid (connectionToISM, receiver, osc_listener,      4,    2,     0,       15.85,   false);
+% pause(0.2);
+% % %% Generate W-files
+% % for i=DpMin:DpMax
+% %    configureHybrid (connectionToISM, receiver, osc_listener,   -1,    i,     0,       -1,   true);
+% %    pause(0.2);
+% % end
+% 
+% %% Generate W-files
+% %% Send Initial absortions
+% walls_absor = zeros(1,54);
+% absorbDataT = absorbData';
+% walls_absor = absorbDataT(:);
+% SendCoefficientsVectorToISM(connectionToISM, walls_absor'); 
+% 
+% %% Waiting msg from ISM
+% message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
+% disp(message);
+
+
 %% Disable Reverb
 SendReverbEnableToISM(connectionToISM, false);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
@@ -166,7 +195,7 @@ SendReflecionOrderToISM(connectionToISM, 20);
 % Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
-pause(0.2);
+pause(0.5);
 
 %% Send Initial absortions
 walls_absor = zeros(1,54);
@@ -259,9 +288,11 @@ while ( iLoop < ITER_MAX)
         e_TotalWin(i,:)= e;
         %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec)
         E_TotalWin= calculateEnergyFrec(Fs, ir_Win)/length(ir_Win);
-        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Ism); %(Bhi(NB)-Blo(1)+1);
+        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Ism); %(Bhi(NB)-Blo(1)+1);le
         %eSumBandsW=zeros(1,2); %checksum
         eSumBandsW=0; %checksum
+     
+        
         for j=1:NB
             e = calculateEnergyBand(Fs, ir_Win, Blo(j), Bhi(j))/length(ir_Win); %/(Bhi(j)-Blo(j)+1);
             E_BandWin(j,i,:) = e;
@@ -310,38 +341,25 @@ while ( iLoop < ITER_MAX)
     xlabel('Distance (m)');
     ylabel('Factor');
     title('Factor (total) vs Pruning Distance');
-    legend('SQRT(eTotalIsm/(eBRIR-eTotalWin))', 'Location','southeast');
+    legend('SQRT(eTotalIsm/(eBRIR-eTotalWin))', 'Location','southwest');
     grid;
     %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed
-%    figure; hold on;
+    figure; hold on;
+    y=zeros(1,length(NumFiles));
     for j=1:NB
-%        subplot(NB,3,3*j-2);
-%        y=  E_BandIsm(j,:,L);
-%        plot (x,y,'r--.');   %Ism
-%        legend('e-BandIsm', 'Location','northwest');
-%        ylim([0.0 0.01*j]);    grid;
-
-%         subplot(NB,3,3*j-1);
-%         y= E_BandWin(j,:,L);
-%         plot (x,y,'g--.');   % Windowed
-%         legend('e-BandWin', 'Location','northeast');
-%         ylim([0.0 0.01*j]);    grid;
-
-%        subplot(NB,3,3*j);
         eBand=E_BandBrir(j,L);
-        y= E_BandWin(j,:,L);
-        E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;
-%         plot (x, E_BandBrir_Win(j,:,L) ,'b--.');   % Brir-Windowed
-%         legend('e-Brir-Win', 'Location','southeast');
-%         ylim([0.0 0.01*j]);    grid;
+        y = E_BandWin(j,:,L);
+        E_BandBrir_Win(j,:,L)=abs(eBand(1,L)*ones(1, length(NumFiles))-y);
+        plot (x, E_BandBrir_Win(j,:,L));
     end
+    title('E.BRIR-E.WIN-vs Pruning Distance');
     %% -----------------------------                  % FIGURE 4 -- Factor per Band
     figure; hold on;
     factorBand =zeros(NB, NumFiles,2);
     for j=1:NB
         eBand=E_BandBrir(j,L);
         y= E_BandWin(j,:,L);
-        E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;
+        E_BandBrir_Win(j,:,L)=abs(eBand(1,L)*ones(1, length(NumFiles))-y);
         factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L));
         plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
     end
@@ -406,7 +424,7 @@ while ( iLoop < ITER_MAX)
 
     %% -----------------------------------------------------------------
     %% Extrac slopes and new absortions (only 1ª and 2ª iterations) to send to ISM
-    alfa = 0.5;
+    alfa = 0.01;
     %epsilon = 0.00001;
     epsilon = EPSILON_OBJ;
     slopes=zeros(1,9);

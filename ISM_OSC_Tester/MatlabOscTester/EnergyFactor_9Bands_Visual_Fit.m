@@ -30,15 +30,19 @@
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\AbsorP5';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_35 DpMin_3 DpMinFit_18 4iter_100\100';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\20';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\20'
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\PROBLEMA SALA PEQUEÑA 13 2 9 12dB\0'
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\8';
+
 %cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit_22_KU_44100\8';
 %cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit_22_KU_44100 ABSORB 04\16'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_30 DpMin_15 DpMinFit_18'
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_28 DpMin_3 DpMinFit_16_alfa_05\40';
 %% PRUNING DISTANCES
-DpMax=14; DpMin=2;
-DpMinFit = 9;                   %% small distance values are not parsed
-%DpMax=40; DpMin=10;
+DpMax=15; DpMin=2;
+DpMinFit = 10;                   %% small distance values are not parsed
+% DpMax=26; DpMin=2;
+% DpMinFit = 20;                   %% small distance values are not parsed
+
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
@@ -157,7 +161,7 @@ plot (x, eL_BRIR_W,'k--x');
 xlabel('Distance (m)');  
 ylabel('Energy'); 
 title('Total Energy vs Pruning Distance');  
-legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
+legend('E.Ism',  'E.win','E.RIR-E.win',  'Location','northwest');
 %% -----------------------------                 % FIGURE 2 -- Total Factor
 figure;                                          
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
@@ -166,21 +170,23 @@ plot (x, Factor,'b--*');
 xlabel('Distance (m)');  
 ylabel('Factor'); 
 title('Factor (total) vs Pruning Distance');  
-legend('SQRT(e_TotalIsm/(eBRIR-e_Totalwin))', 'Location','southeast');
+legend('SQRT(eTotalIsm/(eRIR-eTotalwin))', 'Location','southeast');
 grid;
 %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed
 figure; hold on;                                 
-for j=1:NB
+for j=2:NB
     subplot(NB,3,3*j-2);
     y=  E_BandIsm(j,:,L);
     plot (x,y,'r--.');   %Ism
     legend('e-BandIsm', 'Location','northwest');
+    ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
-
+    
     subplot(NB,3,3*j-1);
     y= E_BandWin(j,:,L);
     plot (x,y,'g--.');   % Windowed
     legend('e-BandWin', 'Location','northeast');
+    ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
 
     subplot(NB,3,3*j);
@@ -188,7 +194,8 @@ for j=1:NB
     y= E_BandWin(j,:,L);
     E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;
     plot (x, E_BandBrir_Win(j,:,L) ,'b--.');   % Brir-Windowed
-    legend('e-Brir-Win', 'Location','southeast');
+    legend('e-Rir-Win', 'Location','southeast');
+    ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
 end
 % %% color map
@@ -198,7 +205,7 @@ end
 %% -----------------------------                  % FIGURE 4 -- Factor per Band
 figure; hold on;                                  
 factorBand =zeros(NB, NumFiles,2);
-for j=1:NB
+for j=2:NB
     eBand=E_BandBrir(j,L);
     y= E_BandWin(j,:,L);
     E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;

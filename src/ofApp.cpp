@@ -11,8 +11,14 @@ Common::CProfilerDataSet dsProcessFrameTime;
 Common::CTimeMeasure startOfflineRecord;
 #endif
 
-#define NUMBER_IRSCAN   13 //small room
-#define INI_DIST_IRSCAN 2
+//#define SMALL_ROOM 1
+//#define LAB_ROOM   1
+//#define LORENZO    1
+
+#define NUMBER_IRSCAN    14
+
+
+#define INI_DIST_IRSCAN  2
 //#define NUMBER_IRSCAN   35 //lab
 //#define INI_DIST_IRSCAN 3
 
@@ -55,9 +61,10 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	//Common::CVector3 listenerLocation(0.2, 0.0, -0.05); //small room
-	Common::CVector3 listenerLocation(0.2, -0.65, -0.05); //small room
-	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);
+	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);			     // LORENZO
+	Common::CVector3 listenerLocation(0.2, 0.0, -0.59);            // SMALL_ROOM
+	//Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);           // LAB_ROOM_ROTATE
+	//Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);              // LAB_ROOM
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -81,10 +88,11 @@ void ofApp::setup() {
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile; 
-	//fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";
-	fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa"; //small room
-    //fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa"; //smal room pos2
+	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // LORENZO
+	fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
+	//fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM Pos2
+	//fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM & LAB_ROOM_ROTATE
+	 
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
 	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
@@ -95,10 +103,13 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";
+	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";		 // LORENZO
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
-	fullPath = pathResources + "\\" + "spequena_05.xml";
 	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";
+	fullPath = pathResources + "\\" + "spequena_05.xml";           // SMALL_ROOM
+	//fullPath = pathResources + "\\" + "lab_B1_rotate.xml";         // LAB_ROOM_ROTATE
+	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";          // LAB_ROOM
+
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -180,9 +191,11 @@ void ofApp::setup() {
 	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic source
-	//Common::CVector3 initialLocation(13, 0, -4);
-	//Common::CVector3 initialLocation(1.2, 0, 0);    //lab
-	Common::CVector3 initialLocation(-1.2, 0, -0.05); //small room
+	//Common::CVector3 initialLocation(1, 0, 0);					// LORENZO
+	//Common::CVector3 initialLocation(13, 0, -4);					// THEATER_ROOM
+	//Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM_ROTATE
+	//Common::CVector3 initialLocation(-0.3, 2.4, -0.8);              // LAB_ROOM
+	Common::CVector3 initialLocation(-1.2, 0, -0.59);             // SMALL_ROOM
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -253,7 +266,7 @@ void ofApp::setup() {
 	//// Setup windowThreshold and windowSlope
 
 	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
-	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -24, 24));
+	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -30, 30));
 
 	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);
 	leftPanel.add(winThresholdControl.set("WinThreshold (ms)", (INITIAL_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
@@ -2065,10 +2078,11 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
-	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa_44100";   //lab
-	string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";          //small room
-	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa"; //smal room pos2
+	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		    // LORENZO
+	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM & LAB_ROOM_ROTATE
+	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_adjusted_44100_v2.sofa";   // LABROOM_con camino directo
+	string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
+	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM_pos2
 	
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
 	
@@ -2741,6 +2755,7 @@ void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
 
 	float windowThreshold = winThresholdControl.get();
 	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
+
 	imageSourceDSPList = reCreateImageSourceDSP();
 	if (!stopState) systemSoundStream.start();
 	SendOSCMessageToMatlab_Ready();

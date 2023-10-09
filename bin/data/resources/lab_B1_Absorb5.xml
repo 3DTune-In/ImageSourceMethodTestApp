@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ROOMGEOMETRY>
    <CORNERS>
-        <CORNER _3Dpoint=" 2.0, 1.25,-1.79"/>  0
-        <CORNER _3Dpoint=" 2.0,-1.25,-1.79"/>  1 
-        <CORNER _3Dpoint=" 2.0,-1.25, 1.79"/>  2
-        <CORNER _3Dpoint=" 2.0, 1.25, 1.79"/>  3
-        <CORNER _3Dpoint="-2.0,-1.25,-1.79"/>  4
-        <CORNER _3Dpoint="-2.0, 1.25,-1.79"/>  5
-        <CORNER _3Dpoint="-2.0, 1.25, 1.79"/>  6
-        <CORNER _3Dpoint="-2.0,-1.25, 1.79"/>  7
+        <CORNER _3Dpoint=" 4.5, 5.9,-2.0"/>  0
+        <CORNER _3Dpoint=" 4.5,-5.9,-2.0"/>  1 
+        <CORNER _3Dpoint=" 4.5,-5.9, 2.0"/>  2
+        <CORNER _3Dpoint=" 4.5, 5.9, 2.0"/>  3
+        <CORNER _3Dpoint="-4.5,-5.9,-2.0"/>  4
+        <CORNER _3Dpoint="-4.5, 5.9,-2.0"/>  5
+        <CORNER _3Dpoint="-4.5, 5.9, 2.0"/>  6
+        <CORNER _3Dpoint="-4.5,-5.9, 2.0"/>  7
     </CORNERS>
 	
     <WALLS>
@@ -20,3 +20,4 @@
        <WALL corner="3, 2, 7, 6" absor= "0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5"/>
     </WALLS>
 </ROOMGEOMETRY>
+

@@ -98,7 +98,7 @@ private:
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
 		ofParameter<float> maxDistanceImageSourcesToListenerControl;
-		ofParameter<int> reverbGainControl;
+		ofParameter<float> reverbGainControl;
 		ofParameter<int> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
@@ -208,7 +208,7 @@ private:
 		void changeMaxDistanceImageSources(float &maxDistanceSourcesToListener);
 		void changeWinThreshold(int& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
-		void changeReverbGain(int& reverbGain);
+		void changeReverbGain(float &reverbGain);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
 		void toggleAnechoic(bool& active);

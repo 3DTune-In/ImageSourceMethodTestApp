@@ -148,20 +148,20 @@ SendStopToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
 pause(0.5);
-% 
-% %% BRIR
-% % configureHybrid (connectionToISM, receiver, osc_listener, 
-% %                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
-% configureHybrid (connectionToISM, receiver, osc_listener,      2,    1,       0,        -1,   true);
-% pause(0.5);
-% %% Folder with impulse responses
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-% movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
-% %delete   'wIrRO0DP01W02.wav';
 
-% %% set DistMax=3m, Slope=10ms,
-% configureHybrid (connectionToISM, receiver, osc_listener,      10,    3,     0,       -1,   false);
-% 
+%% BRIR
+% configureHybrid (connectionToISM, receiver, osc_listener, 
+%                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
+configureHybrid (connectionToISM, receiver, osc_listener,      2,    1,       0,        15.85,   true);
+pause(0.5);
+%% Folder with impulse responses
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
+%delete   'wIrRO0DP01W02.wav';
+
+%% set DistMax=3m, Slope=10ms,
+configureHybrid (connectionToISM, receiver, osc_listener,      4,    3,     0,       -1,   false);
+
 %% set DistMax=2m, Slope=4 ms,
 % configureHybrid (connectionToISM, receiver, osc_listener, 
 %                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
@@ -173,16 +173,16 @@ pause(0.5);
 % %    pause(0.2);
 % % end
 % 
-% %% Generate W-files
-% %% Send Initial absortions
-% walls_absor = zeros(1,54);
-% absorbDataT = absorbData';
-% walls_absor = absorbDataT(:);
-% SendCoefficientsVectorToISM(connectionToISM, walls_absor'); 
-% 
-% %% Waiting msg from ISM
-% message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
-% disp(message);
+%% Generate W-files
+%% Send Initial absortions
+walls_absor = zeros(1,54);
+absorbDataT = absorbData';
+walls_absor = absorbDataT(:);
+SendCoefficientsVectorToISM(connectionToISM, walls_absor'); 
+
+%% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);    
+disp(message);
 
 
 %% Disable Reverb

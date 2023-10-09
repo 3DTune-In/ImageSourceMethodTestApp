@@ -1881,7 +1881,7 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 	if (!stopState) systemSoundStream.start();
 }
 
-void ofApp::changeReverbGain(int& _reverbGain)
+void ofApp::changeReverbGain(float &_reverbGain)
 {
 	if (setupDone == false) return;
 
@@ -2746,8 +2746,10 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
-	float reverbGainLinear = message.getArgAsFloat(0);
+	reverbGainLinear = message.getArgAsFloat(0);
 	std::cout << "Received ReverbGain Comand"<<",  "<< reverbGainLinear << std::endl;
+	float reverbGainDb = 20 * log10(reverbGainLinear);
+	reverbGainControl.set(reverbGainDb);
 
 	if (!stopState) systemSoundStream.stop();
 	playToStopControl.set("Stop", true);

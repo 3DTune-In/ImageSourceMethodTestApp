@@ -15,9 +15,7 @@ Common::CTimeMeasure startOfflineRecord;
 //#define LAB_ROOM   1
 //#define LORENZO    1
 
-#define NUMBER_IRSCAN    14
-
-
+#define NUMBER_IRSCAN    25
 #define INI_DIST_IRSCAN  2
 //#define NUMBER_IRSCAN   35 //lab
 //#define INI_DIST_IRSCAN 3
@@ -62,9 +60,9 @@ void ofApp::setup() {
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
 	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);			     // LORENZO
-	Common::CVector3 listenerLocation(0.2, 0.0, -0.59);            // SMALL_ROOM
+	//Common::CVector3 listenerLocation(0.2, 0.0, -0.59);            // SMALL_ROOM
 	//Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);           // LAB_ROOM_ROTATE
-	//Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);              // LAB_ROOM
+	Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);              // LAB_ROOM
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -89,9 +87,9 @@ void ofApp::setup() {
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // LORENZO
-	fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
+	//fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
 	//fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM Pos2
-	//fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM & LAB_ROOM_ROTATE
+	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM & LAB_ROOM_ROTATE
 	 
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
@@ -106,9 +104,9 @@ void ofApp::setup() {
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";		 // LORENZO
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
 	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";
-	fullPath = pathResources + "\\" + "spequena_05.xml";           // SMALL_ROOM
+	//fullPath = pathResources + "\\" + "spequena_05.xml";           // SMALL_ROOM
 	//fullPath = pathResources + "\\" + "lab_B1_rotate.xml";         // LAB_ROOM_ROTATE
-	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";          // LAB_ROOM
+	fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";          // LAB_ROOM
 
 	if (!xml.load(fullPath))
 	{
@@ -194,8 +192,8 @@ void ofApp::setup() {
 	//Common::CVector3 initialLocation(1, 0, 0);					// LORENZO
 	//Common::CVector3 initialLocation(13, 0, -4);					// THEATER_ROOM
 	//Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM_ROTATE
-	//Common::CVector3 initialLocation(-0.3, 2.4, -0.8);              // LAB_ROOM
-	Common::CVector3 initialLocation(-1.2, 0, -0.59);             // SMALL_ROOM
+	Common::CVector3 initialLocation(-0.3, 2.4, -0.8);              // LAB_ROOM
+	//Common::CVector3 initialLocation(-1.2, 0, -0.59);             // SMALL_ROOM
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -511,6 +509,7 @@ void ofApp::draw() {
 			}
 
 			if (!stopState && playState) systemSoundStream.start();
+
 		}
 		
 		// iteratively recording multiple impulse responses
@@ -2079,9 +2078,9 @@ void ofApp::resetAudio()
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		    // LORENZO
-	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM & LAB_ROOM_ROTATE
+	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM & LAB_ROOM_ROTATE
 	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_adjusted_44100_v2.sofa";   // LABROOM_con camino directo
-	string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
+	//string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
 	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM_pos2
 	
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e

@@ -1,12 +1,14 @@
-% Author: Fabian Arrebola (27/04/2023) 
+%% This script shows the intermediate and final graphical results
+%% derived from the process of adjusting the absorption values. 
+%% The energy factor for the hybrid method is also obtained.
+%% (this script replaces EnergyFactor_9Bands_Visual_Fit.m)
+
+% Author: Fabian Arrebola (17/10/2023) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
 % Project: SONICOM
 % 
 % Copyright (C) 2023 Universidad de Málaga
-
-%% This script displays and renders the results associated with the 
-%% behavior of the ISM+Convolution hybrid system of the 3DTI toolkit.
 
 %% As input parameters are taken:
 %% a) N impulse responses obtained by the ISM with a sufficiently high 
@@ -20,29 +22,13 @@
 %% DpMinFit = first distance value to carry out the process of fitting the 
 %% slopes of the energy factors
 
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\DpMinFitresources\IR\H_20230116'
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\IR\P_20230207AbsorLowW20ms'
+%% Folder with impulse responses
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
+cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 36 2 28\20'
 
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\LabRectanOr15'
-%cd 'D:\3DTI_of_v0.11.2_vs2017_release\of_v0.11.2_vs2017_release\METODO_IMAGENES\vstudio';
-
-%Folder with impulse responses
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\AbsorP5';
-%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_35 DpMin_3 DpMinFit_18 4iter_100\100';
-%% cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_34 DpMin_3 DpMinFit 25_walls_6_it10\20';
-%% cd 'C:\Repos\HIBRIDO PRUEBAS\PROBLEMA SALA PEQUEÑA 13 2 9 12dB\0'
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\0';
-
-%cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit_22_KU_44100\8';
-%cd 'C:\Repos\HIBRIDO PRUEBAS\DpMax_32 DpMin_3 DpMinFit_22_KU_44100 ABSORB 04\16'
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_30 DpMin_15 DpMinFit_18'
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\DpMax_28 DpMin_3 DpMinFit_16_alfa_05\40';
 %% PRUNING DISTANCES
-DpMax=17; DpMin=2;
-DpMinFit = 10;                   %% small distance values are not parsed
-% DpMax=26; DpMin=2;
-% DpMinFit = 20;                   %% small distance values are not parsed
-
+DpMax=36; DpMin=2;
+DpMinFit = 28;                   %% small distance values are not parsed
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
@@ -51,9 +37,6 @@ L=1; R=2;                        % Channel
 %%   BANDS
 %    62,5    125     250      500      1000       2000       4000       8000       16000
 % B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22016;];
-% 
-% Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
-% Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
 
 %%   9 BANDS
 NB=9;
@@ -61,24 +44,20 @@ B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314;
 Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
 Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
 
-
 %% FILES with Impulse Response in de folder
-iFiles=dir(['i*.wav']);   % Ism files without direct path
-wFiles=dir(['w*.wav']);   % Reverb files (hybrid windowed order 0 with no direct path)
-% tFiles=dir(['t*.wav']); % Total (Reverb + Ism) audioreadfiles
-NumFiles = length(iFiles);
-
-%% Delimitation of the number of files depending on the pruning distances to be studied
-if (NumFiles>(DpMax-DpMin+1))
-  NumFiles = DpMax-DpMin+1;
-end
+NumFiles = DpMax-DpMin+1;
 
 %% Read file with BRIR
 BRIRFile=dir(['BRIR*.wav']);  %BRIR obtained with a pruning distance of 1 meter
 AudioFile=BRIRFile.name;
 [t_BRIR,Fs] = audioread(AudioFile);
 
-%f_BRIR= SSA_Spectrum(Fs,t_BRIR,0);
+%% Read file with ISM
+ISMFile=dir(['i*.wav']);      %ISM obtained with a pruning max distance 
+AudioFile=ISMFile.name;
+[t_ISM,Fs] = audioread(AudioFile);
+
+%% BRIR Energy
 %%%%%%%%%%%%%%%%
 e_BRIR= calculateEnergy(t_BRIR);
 %%%%%%% PARSEVAL RELATION --> e_BRIR (in time) == E_BRIR (in frec)
@@ -95,10 +74,10 @@ E_BandWin=zeros(NB,NumFiles,2);
 E_BandBrir_Win=zeros(NB,NumFiles,2);        %BRIR-Win
 
 %% Calculate total and partial energies
+maxDistSL = DpMin;
 for i=1:NumFiles
-     %%%%  Ism files -------------------------------------
-     iAudioFile=iFiles(i).name; 
-     [ir_Ism,Fs] = audioread(iAudioFile);
+     %%  Ism IRs -------------------------------------
+     ir_Ism =  windowingISM_RIR (Fs, t_ISM, maxDistSL, 2, 1);
      e= calculateEnergy(ir_Ism);
      e_TotalIsm(i,:)= e;
      % PARSEVAL RELATION --> e_TotalIsm (in time) == E_TotalIsm (in frec) 
@@ -112,9 +91,8 @@ for i=1:NumFiles
         eSumBandsI = eSumBandsI+E_BandIsm(j,i,:);
      end
      eSumBandsI= squeeze(eSumBandsI);
-     %%%%  Windowed files -------------------------------
-     wAudioFile=wFiles(i).name; 
-     [ir_Win,Fs] = audioread(wAudioFile);
+     %%  Windowed IRs -------------------------------
+     ir_Win =  windowingISM_RIR (Fs, t_BRIR, maxDistSL, 2, 0);
      e = calculateEnergy(ir_Win);
      e_TotalWin(i,:)= e;
      %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec) 
@@ -128,7 +106,9 @@ for i=1:NumFiles
         eSumBandsW= eSumBandsW+E_BandWin(j,i,:);
      end
      eSumBandsW= squeeze(eSumBandsW);
+     maxDistSL = maxDistSL+1;
 end
+
 %% -------
 %% BRIR Energy for each band
 E_BandBrir=zeros(NB,2);
@@ -260,18 +240,3 @@ xlabel('Distance (m)');  ylabel('Factor');
 legend( leg, 'Location','northwest'); grid;
 title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 
 %hold off;
-
-%  % actual dir
-%  current_folder = pwd;
-%  % new folder
-%  iloop=1;
-%  new_folder = num2str(iloop);
-%  mkdir( current_folder, new_folder);
-% 
-%  nameFile= 'slopesFile';
-%  save(fullfile( current_folder,   nameFile), 'Blo');
-%  nameFile= 'absorbFile';
-%  save(fullfile( current_folder,   nameFile), 'Bhi');
-% 
-%     % copy files
-%  copyfile(fullfile( current_folder,'*'), new_folder);

@@ -15,10 +15,6 @@ Common::CTimeMeasure startOfflineRecord;
 //#define LAB_ROOM   1
 //#define LORENZO    1
 
-#define NUMBER_IRSCAN    25
-#define INI_DIST_IRSCAN  2
-//#define NUMBER_IRSCAN   35 //lab
-//#define INI_DIST_IRSCAN 3
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
@@ -310,9 +306,6 @@ void ofApp::setup() {
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("Save IR", false));
 
-	recordOfflineIRScanControl.addListener(this, &ofApp::recordIrSeriesOffline);
-	leftPanel.add(recordOfflineIRScanControl.set("Generate IR series", false));
-
 	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
 	leftPanel.add(recordOfflineWAVControl.set("Record (offline)", false));
 	
@@ -349,7 +342,6 @@ void ofApp::setup() {
 	offlineRecordBuffers = 0;
 	frameRate = ofGetFrameRate();	
 
-	recordingOfflineSeries = false;
 	numberIRScan = 0;
 
 	// Profilling
@@ -390,21 +382,12 @@ void ofApp::draw() {
 			string fileNameUsr;
 			if (boolRecordingIR)
 			{
-				if (!recordingOfflineSeries) // save a single file
-				{	
-					//ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
-				    //fileNameUsr = saveFileResult.getPath();
-					//// TODO just for testing delete and replace with the previous code that is as comments
-					string pathData = ofToDataPath("");
-					string pathResources = ofToDataPath("resources");
-					fileNameUsr = pathResources + "\\SeriesIr\\";
-				}
-				else                       // save a set of files
-				{
-					string pathData = ofToDataPath("");
-					string pathResources = ofToDataPath("resources");
-					fileNameUsr = pathResources + "\\SeriesIr\\";
-				}		
+				//ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
+				//fileNameUsr = saveFileResult.getPath();
+				/// TODO just for testing delete and replace with the previous code that is as comments
+				string pathData = ofToDataPath("");
+				string pathResources = ofToDataPath("resources");
+				fileNameUsr = pathResources + "\\SeriesIr\\";
 			}
 			else
 			{
@@ -514,28 +497,7 @@ void ofApp::draw() {
 		
 		// iteratively recording multiple impulse responses
 
-		if (recordingOfflineSeries && (numberIRScan > 0) && recordingPercent >= 100.0f)
-		{ 
-			numberIRScan--;
-
-			if (numberIRScan == 0) {
-				recordingOfflineSeries = false;
-				// TODO Delete me, just for testing
-				// Send msg to matlab
-				SendOSCMessageToMatlab_Ready();
-			}
-			else {
-				recordOfflineIRControl.set(true);
-				ofApp::recordIrOffline(recordingOfflineSeries);
-
-				if (!stopState) systemSoundStream.stop();
-				float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
-				ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-				imageSourceDSPList = reCreateImageSourceDSP();
-				if (!stopState) systemSoundStream.start();
-			}
-		}
-		else if (!recordingOfflineSeries && (numberIRScan == 0) && recordingPercent >= 100.0f) {
+		if (recordingPercent >= 100.0f) {
 			// TODO Delete me, just for testing
 			// Send msg to matlab
 			SendOSCMessageToMatlab_Ready();
@@ -1964,25 +1926,6 @@ void ofApp::recordIrOffline(bool &_active)
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
-}
-
-void ofApp::recordIrSeriesOffline(bool& _active)
-{
-	recordingOfflineSeries = true;
-	recordOfflineIRScanControl = false;
-
-	if (setupDone == false) return;
-
-	anechoicSourceDSP->DisableAnechoicProcess();
-	stateAnechoicProcess = false;
-
-	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3); // 3m
-	//numberIRScan = 33;                                                    // 3m -35m range      
-	float maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(INI_DIST_IRSCAN);
-	numberIRScan = NUMBER_IRSCAN;                                       
-	ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-	ofApp::recordIrOffline(recordingOfflineSeries);
-
 }
 
 void ofApp::recordWavOffline(bool& _active)

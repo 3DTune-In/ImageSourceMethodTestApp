@@ -76,7 +76,6 @@ private:
 	    // Record to WAV
 	    WavWriter wavWriter;
 	    bool recordingOffline=false;
-		bool recordingOfflineSeries = false;
 		bool boolRecordingIR = false;
 	    float recordingPercent;
 	    int offlineRecordIteration = 0;
@@ -215,7 +214,6 @@ private:
 		void toggleBinauralSpatialisation(bool& active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
-		void recordIrSeriesOffline(bool& active);
 		void recordWavOffline(bool& active);
 		void changeSecondsToRecordIR(int &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);

@@ -44,12 +44,20 @@
 %        (wIRs*.wav, iIRs*.wav, BRIR.wav)
 
 %% MAX ITERATIONS 
-ITER_MAX = 21;
+ITER_MAX = 17;
 EPSILON_OBJ =0.0000000000001;
 
 %% PRUNING DISTANCES
 DpMax=26; DpMin=2;
 DpMinFit = 20;                   %% small distance values are not parsed
+
+%% Folder with impulse responses
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+delete *.wav;
+
+%% SAVE PRUNING DISTANCES
+save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
+
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
 L=1; R=2;                        % Channel
@@ -87,10 +95,6 @@ formatSlope = "Slope: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsor = "Absor: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsorChange= "AbChg: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formaTotalMaxSlope= "TotalSlope: %.5f  MaxPartialSlope: %.5f";
-
-%% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-delete *.wav;
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;

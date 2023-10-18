@@ -22,17 +22,23 @@
 %% DpMinFit = first distance value to carry out the process of fitting the 
 %% slopes of the energy factors
 
-%% Folder with impulse responses
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
-cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 36 2 28\20'
 
 %% PRUNING DISTANCES
-DpMax=36; DpMin=2;
-DpMinFit = 28;                   %% small distance values are not parsed
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+load("DistanceRange.mat");
+% DpMax=30; DpMin=2;
+% DpMinFit = 22;                   %% small distance values are not parsed
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
 L=1; R=2;                        % Channel
+
+%% Folder with impulse responses
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\16';
+% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 36 2 28\12'
+load("FiInfAbsorb.mat");
+load("FiInfSlopes.mat");
+
 
 %%   BANDS
 %    62,5    125     250      500      1000       2000       4000       8000       16000
@@ -147,14 +153,27 @@ figure;
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
 plot (x, Factor,'b--*');
 %% ylim([0.0 1.2]);
+
+FactorMeanValue=0;
+for j=DpMinFit:(DpMax-DpMin)+1
+    FactorMeanValue = FactorMeanValue+Factor(j,1);
+end
+FactorMeanValue = FactorMeanValue/(DpMax-DpMinFit);
+
 xlabel('Distance (m)');  
 ylabel('Factor'); 
 title('Factor (total) vs Pruning Distance');  
-legend('SQRT(eTotalIsm/(eRIR-eTotalwin))', 'Location','southeast');
+formatLegendFactor= "SQRT(eTotalIsm/(eRIR-eTotalwin): %.3f";
+legengFactor = sprintf(formatLegendFactor, FactorMeanValue);  
+%legend('SQRT(eTotalIsm/(eRIR-eTotalwin))', 'Location','southeast');
+legend(legengFactor, 'Location','southeast');
+
+save ('EnergyFactor.mat','FactorMeanValue');
+
 grid;
 %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed
 figure; hold on;                                 
-for j=2:NB
+for j=1:NB
     subplot(NB,3,3*j-2);
     y=  E_BandIsm(j,:,L);
     plot (x,y,'r--.');   %Ism
@@ -185,7 +204,7 @@ end
 %% -----------------------------                  % FIGURE 4 -- Factor per Band
 figure; hold on;                                  
 factorBand =zeros(NB, NumFiles,2);
-for j=2:NB
+for j=1:NB
     eBand=E_BandBrir(j,L);
     y= E_BandWin(j,:,L);
     E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;

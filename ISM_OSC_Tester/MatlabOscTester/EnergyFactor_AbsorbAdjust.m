@@ -16,10 +16,10 @@
 %% This script:
 %  1) Open a connection to send/receive messages to ISM simulator
 %  2) Generate the BRIR file from a simulation with 
-%     DistMax=1m, RO=0, Slope=2 ms and RGain value set by the user
+%     DistMax=1m, RO=0, W_Slope=2 ms and RGain value set by the user
 %  3) Send Initial absortions
 %  4) Generate the IR file associated with ISM with Maximum pruning distance
-%     ISM_DpMax:  DistMax=DpMax, RO=20. 
+%     ISM_DpMax:  DistMax=DpMax, RO>20. 
 %  5) Read file with BRIR and file with ISM_DpMax
 %  
 %% 6) Working Loop:
@@ -45,15 +45,27 @@
 
 %% MAX ITERATIONS 
 ITER_MAX = 17;
-EPSILON_OBJ =0.0000000000001;
 
 %% PRUNING DISTANCES
-DpMax=26; DpMin=2;
+DpMax=32; DpMin=2;
 DpMinFit = 20;                   %% small distance values are not parsed
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
 delete *.wav;
+
+%% SAVE Configuration parameters for ISM simulation
+RefOrd=30; 
+W_Slope=2;                       % Value for energy adjustment
+RGain_dB = 18;
+RGain = db2mag(RGain_dB);
+save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB');
+
+%% File name associated with ISM simulation
+formatFileISM= "iIrRO%iDP%02iW%02i";
+nameFileISM = sprintf(formatFileISM, RefOrd, DpMax, W_Slope)+'.wav';
+
+% nameFileISM = generateNameFile( RefOrd, DpMax, W_Slope);
 
 %% SAVE PRUNING DISTANCES
 save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
@@ -111,43 +123,42 @@ receiver = InitOscServer(listenPort);
 SendReflecionOrderToISM(connectionToISM, 0);
 % Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message+" RO=0");
+disp(message+" Ref Order = 0");
 pause(0.2);
 
 %% Enable Reverb
 SendReverbEnableToISM(connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Enable Reverb");
-pause(1);
+pause(0.2);
 
 %%  Send Play and Stop ToISM
 SendPlayToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Play");
-pause(1);
+pause(0.2);
 
 SendStopToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Stop");
-pause(0.5);
+pause(0.2);
 
 %% BRIR
 % configureHybrid (connectionToISM, receiver, osc_listener, 
-%                                                               Slope, DistMax, RefOrd, RGain, SaveIR) 
-configureHybrid (connectionToISM, receiver, osc_listener,       2,    1,       0,        15.85,   true);
-pause(1);
+%                                                               W_Slope, DistMax, RefOrd, RGain, SaveIR) 
+configureHybrid (connectionToISM, receiver, osc_listener,       2,    1,       0,         RGain,   true);
+pause(0.2);
 disp(message+" RIR");
 
 %% Disable Reverb
 SendReverbEnableToISM(connectionToISM, false);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Dissable Reverb");
-pause(1);
+pause(0.2);
 
 %% Rename to BRIR.wav
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
 movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
-%delete   'wIrRO0DP01W02.wav';
 
 %% Send Initial absortions
 walls_absor = zeros(1,54);
@@ -158,18 +169,22 @@ message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Initial absortions");
 pause(0.2);
 
-%% Reflecion Order = 20
-SendReflecionOrderToISM(connectionToISM, 20);
+%% Reflecion Order
+SendReflecionOrderToISM(connectionToISM, RefOrd);
 % Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message+" RO=20");
-pause(0.5);
+msg = sprintf('%s Ref Order = %d', message, RefOrd);
+disp (msg);
+pause(0.2);
 %% ISM_DpMax
 % configureHybrid (connectionToISM, receiver, osc_listener, 
-%                                                            Slope, DistMax, RefOrd, RGain, SaveIR) 
-configureHybrid (connectionToISM, receiver, osc_listener,      2,    DpMax,       -1,        15.85,   true);
-pause(0.5);
+%                                                            W_Slope, DistMax,   RefOrd,     RGain, SaveIR) 
+configureHybrid (connectionToISM, receiver, osc_listener,    W_Slope,    DpMax,     -1,        -1,   true);
+pause(0.2);
 disp(message+ " ISM DpMax ");
+%% Rename to ISM_DpMax.wav
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+movefile (nameFileISM, "ISM_DpMax.wav");
 
 %%   BANDS
 %    62,5    125     250      500      1000       2000       4000       8000       16000
@@ -189,12 +204,12 @@ rng('default');
 iLoop = 0;
 
 %% Read file with BRIR
-BRIRFile=dir(['BRIR*.wav']);  %BRIR obtained with a pruning distance of 1 meter
+BRIRFile=dir(['BRIR*.wav']);         %BRIR obtained with a pruning distance of 1 meter
 AudioFile=BRIRFile.name;
 [t_BRIR,Fs] = audioread(AudioFile);
 
 %% Read file with ISM
-ISMFile=dir(['i*.wav']);      %ISM obtained with a pruning max distance 
+ISMFile=dir(['ISM_DpMax.wav']);      %ISM obtained with a pruning max distance 
 AudioFile=ISMFile.name;
 [t_ISM,Fs] = audioread(AudioFile);
 pause(0.5);
@@ -382,8 +397,6 @@ while ( iLoop < ITER_MAX)
     %% -----------------------------------------------------------------
     %% Extrac slopes and new absortions (only 1ª and 2ª iterations) to send to ISM
     alfa = 0.01;
-    %epsilon = 0.00001;
-    epsilon = EPSILON_OBJ;
     slopes=zeros(1,9);
     ordO=zeros(1,9);
     slopeMax=0;
@@ -484,6 +497,9 @@ while ( iLoop < ITER_MAX)
        disp(message+" SaveIR");
        pause(0.5);
 
+       cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+       movefile (nameFileISM, "ISM_DpMax.wav");
+
        AudioFile=ISMFile.name;
        [t_ISM,Fs] = audioread(AudioFile);
 
@@ -510,8 +526,9 @@ while ( iLoop < ITER_MAX)
         % copy files
         copyfile(fullfile( current_folder,'BR*'), new_folder);
         % copyfile(fullfile( current_folder,'wIr*'), new_folder);
-        copyfile(fullfile( current_folder,'iIr*'), new_folder);
-        copyfile(fullfile( current_folder,'FiInf*'), new_folder);
+        copyfile(fullfile( current_folder,'ISM*'), new_folder);
+        % copyfile(fullfile( current_folder,'iIr*'), new_folder);
+        copyfile(fullfile( current_folder,'*.mat'), new_folder);
     end
 %% -------------------------------
 
@@ -526,7 +543,15 @@ while ( iLoop < ITER_MAX)
 
 end
 
-% Close, doesn't work properly
+%% Reflecion Order = 0
+SendReflecionOrderToISM(connectionToISM, 0);
+% Waiting msg from ISM
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Ref Order = 0");
+pause(0.2);
+
+
+%% Close, doesn't work properly
 CloseOscServer(receiver, osc_listener);
 
 %% Open a UDP connection with a OSC server
@@ -625,7 +650,7 @@ end
 
 %% configureHybrid
 function configureHybrid (connectionToISM, receiver, osc_listener, ...
-                          Slope, DistMax, RO, RGain, saveIR)
+                          W_Slope, DistMax, RO, RGain, saveIR)
      
     %% Send MaxDistImages
     if DistMax > 0
@@ -637,8 +662,8 @@ function configureHybrid (connectionToISM, receiver, osc_listener, ...
     end 
 
      %% Send WindowSlope
-    if Slope > 0
-        SendWindowSlopeToISM(connectionToISM, Slope);
+    if W_Slope > 0
+        SendWindowSlopeToISM(connectionToISM, W_Slope);
         % Waiting msg from ISM
         message = WaitingOneOscMessageStringVector(receiver, osc_listener);
         disp(message+" WindowSlope");

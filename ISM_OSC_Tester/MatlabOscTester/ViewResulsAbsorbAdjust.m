@@ -22,12 +22,11 @@
 %% DpMinFit = first distance value to carry out the process of fitting the 
 %% slopes of the energy factors
 
-
-%% PRUNING DISTANCES
+%% PRUNING DISTANCES &  Configuration parameters for ISM 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-load("DistanceRange.mat");
-% DpMax=30; DpMin=2;
-% DpMinFit = 22;                   %% small distance values are not parsed
+% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 36 2 20';
+load ("DistanceRange.mat");
+load ("ParamsISM.mat")
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
@@ -35,9 +34,9 @@ L=1; R=2;                        % Channel
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\16';
-% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 36 2 28\12'
-load("FiInfAbsorb.mat");
-load("FiInfSlopes.mat");
+% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 32 2 20\12'
+load ("FiInfAbsorb.mat");
+load ("FiInfSlopes.mat");
 
 
 %%   BANDS
@@ -59,7 +58,7 @@ AudioFile=BRIRFile.name;
 [t_BRIR,Fs] = audioread(AudioFile);
 
 %% Read file with ISM
-ISMFile=dir(['i*.wav']);      %ISM obtained with a pruning max distance 
+ISMFile=dir(['ISM*.wav']);      %ISM obtained with a pruning max distance 
 AudioFile=ISMFile.name;
 [t_ISM,Fs] = audioread(AudioFile);
 
@@ -162,9 +161,11 @@ FactorMeanValue = FactorMeanValue/(DpMax-DpMinFit);
 
 xlabel('Distance (m)');  
 ylabel('Factor'); 
-title('Factor (total) vs Pruning Distance');  
-formatLegendFactor= "SQRT(eTotalIsm/(eRIR-eTotalwin): %.3f";
-legengFactor = sprintf(formatLegendFactor, FactorMeanValue);  
+title('Factor (total) vs Pruning Distance');
+%% RGain = RGain_Linear*EnergyFactor;
+%RGain = FactorMeanValue*db2mag(RGain_dB); 
+formatLegendFactor= "Factor: %.3f -- RGain(dB): %.1f";
+legengFactor = sprintf(formatLegendFactor, FactorMeanValue, RGain_dB);  
 %legend('SQRT(eTotalIsm/(eRIR-eTotalwin))', 'Location','southeast');
 legend(legengFactor, 'Location','southeast');
 

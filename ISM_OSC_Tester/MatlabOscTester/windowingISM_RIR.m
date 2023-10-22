@@ -1,3 +1,5 @@
+function [y2w]= windowingISM_RIR (Fs, IR, maxDistSL, slope, ismOrRir)
+
 % Author: Fabian Arrebola (17/10/2023) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
@@ -5,8 +7,6 @@
 % 
 % Copyright (C) 2023 Universidad de Málaga
 
-
-function [y2w]= windowingISM_RIR (Fs, IR, maxDistSL, slope, ismOrRir)
 
 y=IR;
 Vs=340;          % v=e/t -->  e=v*t --> t=e/v

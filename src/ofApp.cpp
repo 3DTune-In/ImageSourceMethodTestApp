@@ -57,8 +57,7 @@ void ofApp::setup() {
 	listener = myCore.CreateListener();								 // First step is creating listener
 	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);			     // LORENZO
 	//Common::CVector3 listenerLocation(0.2, 0.0, -0.59);            // SMALL_ROOM
-	//Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);           // LAB_ROOM_ROTATE
-	Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);              // LAB_ROOM
+	Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);             // LAB_ROOM
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -85,7 +84,7 @@ void ofApp::setup() {
 	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // LORENZO
 	//fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
 	//fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM Pos2
-	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM & LAB_ROOM_ROTATE
+	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM 
 	 
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
@@ -97,12 +96,11 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	//fullPath = pathResources + "\\" + "lab_B1_AbsorNorm.xml";		 // LORENZO
+	//fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";	 // LORENZO
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
 	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";
 	//fullPath = pathResources + "\\" + "spequena_05.xml";           // SMALL_ROOM
-	//fullPath = pathResources + "\\" + "lab_B1_rotate.xml";         // LAB_ROOM_ROTATE
-	fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";          // LAB_ROOM
+	fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";       // LAB_ROOM
 
 	if (!xml.load(fullPath))
 	{
@@ -184,11 +182,10 @@ void ofApp::setup() {
 
 	mainRoom = ISMHandler->getRoom();
 
-	// setup of the anechoic source
+	// setup of the anechoic SOURCE
 	//Common::CVector3 initialLocation(1, 0, 0);					// LORENZO
 	//Common::CVector3 initialLocation(13, 0, -4);					// THEATER_ROOM
-	//Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM_ROTATE
-	Common::CVector3 initialLocation(-0.3, 2.4, -0.8);              // LAB_ROOM
+	Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM
 	//Common::CVector3 initialLocation(-1.2, 0, -0.59);             // SMALL_ROOM
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
@@ -199,11 +196,11 @@ void ofApp::setup() {
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
 	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	stateAnechoicProcess = true;                  //Is changed in the method in toggleAnechoic        
+	stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic        
 
-
-	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-	//anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
+	// DistanceAttenuation
+	//anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
 
 	//anechoicSourceDSP->EnableDistanceAttenuationReverb();
 	anechoicSourceDSP->DisableDistanceAttenuationReverb();
@@ -1658,9 +1655,10 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 			tempSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);	// Choosing no spatialisation mode for anechoic processing
 		}
 		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+		//DistanceAttenuation
+		//tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
 		tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
-		//tempSourceDSP->DisableDistanceAttenuationAnechoic();
+		tempSourceDSP->DisableDistanceAttenuationAnechoic();
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
 		tempImageSourceDSPList.push_back(tempSourceDSP);
@@ -2020,10 +2018,10 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		    // LORENZO
-	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM & LAB_ROOM_ROTATE
+	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		        // LORENZO
+	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM
 	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_adjusted_44100_v2.sofa";   // LABROOM_con camino directo
-	//string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
+	//string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";         // SMALL_ROOM
 	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM_pos2
 	
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
@@ -2238,6 +2236,12 @@ void ofApp::toggleWall(bool &_active)
 
 void ofApp::toggleAnechoic(bool &_active)
 {
+	if (setupDone == false)
+	{
+		stateAnechoicProcess = false;
+		return;
+	}
+
 	if (stateAnechoicProcess)
 	{
 		anechoicSourceDSP->DisableAnechoicProcess();
@@ -2770,6 +2774,7 @@ void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
 		else {
 			anechoicSourceDSP->EnableAnechoicProcess();
 			//anechoicEnableControl = true;
+			anechoicEnableControl.set(true);
 			stateAnechoicProcess = true;
 		}
 	}
@@ -2779,6 +2784,7 @@ void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
 		else {
 			anechoicSourceDSP->DisableAnechoicProcess();
 			//anechoicEnableControl = false;
+			anechoicEnableControl.set(false);
 			stateAnechoicProcess = false;
 		}
 	}

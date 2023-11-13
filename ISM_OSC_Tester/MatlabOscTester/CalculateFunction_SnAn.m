@@ -1,8 +1,7 @@
-%% This Scritp carry out the process of adjusting absorptions 
-%% and obtaining the Energy Factor for the hybrid method
-%% (this script replaces EnergyFactor_9Bands_OSC_FAST5.m)
+%% This script generates the slopes associated with 20 absorption values 
+%% from 0 to 1
 
-% Author: Fabian Arrebola (17/10/2023) 
+% Author: Fabian Arrebola (25/10/2023) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
 % Project: SONICOM
@@ -43,35 +42,46 @@
 %  6.11) Create new folder to save slopes, absortions and IRs files 
 %        (wIRs*.wav, iIRs*.wav, BRIR.wav)
 
+
+
 %% Absorption saturation values
-absorMax=0.95;
-absorMin=0.05;
-maxChange=0.15;
-reductionAbsorChange=0.6;
+absorMax=1.0;
+absorMin=0.0;
+maxChange=1.0;
+reductionAbsorChange=1.0;
+
 % absorMax=0.95;
 % absorMin=0.05;
 % maxChange=0.15;
 % reductionAbsorChange=0.6;
 
 %% MAX ITERATIONS 
-ITER_MAX = 9;
+ITER_MAX = 20;
 
 %% Absortions and Slopes
-An=zeros(1,ITER_MAX);
-Sn=zeros(1,ITER_MAX);
+An=zeros(1,ITER_MAX+1);
+An(1,1)=0;
+for i=2:ITER_MAX+1
+    An(1,i) = An(1,i-1) + 1.0/ITER_MAX;
+end
+Sn=zeros(ITER_MAX+1, 9);
 
 %% PRUNING DISTANCES
-DpMax=13; DpMin=2;
-DpMinFit = 8;                   %% small distance values are not parsed
+DpMax=15; DpMin=2;
+DpMinFit = 10;                   %% small distance values are not parsed
+% DpMax=34; DpMin=2;
+% DpMinFit = 22;                   %% small distance values are not parsed
+
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
 delete *.wav;
+addpath 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'
 
 %% SAVE Configuration parameters for ISM simulation
 RefOrd=40; 
 W_Slope=2;                       % Value for energy adjustment
-RGain_dB = 24;
+RGain_dB = 0;
 RGain = db2mag(RGain_dB);
 save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB');
 
@@ -84,38 +94,29 @@ nameFileISM = sprintf(formatFileISM, RefOrd, DpMax, W_Slope)+'.wav';
 %% SAVE PRUNING DISTANCES
 save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
 
-x=[DpMin:1:DpMax];               % Initial and final pruning distance
+x=[DpMin:1:DpMax];               % Initial and final pruning distance0.25
 
-L=1; R=2;                        % Channel
+L=1; R=2;                        % ChannelITER_MAX
 %% ABSORTIONS
 %% 6 it
 
-% %% Pablo absortions
-% absorbData = [
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.40 0.40 0.30  0.20  0.17  0.15    0.10  0.10  0.20;
-% 0.20 0.20 0.25  0.35  0.50  0.30    0.25  0.40  0.40;];
-
+%% Initial absorptions
 absorbData = [
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;];
+0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;];
+
+%% 1 KHz band
+for k=1:6
+  absorbData (k,5) = 0;
+end  
 
 absorbData0 = absorbData;
 absorbData1 = absorbData;
 absorbData2 = absorbData;
-
-slopes0 = zeros(1,9);
-slopes1 = zeros(1,9);
-slopes2 = zeros(1,9);
-
-Sn=zeros(ITER_MAX, 9);
 
 maximumAbsorChange=[maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange];
 
@@ -231,8 +232,9 @@ AudioFile=ISMFile.name;
 pause(0.5);
 delete (ISMFile.name);
 
-fitSlopes=false;
-while ( iLoop < ITER_MAX)
+iLoop = 1;
+
+while ( iLoop <= ITER_MAX+1)
     disp(iLoop);
     %% Folder with impulse responses
     cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
@@ -424,146 +426,57 @@ while ( iLoop < ITER_MAX)
             slopeMax=abs(slopeB);
         end
         ordOB = ordO (1,j);
-        if (abs (slopeB)  > 0)
-            % for k=1:4    %excluding ceil and floor
-             for k=1:6
-                newAbsorb = absorbData (k,j) + slopeB*alfa; 
-                if newAbsorb > 0.0 && newAbsorb < 1.0
-                    absorbData (k,j) = newAbsorb;
-                elseif newAbsorb <= 0.0
-                    absorbData (k,j) = absorMin;
-                elseif newAbsorb >= 1.0
-                    absorbData (k,j) = absorMax;
-                end
-            end 
-        end
     end 
-    %% update calculated slopes
-    slopes0=slopes1;
-    slopes1=slopes;
-    %slopes2=slopes;
+    
     %% update absorption values
     absorbData0 = absorbData1;
     absorbData1 = absorbData2;
 
-    %% ---------------------------------
-
-    if (iLoop < 2 )
-        %% first new absortions
-       absorbData2 = absorbData;            
-    else
-        %% calculate new absorptions
-        for j=1:NB
-            if (abs (slopes0(1,j) - slopes1(1,j) ) > 0.0000001)
-                newAbsorb = (-slopes0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(slopes1(1,j)-slopes0(1,j))+absorbData0(1,j); 
-
-                if sign(slopes1(1,j)) ~= sign(slopes0(1,j))
-                    maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
-                end
-
-                if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j)
-                   if newAbsorb > absorbData1(1,j)  
-                      newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
-                   else 
-                      newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
-                   end
-                end
-
-            else 
-                newAbsorb =  absorbData1(1,j)+slopes1(1,j); %%%%%%%%%%%
-                disp('Very similar slopes. Band: '+ int2str(j) ); 
-                % disp (newAbsorb);
-            end
-
-            if (newAbsorb <= 0.0)
-                newAbsorb = absorMin;
-            elseif (newAbsorb >= 1.0)
-                newAbsorb = absorMax;
-            end
-
-            for k=1:6
-                absorbData2 (k,j) = newAbsorb;
-            end  
-        end
+    %% calculate new absorptions
+    %% 1 KHz band
+    for k=1:6
+       absorbData2 (k,5) = An(1,iLoop);
     end
 
+    Sn(iLoop, :) = slopes;
+
+    %% ---------------------------------
  
-    vSlope = sprintf(formatSlope,slopes0);
+    vSlope = sprintf(formatSlope,slopes);
     disp(vSlope);
-    vSlope = sprintf(formatSlope,slopes1);
-    disp(vSlope);
-    vSlope = sprintf(formaTotalMaxSlope, totalSlope, slopeMax);  
-    disp(vSlope);
-    vAbsor = sprintf(formatAbsorChange,maximumAbsorChange);
-    disp(vAbsor);
-    vAbsor = sprintf(formatAbsor,absorbData0(1,:));
-    disp(vAbsor);
-    vAbsor = sprintf(formatAbsor,absorbData1(1,:));
-    disp(vAbsor);
     vAbsor = sprintf(formatAbsor,absorbData2(1,:));
     disp(vAbsor);
-       
+   
     %% send new abssortion values (if any of the slopes exceeds the threshold)
-    if slopeMax > 0.002 || abs(totalSlope)> 0.002
-       absorbDataT = absorbData2';
-       walls_absor = absorbDataT(:);
-       SendAbsortionsToISM(connectionToISM, walls_absor');
-       message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-       disp(message+" New Absortions");
-       pause(0.5);
-       SendSaveIRToISM(connectionToISM);
-       message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-       disp(message+" SaveIR");
-       pause(0.5);
+    absorbDataT = absorbData2';
+    walls_absor = absorbDataT(:);
+    SendAbsortionsToISM(connectionToISM, walls_absor');
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message+" New Absortions");
+    pause(0.5);
+    SendSaveIRToISM(connectionToISM);
+    message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+    disp(message+" SaveIR");
+    pause(0.5);
 
-       cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-       movefile (nameFileISM, "ISM_DpMax.wav");
+    cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+    movefile (nameFileISM, "ISM_DpMax.wav");
 
-       AudioFile=ISMFile.name;
-       [t_ISM,Fs] = audioread(AudioFile);
+    AudioFile=ISMFile.name;
+    [t_ISM,Fs] = audioread(AudioFile);
 
-
-    else
-       fitSlopes=true;
-    end
-    % disp(message);
-    % pause (1)
 %% ----------- ------------------
-    b = mod( iLoop , 4 ) ;
-    if (b==0)|| fitSlopes == true
-        % actual folder
-        current_folder = pwd;
-        % new folder
-        new_folder = num2str(iLoop);
-        mkdir( current_folder, new_folder);
-        % save slopes and absortions
-        nameFile= 'FiInfSlopes';
-        save(fullfile( current_folder,   nameFile), 'slopes');
-        nameFile= 'FiInfAbsorb';
-        save(fullfile( current_folder,   nameFile), 'absorbData1');
-
-        % copy files
-        copyfile(fullfile( current_folder,'BR*'), new_folder);
-        % copyfile(fullfile( current_folder,'wIr*'), new_folder);
-        copyfile(fullfile( current_folder,'ISM*'), new_folder);
-        % copyfile(fullfile( current_folder,'iIr*'), new_folder);
-        copyfile(fullfile( current_folder,'*.mat'), new_folder);
-    end
+    
 %% -------------------------------
 
-    if (iLoop<ITER_MAX-1 && fitSlopes == false)
+    if (iLoop<ITER_MAX)
         close all;
     end
     iLoop=iLoop+1;
-
-    %% Save slopes in Sn
-    Sn(iLoop, :) = slopes;
-
-    if (fitSlopes == true)
-        break;
-    end
-
 end
+
+plot (Sn);
+legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','southeast');
 
 %% Reflecion Order = 0
 SendReflecionOrderToISM(connectionToISM, 0);
@@ -572,12 +485,10 @@ message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Ref Order = 0");
 pause(0.2);
 
-
 %% Close, doesn't work properly
 CloseOscServer(receiver, osc_listener);
 
-%% File with Sn and An values
-%%  Files with Sn values
+%%  File with Sn values
 t = datetime('now','Format','HH:mm:ss.SSS');
 [h,m,s] = hms(t);
 H = int2str (h);
@@ -586,7 +497,6 @@ S = int2str (s);
 current_folder = pwd;
 nameFile= "SnFile_"+ H +"_"+ M + "_" + S;
 save(fullfile( current_folder,   nameFile), 'Sn');
-
 
 %% Open a UDP connection with a OSC server
 function connectionToISM = InitConnectionToISM(port)

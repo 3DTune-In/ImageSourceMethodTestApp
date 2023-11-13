@@ -7,7 +7,8 @@
 
 %% Set folder with IRs and Params
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\16';
-% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 32 2 20\12'
+%% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
+
 
 %% Load info
 load ("ParamsISM.mat");

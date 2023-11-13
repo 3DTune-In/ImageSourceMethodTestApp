@@ -24,7 +24,7 @@
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
-% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 36 2 20';
+% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20';
 load ("DistanceRange.mat");
 load ("ParamsISM.mat")
 
@@ -33,7 +33,8 @@ x=[DpMin:1:DpMax];               % Initial and final pruning distance
 L=1; R=2;                        % Channel
 
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\16';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\8';
+% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20\0';
 % cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 32 2 20\12'
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");

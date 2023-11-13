@@ -26,7 +26,7 @@
 
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\16';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -37,7 +37,7 @@ load ("EnergyFactor.mat");
 
 %% ---------------------------------------------------------
 %% Set TMix & Slope
-Dp_Tmix = 14;
+Dp_Tmix = 30;
 W_Slope = 2;            %  It may be a different value than the one used for energy adjustment
 
 %% Set working folder
@@ -75,6 +75,10 @@ message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
 
 %%  Send Play and Stop ToISM
+SendSpatialisationEnableToISM (connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.2);
 SendPlayToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
@@ -82,7 +86,19 @@ pause(1);
 SendStopToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
+pause(0.2);
+SendSpatialisationEnableToISM (connectionToISM, true);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.2);
+SendPlayToISM(connectionToISM);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
 pause(1);
+SendStopToISM(connectionToISM);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.2);
 
 %% Send Initial absortions
 walls_absor = zeros(1,54);
@@ -95,14 +111,13 @@ message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
 pause(0.1);
 
-
 %% configureHybrid (connectionToISM, receiver, osc_listener, 
 %%                                                       W_Slope, DistMax, RefOrd, RGain, SaveIR)
 %% Enable Reverb
 SendReverbEnableToISM(connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message);
-pause(2);
+pause(0.2);
 
 %% w file 
 
@@ -260,6 +275,11 @@ end
 %% Send ReverbEnable comand to the OSC server (ISM)
 function SendReverbEnableToISM(u, vbool)
     oscsend(u,'/reverbEnable','B',vbool);    
+end
+
+%% Send spatialisationEnable comand to the OSC server (ISM)
+function SendSpatialisationEnableToISM(u, vbool)
+    oscsend(u,'/spatialisationEnable','B',vbool);    
 end
 
 

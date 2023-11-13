@@ -66,7 +66,7 @@ void ofApp::setup() {
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	
-	string fullPath = pathResources + "\\" + "hrtf.sofa";  //"hrtf.sofa"= pathFile;
+	string fullPath = pathResources + "\\" + "hrtf.sofa";                   //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";  // To test the Filterbank
 
 	bool specifiedDelays;
@@ -194,17 +194,14 @@ void ofApp::setup() {
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
 	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
-	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
+	//anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
+	anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
 	stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic        
 
 	// DistanceAttenuation
-	//anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-	anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
-
-	//anechoicSourceDSP->EnableDistanceAttenuationReverb();
-	anechoicSourceDSP->DisableDistanceAttenuationReverb();
-
+	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	//anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
+		
 	anechoicSourceDSP->EnablePropagationDelay();
 	
 	// setup of the image sources
@@ -1656,9 +1653,9 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		}
 		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 		//DistanceAttenuation
-		//tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
+		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
 		tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
-		tempSourceDSP->DisableDistanceAttenuationAnechoic();
+		//tempSourceDSP->DisableDistanceAttenuationAnechoic();
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
 		tempImageSourceDSPList.push_back(tempSourceDSP);
@@ -2631,6 +2628,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/reflectionOrder")	OscCallBackReflectionOrder(message);
 	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
 	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
+	else if (message.getAddress() == "/spatialisationEnable")	OscCallBackSpatialisationEnable(message);
 	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
 	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
 
@@ -2790,6 +2788,43 @@ void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
 	}
 	SendOSCMessageToMatlab_Ready();
 }
+
+void ofApp::OscCallBackSpatialisationEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received EspatialisationEnable Comand" << ",  " << state << std::endl;
+
+	if (!stopState) systemSoundStream.stop();
+
+	if (state)
+	{
+		if (stateBinauralSpatialisation)
+		;
+		else {
+			anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
+			binauralSpatialisationEnableControl.set(true);
+			stateBinauralSpatialisation = true;
+		}
+	}
+	else
+	{
+		if ( ! stateBinauralSpatialisation)
+			;
+		else {
+			anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
+			binauralSpatialisationEnableControl.set(false);
+			stateBinauralSpatialisation = false;
+		}
+	}
+
+	imageSourceDSPList = reCreateImageSourceDSP();
+
+	if (!stopState) systemSoundStream.start();
+
+	SendOSCMessageToMatlab_Ready();
+}
+
 
 void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
 	message.getNumArgs();

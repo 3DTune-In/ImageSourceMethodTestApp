@@ -268,6 +268,7 @@ private:
 		void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message);
 		void OscCallBackReflectionOrder(const ofxOscMessage& message);
 		void OscCallBackDirectPathEnable(const ofxOscMessage& message);
+		void OscCallBackSpatialisationEnable(const ofxOscMessage& message);
 		void OscCallBackReverbEnable(const ofxOscMessage& message);
 		void OscCallBackSaveIR();
 		void SendOSCMessageToMatlab_Ready();

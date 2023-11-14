@@ -54,15 +54,15 @@ reductionAbsorChange=0.6;
 % reductionAbsorChange=0.6;
 
 %% MAX ITERATIONS 
-ITER_MAX = 9;
+ITER_MAX = 13;
 
 %% Absortions and Slopes
 An=zeros(1,ITER_MAX);
 Sn=zeros(1,ITER_MAX);
 
 %% PRUNING DISTANCES
-DpMax=13; DpMin=2;
-DpMinFit = 8;                   %% small distance values are not parsed
+DpMax=36; DpMin=2;
+DpMinFit = 24;                   %% small distance values are not parsed
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
@@ -147,6 +147,23 @@ SendReverbEnableToISM(connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Enable Reverb");
 pause(0.2);
+
+%% Enable Spatialisation
+SendSpatialisationEnableToISM (connectionToISM, true);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Enable Spatialisation");
+pause(0.2);
+
+%% Enable Distance Attenuation
+SendDistanceAttenuationEnableToISM (connectionToISM, true);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Enable Distance Attenuation");
+pause(0.2);
+
+%% Disable Direct Path
+SendDirectPathEnableToISM(connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Disable Direct Path");
 
 %%  Send Play and Stop ToISM
 SendPlayToISM(connectionToISM);
@@ -779,6 +796,16 @@ end
 %% Send ReverbEnable comand to the OSC server (ISM)
 function SendReverbEnableToISM(u, vbool)
     oscsend(u,'/reverbEnable','B',vbool);    
+end
+
+%% Send SpatialisationEnable comand to the OSC server (ISM)
+function SendSpatialisationEnableToISM(u, vbool)
+    oscsend(u,'/spatialisationEnable','B',vbool);    
+end
+
+%% Send DistanceAttenuationEnable comand to the OSC server (ISM)
+function SendDistanceAttenuationEnableToISM(u, vbool)
+    oscsend(u,'/distanceAttenuEnable','B',vbool);    
 end
 
 %% Send float vector to the OSC server (ISM)

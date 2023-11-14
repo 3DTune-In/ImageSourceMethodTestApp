@@ -68,6 +68,23 @@ SendDirectPathEnableToISM(connectionToISM, false);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Disable Direct Path");
 
+%% Distance Attenuation Disable
+SendDistanceAttenuationEnableToISM (connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Disable Distance Attenuation");
+pause(0.2);
+
+%% Spatialisation Disable
+SendSpatialisationEnableToISM (connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Disable Spatialisation");
+pause(0.2);
+
+%% Disable Reverb
+SendReverbEnableToISM(connectionToISM, false);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message);
+pause(0.2);
 
 %% LAB_ROOM
 %% configureHybrid (connectionToISM, receiver, osc_listener, 
@@ -290,6 +307,16 @@ end
 %% Send ReverbEnable comand to the OSC server (ISM)
 function SendReverbEnableToISM(u, vbool)
     oscsend(u,'/reverbEnable','B',vbool);    
+end
+
+%% Send SpatialisationEnable comand to the OSC server (ISM)
+function SendSpatialisationEnableToISM(u, vbool)
+    oscsend(u,'/spatialisationEnable','B',vbool);    
+end
+
+%% Send DistanceAttenuationEnable comand to the OSC server (ISM)
+function SendDistanceAttenuationEnableToISM(u, vbool)
+    oscsend(u,'/distanceAttenuEnable','B',vbool);    
 end
 
 

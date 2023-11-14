@@ -26,7 +26,7 @@
 
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\8';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -72,32 +72,28 @@ receiver = InitOscServer(listenPort);
 SendReflecionOrderToISM(connectionToISM, 1);
 % Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" Ref Order = 1");
 
-%%  Send Play and Stop ToISM
-SendSpatialisationEnableToISM (connectionToISM, false);
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
-pause(0.2);
-SendPlayToISM(connectionToISM);
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
-pause(1);
-SendStopToISM(connectionToISM);
-message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
-pause(0.2);
+%%  Send Spatialisation Enable To ISM
 SendSpatialisationEnableToISM (connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" Spatialisation Enable");
 pause(0.2);
+
+%%  Send Distance Attenuation Enable To ISM
+SendDistanceAttenuationEnableToISM (connectionToISM, true);
+message = WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Distance Attenuation Enable");
+pause(0.2);
+
+%%  Send Play and Stop To ISM
 SendPlayToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" PLAY");
 pause(1);
 SendStopToISM(connectionToISM);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" STOP");
 pause(0.2);
 
 %% Send Initial absortions
@@ -108,7 +104,7 @@ SendAbsortionsToISM(connectionToISM, walls_absor');
 pause(0.2);
 %% Waiting msg from ISM
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" ABSORPTIONS");
 pause(0.1);
 
 %% configureHybrid (connectionToISM, receiver, osc_listener, 
@@ -116,7 +112,7 @@ pause(0.1);
 %% Enable Reverb
 SendReverbEnableToISM(connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" Enable Reverb");
 pause(0.2);
 
 %% w file 
@@ -135,7 +131,7 @@ pause(1.0);
 %% Disable Reverb
 SendReverbEnableToISM(connectionToISM, false);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" Disable Reverb");
 pause(1);
 
 %% i file
@@ -152,7 +148,7 @@ pause(0.5);
 %% Enable Reverb
 SendReverbEnableToISM(connectionToISM, true);
 message = WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
+disp(message+" Enable Reverb");
 pause(2);
 
 
@@ -277,10 +273,16 @@ function SendReverbEnableToISM(u, vbool)
     oscsend(u,'/reverbEnable','B',vbool);    
 end
 
-%% Send spatialisationEnable comand to the OSC server (ISM)
+%% Send SpatialisationEnable comand to the OSC server (ISM)
 function SendSpatialisationEnableToISM(u, vbool)
     oscsend(u,'/spatialisationEnable','B',vbool);    
 end
+
+%% Send DistanceAttenuationEnable comand to the OSC server (ISM)
+function SendDistanceAttenuationEnableToISM(u, vbool)
+    oscsend(u,'/distanceAttenuEnable','B',vbool);    
+end
+
 
 
 %% Send float vector to the OSC server (ISM)

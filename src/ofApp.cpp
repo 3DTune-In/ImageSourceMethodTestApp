@@ -200,6 +200,7 @@ void ofApp::setup() {
 
 	// DistanceAttenuation
 	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
+	stateDistanceAttenuation = true; 
 	//anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
 		
 	anechoicSourceDSP->EnablePropagationDelay();
@@ -1256,6 +1257,13 @@ void ofApp::keyPressed(int key) {
 			cout << "BinauralSpatialisation Enabled" << "\n";
 		else
 			cout << "BinauralSpatialisation Disabled" << "\n";
+
+		if (stateDistanceAttenuation)
+			cout << "DistanceAttenuation Enabled" << "\n";
+		else
+			cout << "DistanceAttenuation Disabled" << "\n";
+
+
 
 		//#if 0
 		if (!bDisableReverb)
@@ -2629,6 +2637,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
 	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
 	else if (message.getAddress() == "/spatialisationEnable")	OscCallBackSpatialisationEnable(message);
+	else if (message.getAddress() == "/distanceAttenuEnable")	OscCallBackDistanceAttenuationEnable(message);
 	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
 	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
 
@@ -2849,6 +2858,22 @@ void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
 	
 	if (setupDone == false) std::chrono::milliseconds::duration(2000);
 
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DistanceAttenuationEnableDisable Comand" << ",  " << state << std::endl;
+	if (state) {
+		anechoicSourceDSP->EnableDistanceAttenuationAnechoic();
+		stateDistanceAttenuation = true;
+	}
+	else {
+		anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
+		stateDistanceAttenuation = false;
+	}
 	SendOSCMessageToMatlab_Ready();
 }
 

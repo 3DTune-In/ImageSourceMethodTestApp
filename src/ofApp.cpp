@@ -199,10 +199,12 @@ void ofApp::setup() {
 	stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic        
 
 	// DistanceAttenuation
-	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-	stateDistanceAttenuation = true; 
-	//anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
-		
+	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								
+	stateDistanceAttenuationAnechoic = true; 
+	anechoicSourceDSP->DisableDistanceAttenuationReverb();
+	stateDistanceAttenuationReverb = false; 
+	//anechoicSourceDSP->DisableDistanceAttenuationReverb();
+			
 	anechoicSourceDSP->EnablePropagationDelay();
 	
 	// setup of the image sources
@@ -1245,8 +1247,8 @@ void ofApp::keyPressed(int key) {
 			cout << w6 << (data.at(i).location - listenerLocation).GetDistance();								//print distance to listener and distance between first and last reflection walls
 			cout << " (" << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << ")" << "\n";
 		}
-		cout << "Shoebox \n";
-		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
+		//cout << "Shoebox \n";
+		//cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
 
 		if (stateAnechoicProcess)
 			cout << "AnechoicProcess Enabled" << "\n";
@@ -1258,10 +1260,16 @@ void ofApp::keyPressed(int key) {
 		else
 			cout << "BinauralSpatialisation Disabled" << "\n";
 
-		if (stateDistanceAttenuation)
-			cout << "DistanceAttenuation Enabled" << "\n";
+		if (stateDistanceAttenuationAnechoic)
+			cout << "DistanceAttenuationAnechoic Enabled" << "\n";
 		else
-			cout << "DistanceAttenuation Disabled" << "\n";
+			cout << "DistanceAttenuationAnechoic Disabled" << "\n";
+
+		if (stateDistanceAttenuationReverb)
+			cout << "DistanceAttenuationReverb Enabled" << "\n";
+		else
+			cout << "DistanceAttenuationReverb Disabled" << "\n";
+
 
 
 
@@ -1662,8 +1670,10 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
 		//DistanceAttenuation
 		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-		tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
-		//tempSourceDSP->DisableDistanceAttenuationAnechoic();
+		if (stateDistanceAttenuationAnechoic)
+		   tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
+		else
+		   tempSourceDSP->DisableDistanceAttenuationAnechoic();
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
 		tempImageSourceDSPList.push_back(tempSourceDSP);
@@ -2636,8 +2646,9 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/reflectionOrder")	OscCallBackReflectionOrder(message);
 	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
 	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
-	else if (message.getAddress() == "/spatialisationEnable")	OscCallBackSpatialisationEnable(message);
-	else if (message.getAddress() == "/distanceAttenuEnable")	OscCallBackDistanceAttenuationEnable(message);
+	else if (message.getAddress() == "/spatialisationEnable")	    OscCallBackSpatialisationEnable(message);
+	else if (message.getAddress() == "/distanceAttAnechoicEnable")	OscCallBackDistanceAttenuationEnable(message);
+	else if (message.getAddress() == "/distanceAttReverbEnable")    OscCallBackDistanceAttenuationReverbEnable(message);
 	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
 	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
 
@@ -2865,14 +2876,30 @@ void ofApp::OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received DistanceAttenuationEnableDisable Comand" << ",  " << state << std::endl;
+	std::cout << "Received DistanceAttenuationAnechoicEnableDisable Comand" << ",  " << state << std::endl;
 	if (state) {
 		anechoicSourceDSP->EnableDistanceAttenuationAnechoic();
-		stateDistanceAttenuation = true;
+		stateDistanceAttenuationAnechoic = true;
 	}
 	else {
 		anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
-		stateDistanceAttenuation = false;
+		stateDistanceAttenuationAnechoic = false;
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DistanceAttenuationReverbEnableDisable Comand" << ",  " << state << std::endl;
+	if (state) {
+		anechoicSourceDSP->EnableDistanceAttenuationReverb();
+		stateDistanceAttenuationReverb = true;
+	}
+	else {
+		anechoicSourceDSP->DisableDistanceAttenuationReverb();
+		stateDistanceAttenuationReverb = false;
 	}
 	SendOSCMessageToMatlab_Ready();
 }

@@ -159,7 +159,8 @@ private:
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
 		bool stateAnechoicProcess;                                                          // Enabled o Disabled
 		bool stateBinauralSpatialisation;                                                   // Enabled o Disabled
-		bool stateDistanceAttenuation;                                                      // Enabled o Disabled
+		bool stateDistanceAttenuationAnechoic;                                             // Enabled o Disabled
+		bool stateDistanceAttenuationReverb;                                                // Enabled o Disabled
 
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
@@ -266,12 +267,13 @@ private:
 		void OscCallBackAbsortions(const ofxOscMessage& message);
 		void OscCallBackReverbGain(const ofxOscMessage& message);
 		void OscCallBackDistMaxImgs(const ofxOscMessage& message);
-		void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message);
+		void OscCallBackWindowSlope(const ofxOscMessage& message);
 		void OscCallBackReflectionOrder(const ofxOscMessage& message);
 		void OscCallBackDirectPathEnable(const ofxOscMessage& message);
 		void OscCallBackSpatialisationEnable(const ofxOscMessage& message);
 		void OscCallBackReverbEnable(const ofxOscMessage& message);
 		void OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message);
+		void OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& message);
 		void OscCallBackSaveIR();
 		void SendOSCMessageToMatlab_Ready();
 };

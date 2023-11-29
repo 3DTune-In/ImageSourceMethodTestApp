@@ -93,6 +93,8 @@ void ofApp::setup() {
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
+
+
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
@@ -147,6 +149,9 @@ void ofApp::setup() {
 	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
 	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
 	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
+
+	// enable static distance criterion in order to reduce the number of potential sources
+	ISMHandler->enableStaticDistanceCriterion();
 
 	// Setup windowThreshold and windowSlope
 	   //Get BRIRLength

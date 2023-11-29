@@ -1,12 +1,15 @@
+%% This script shows the intermediate and final graphical results
+%% corresponding to applying the hybrid method (ISM+convolution) 
+
 % Author: Fabian Arrebola (19/10/2023) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
 % Project: SONICOM
 % 
 % Copyright (C) 2023 Universidad de Málaga
-
+ 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\8';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 

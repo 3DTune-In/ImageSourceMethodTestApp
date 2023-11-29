@@ -1,4 +1,12 @@
-%Energy per band 
+%% Calculates the energy of an impulse response for a given frequency band
+
+% Author: Fabian Arrebola (03/03/2023) 
+% contact: areyes@uma.es
+% 3DDIANA research group. University of Malaga
+% Project: SONICOM
+% 
+% Copyright (C) 2023 Universidad de Málaga
+
 function [energy]= calculateEnergyBand (Fs, IR, Lo, Hi)
 
 L=length(IR);

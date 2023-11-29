@@ -2711,7 +2711,7 @@ void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	reverbGainLinear = message.getArgAsFloat(0);
-	std::cout << "Received ReverbGain Comand"<<",  "<< reverbGainLinear << std::endl;
+	std::cout << "Received ReverbGain Command"<<",  "<< reverbGainLinear << std::endl;
 	float reverbGainDb = 20 * log10(reverbGainLinear);
 	reverbGainControl.set(reverbGainDb);
 
@@ -2732,7 +2732,7 @@ void ofApp::OscCallBackDistMaxImgs(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	float maxDistImagesToListener = message.getArgAsFloat(0);  //getArgAsFloat(0);	
-	std::cout << "Received DistanceMaxImages Comand"<<",  "<< maxDistImagesToListener << std::endl;
+	std::cout << "Received DistanceMaxImages Command"<<",  "<< maxDistImagesToListener << std::endl;
 
 	if (!stopState) systemSoundStream.stop();
 		
@@ -2745,7 +2745,7 @@ void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message) {
 	message.getNumArgs();
 
 	int newWindowSlope = message.getArgAsInt(0);  //getArgAsFloat(0);	
-	std::cout << "Received WindowSlope Comand"<<",  " << newWindowSlope << std::endl;
+	std::cout << "Received WindowSlope Command"<<",  " << newWindowSlope << std::endl;
 
 	if (!stopState) systemSoundStream.stop();
 	
@@ -2760,7 +2760,7 @@ void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	int reflectionOrder = message.getArgAsInt(0);  
-	std::cout << "Received ReflectionOrder Comand" << ",  " << reflectionOrder << std::endl;
+	std::cout << "Received ReflectionOrder Command" << ",  " << reflectionOrder << std::endl;
 
 	if (!stopState) systemSoundStream.stop();
 	
@@ -2784,7 +2784,7 @@ void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 	
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received DirectPathEnableDisable Comand" << ",  " << state << std::endl;
+	std::cout << "Received DirectPathEnableDisable Command" << ",  " << state << std::endl;
 
 	if (state){
 		if (anechoicEnableControl.get())
@@ -2813,7 +2813,7 @@ void ofApp::OscCallBackSpatialisationEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received EspatialisationEnable Comand" << ",  " << state << std::endl;
+	std::cout << "Received EspatialisationEnable Command" << ",  " << state << std::endl;
 
 	if (!stopState) systemSoundStream.stop();
 
@@ -2850,7 +2850,7 @@ void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received ReverbPathEnableDisable Comand" << ",  " << state << std::endl;
+	std::cout << "Received ReverbPathEnableDisable Command" << ",  " << state << std::endl;
 		
 	if (state) {
 		reverbEnableControl.set(true);
@@ -2876,7 +2876,7 @@ void ofApp::OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message) {
 	message.getNumArgs();
 
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received DistanceAttenuationAnechoicEnableDisable Comand" << ",  " << state << std::endl;
+	std::cout << "Received DistanceAttenuationAnechoicEnableDisable Command" << ",  " << state << std::endl;
 	if (state) {
 		anechoicSourceDSP->EnableDistanceAttenuationAnechoic();
 		stateDistanceAttenuationAnechoic = true;
@@ -2892,7 +2892,7 @@ void ofApp::OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& mess
 	message.getNumArgs();
 
 	bool state = message.getArgAsBool(0);
-	std::cout << "Received DistanceAttenuationReverbEnableDisable Comand" << ",  " << state << std::endl;
+	std::cout << "Received DistanceAttenuationReverbEnableDisable Command" << ",  " << state << std::endl;
 	if (state) {
 		anechoicSourceDSP->EnableDistanceAttenuationReverb();
 		stateDistanceAttenuationReverb = true;
@@ -2910,7 +2910,7 @@ void ofApp::OscCallBackAbsortions(const ofxOscMessage& message) {
 	std::vector<float> v;
 	std::vector<float> absorWall = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-	std::cout << "Received Absortions Comand" << std::endl;
+	std::cout << "Received Absortions Command" << std::endl;
 
 	for (int i = 0; i < message.getNumArgs(); i++) {
 		v.push_back(message.getArgAsFloat(i));

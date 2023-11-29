@@ -1,3 +1,6 @@
+%% Performs the fade-out on a impulse response from the ISM simulator or 
+%% the fade-in on the RIR
+
 function [y2w]= windowingISM_RIR (Fs, IR, maxDistSL, slope, ismOrRir)
 
 % Author: Fabian Arrebola (17/10/2023) 

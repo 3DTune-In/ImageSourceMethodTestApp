@@ -1,4 +1,4 @@
-%% This script shows the intermediate and final graphical results
+%% This script shows the intermediate and final graphical results 
 %% derived from the process of adjusting the absorption values. 
 %% The energy factor for the hybrid method is also obtained.
 %% (this script replaces EnergyFactor_9Bands_Visual_Fit.m)
@@ -11,16 +11,18 @@
 % Copyright (C) 2023 Universidad de Málaga
 
 %% As input parameters are taken:
-%% a) N impulse responses obtained by the ISM with a sufficiently high 
-%%    reflection order (i*files)
-%% b) N impulse responses obtained by convolution and windowing (w*.wav files)
-%% c) the BRIR of the room to be simulated (BRIR.wav IR obtained by 
+%% a) Impulse response obtained by the ISM with a sufficiently high 
+%%    reflection order 
+%% b) BRIR of the room to be simulated (BRIR.wav IR obtained by 
 %%    convolution and windowing with a pruning distance of 1 meter).
 %% N = DpMax-DpMin+1;
 %% DpMin = Initial pruning distance
 %% DpMax = Final pruning distance
 %% DpMinFit = first distance value to carry out the process of fitting the 
 %% slopes of the energy factors
+
+%% Output
+%  'EnergyFactor.mat'     <--  'FactorMeanValue'
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
@@ -33,7 +35,7 @@ x=[DpMin:1:DpMax];               % Initial and final pruning distance
 L=1; R=2;                        % Channel
 
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\8';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
 % cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20\0'
 % cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 32 2 20\12'
 load ("FiInfAbsorb.mat");
@@ -50,8 +52,8 @@ B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314;
 Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
 Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
 
-%% FILES with Impulse Response in de folder
-NumFiles = DpMax-DpMin+1;
+%% Number of Impulse Responses
+NumIRs = DpMax-DpMin+1;
 
 %% Read file with BRIR
 BRIRFile=dir(['BRIR*.wav']);  %BRIR obtained with a pruning distance of 1 meter
@@ -71,17 +73,17 @@ E_BRIR= calculateEnergyFrec(Fs, t_BRIR)/length(t_BRIR);
 eBRIR_L= e_BRIR(L); eBRIR_R= e_BRIR(R);
 %% --------------
 %% Total Energy in time domain
-e_TotalIsm=zeros(NumFiles,2);              
-e_TotalWin=zeros(NumFiles,2);   
-e_Total=zeros(NumFiles,2);
+e_TotalIsm=zeros(NumIRs,2);              
+e_TotalWin=zeros(NumIRs,2);   
+e_Total=zeros(NumIRs,2);
 %% Energy per band in frequency domain
-E_BandIsm =zeros(NB,NumFiles,2);            
-E_BandWin=zeros(NB,NumFiles,2); 
-E_BandBrir_Win=zeros(NB,NumFiles,2);        %BRIR-Win
+E_BandIsm =zeros(NB,NumIRs,2);            
+E_BandWin=zeros(NB,NumIRs,2); 
+E_BandBrir_Win=zeros(NB,NumIRs,2);        %BRIR-Win
 
 %% Calculate total and partial energies
 maxDistSL = DpMin;
-for i=1:NumFiles
+for i=1:NumIRs
      %%  Ism IRs -------------------------------------
      ir_Ism =  windowingISM_RIR (Fs, t_ISM, maxDistSL, 2, 1);
      e= calculateEnergy(ir_Ism);
@@ -129,9 +131,9 @@ end
 eSumBands= squeeze(eSumBands);
 %% --------------------------                    % FIGURE 1 -- Total: ISM, Windowed, BRIR-Windowed
 figure; hold on;                                 
-eL_Ism  = zeros(NumFiles,L);
-eL_Win  = zeros(NumFiles,L);
-eL_BRIR_W = zeros(NumFiles,L);
+eL_Ism  = zeros(NumIRs,L);
+eL_Win  = zeros(NumIRs,L);
+eL_BRIR_W = zeros(NumIRs,L);
 eL_Ism = e_TotalIsm(:,L);   % Ism without direct path
 eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
 %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
@@ -141,7 +143,7 @@ plot (x, eL_Win,'g--o');   % Windowed
 %plot (x,eL_Total,'b--+'); % Total
 grid;
 
-eL_BRIR_W(:,L) = eBRIR_L*ones(length(NumFiles))-eL_Win;
+eL_BRIR_W(:,L) = eBRIR_L*ones(length(NumIRs))-eL_Win;
 plot (x, eL_BRIR_W,'k--x');
 %ylim([0.0 0.8]);
 xlabel('Distance (m)');  
@@ -193,7 +195,7 @@ for j=1:NB
     subplot(NB,3,3*j);
     eBand=E_BandBrir(j,L);
     y= E_BandWin(j,:,L);
-    E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;
+    E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumIRs))-y;
     plot (x, E_BandBrir_Win(j,:,L) ,'b--.');   % Brir-Windowed
     legend('e-Rir-Win', 'Location','southeast');
     ylim([0.0 0.1]);
@@ -205,11 +207,11 @@ end
 % colormap(c);
 %% -----------------------------                  % FIGURE 4 -- Factor per Band
 figure; hold on;                                  
-factorBand =zeros(NB, NumFiles,2);
+factorBand =zeros(NB, NumIRs,2);
 for j=1:NB
     eBand=E_BandBrir(j,L);
     y= E_BandWin(j,:,L);
-    E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumFiles))-y;
+    E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumIRs))-y;
     factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L)); 
     plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
@@ -223,7 +225,7 @@ title('Factor per Band vs Pruning Distance');
 %% Curve Fitting with "curveFitter"
 % xf=[DpMinFit:1:DpMax]; % from 10 meters to the end
 % for j=1:NB
-%    Ff=factorBand(j, NumFiles-(DpMax-DpMinFit) : NumFiles, L);  % from 10 meters to the end
+%    Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from 10 meters to the end
 % % %P1 = P2(1:L/2+1);
 %    curveFitter(xf,Ff);
 % end
@@ -243,7 +245,7 @@ gofplus = struct('gof', gof , 'p1', 0, 'p2', 0);    % Create struct to load data
 gofpArray = repmat (gofplus, 1, NB);                % Array of structures to store information for each band
 
 for j=1:NB
-   Ff=factorBand(j, NumFiles-(DpMax-DpMinFit) : NumFiles, L);  % from 10 meters to the end
+   Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from 10 meters to the end
    xft=xf'; Fft= Ff'; % transpose
       % [fitObj, gof] = fit(xft,Fft,'poly1');
    [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');

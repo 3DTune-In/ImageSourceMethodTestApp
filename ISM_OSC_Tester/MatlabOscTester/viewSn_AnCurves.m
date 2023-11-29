@@ -9,7 +9,7 @@
 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
 x=[0:0.05:1]; 
-matFiles=dir(['SnFile_1*.mat']); 
+matFiles=dir(['SnFile_*.mat']); 
 NumFiles = length(matFiles);
  for i=1:NumFiles
     MatFile=matFiles(i).name;

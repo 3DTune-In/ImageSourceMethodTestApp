@@ -29,8 +29,8 @@ Sn=zeros(ITER_MAX+1, 9);
 %% PRUNING DISTANCES
 % DpMax=15; DpMin=2;
 % DpMinFit = 10;                   %% small distance values are not parsed
-DpMax=24; DpMin=2;
-DpMinFit = 18;                   %% small distance values are not parsed
+DpMax=14; DpMin=2;
+DpMinFit = 10;                   %% small distance values are not parsed
 
 
 %% Folder with impulse responses
@@ -54,7 +54,7 @@ save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance0.25
 
-L=1; R=2;                        % ChannelITER_MAX
+L=2; R=1;                        % ChannelITER_MAX
 %% ABSORTIONS
 %% 6 it
 
@@ -269,9 +269,9 @@ while ( iLoop <= ITER_MAX+1)
     eSumBands= squeeze(eSumBands);
     %% --------------------------                    % FIGURE 1 -- Total: ISM, Windowed, BRIR-Windowed
     figure; hold on;
-    eL_Ism  = zeros(NumIRs,L);
-    eL_Win  = zeros(NumIRs,L);
-    eL_BRIR_W = zeros(NumIRs,L);
+    eL_Ism  = zeros(NumIRs,1);
+    eL_Win  = zeros(NumIRs,1);
+    eL_BRIR_W = zeros(NumIRs,1);
     eL_Ism = e_TotalIsm(:,L);   % Ism without direct path
     eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
     %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
@@ -281,7 +281,7 @@ while ( iLoop <= ITER_MAX+1)
     %plot (x,eL_Total,'b--+'); % Total
     grid;
 
-    eL_BRIR_W(:,L) = eBRIR_L*ones(length(NumIRs))-eL_Win;
+    eL_BRIR_W(:,1) = eBRIR_L*ones(length(NumIRs))-eL_Win;
     plot (x, eL_BRIR_W,'k--x');
     %ylim([0.0 0.8]);
     xlabel('Distance (m)');
@@ -304,7 +304,7 @@ while ( iLoop <= ITER_MAX+1)
     for j=1:NB
         eBand=E_BandBrir(j,L);
         y = E_BandWin(j,:,L);
-        E_BandBrir_Win(j,:,L)=abs(eBand(1,L)*ones(1, length(NumIRs))-y);
+        E_BandBrir_Win(j,:,L)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
         plot (x, E_BandBrir_Win(j,:,L));
     end
     title('E.BRIR-E.WIN-vs Pruning Distance');
@@ -314,7 +314,7 @@ while ( iLoop <= ITER_MAX+1)
     for j=1:NB
         eBand=E_BandBrir(j,L);
         y= E_BandWin(j,:,L);
-        E_BandBrir_Win(j,:,L)=abs(eBand(1,L)*ones(1, length(NumIRs))-y);
+        E_BandBrir_Win(j,:,L)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
         factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L));
         plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
     end

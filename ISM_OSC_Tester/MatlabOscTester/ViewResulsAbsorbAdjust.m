@@ -35,7 +35,7 @@ x=[DpMin:1:DpMax];               % Initial and final pruning distance
 L=1; R=2;                        % Channel
 
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
 % cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20\0'
 % cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 32 2 20\12'
 load ("FiInfAbsorb.mat");
@@ -131,9 +131,9 @@ end
 eSumBands= squeeze(eSumBands);
 %% --------------------------                    % FIGURE 1 -- Total: ISM, Windowed, BRIR-Windowed
 figure; hold on;                                 
-eL_Ism  = zeros(NumIRs,L);
-eL_Win  = zeros(NumIRs,L);
-eL_BRIR_W = zeros(NumIRs,L);
+eL_Ism  = zeros(NumIRs,1);
+eL_Win  = zeros(NumIRs,1);
+eL_BRIR_W = zeros(NumIRs,1);
 eL_Ism = e_TotalIsm(:,L);   % Ism without direct path
 eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
 %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
@@ -143,7 +143,7 @@ plot (x, eL_Win,'g--o');   % Windowed
 %plot (x,eL_Total,'b--+'); % Total
 grid;
 
-eL_BRIR_W(:,L) = eBRIR_L*ones(length(NumIRs))-eL_Win;
+eL_BRIR_W(:,1) = eBRIR_L*ones(length(NumIRs))-eL_Win;
 plot (x, eL_BRIR_W,'k--x');
 %ylim([0.0 0.8]);
 xlabel('Distance (m)');  
@@ -195,7 +195,7 @@ for j=1:NB
     subplot(NB,3,3*j);
     eBand=E_BandBrir(j,L);
     y= E_BandWin(j,:,L);
-    E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumIRs))-y;
+    E_BandBrir_Win(j,:,L)=eBand(1,1)*ones(1, length(NumIRs))-y;
     plot (x, E_BandBrir_Win(j,:,L) ,'b--.');   % Brir-Windowed
     legend('e-Rir-Win', 'Location','southeast');
     ylim([0.0 0.1]);
@@ -211,7 +211,7 @@ factorBand =zeros(NB, NumIRs,2);
 for j=1:NB
     eBand=E_BandBrir(j,L);
     y= E_BandWin(j,:,L);
-    E_BandBrir_Win(j,:,L)=eBand(1,L)*ones(1, length(NumIRs))-y;
+    E_BandBrir_Win(j,:,L)=eBand(1,1)*ones(1, length(NumIRs))-y;
     factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L)); 
     plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
@@ -221,15 +221,6 @@ xlabel('Distance (m)');  ylabel('Factor');
 legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
 title('Factor per Band vs Pruning Distance');  
 
-%% -----------------------------
-%% Curve Fitting with "curveFitter"
-% xf=[DpMinFit:1:DpMax]; % from 10 meters to the end
-% for j=1:NB
-%    Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from 10 meters to the end
-% % %P1 = P2(1:L/2+1);
-%    curveFitter(xf,Ff);
-% end
-% %hold off;
 
 %% Curve Fitting                                   % FIGURE 5 -- Fit for each Band     
 xf=[DpMinFit:1:DpMax]; % from 10 meters to the end

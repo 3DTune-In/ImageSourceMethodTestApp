@@ -147,9 +147,7 @@ void ofApp::setup() {
 	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
 	ISMHandler->setMaxDistanceImageSources (maxDistanceSourcesToListener, millisec2meters((float)INITIAL_WIN_SLOPE));
 	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
-	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
-	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
-
+	
 	// enable static distance criterion in order to reduce the number of potential sources
 	ISMHandler->enableStaticDistanceCriterion();
 
@@ -167,8 +165,6 @@ void ofApp::setup() {
 		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, millisec2meters(windowSlopeWidth));
 	}
 		
-	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
-
 	// Setup windowThreshold
 	float windowThreshold = float(numberOfSilencedSamples) / (float)myCore.GetAudioState().sampleRate;
 	
@@ -208,8 +204,7 @@ void ofApp::setup() {
 	stateDistanceAttenuationAnechoic = true; 
 	anechoicSourceDSP->DisableDistanceAttenuationReverb();
 	stateDistanceAttenuationReverb = false; 
-	//anechoicSourceDSP->DisableDistanceAttenuationReverb();
-			
+	
 	anechoicSourceDSP->EnablePropagationDelay();
 	
 	// setup of the image sources
@@ -274,22 +269,6 @@ void ofApp::setup() {
 
 	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0, reverbGainLinear);
 
-/*++++* /
-
-	
-	/*
-	//The system starts its execution in PLAY mode
-	playState = true;
-	stopState = false;
-
-	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
-
-	playToStopControl.addListener(this, &ofApp::playToStop);
-	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
-	*/
-	
-	
 	//The system starts its execution in STOP mode
 	playState = false;
 	stopState = true;
@@ -497,8 +476,6 @@ void ofApp::draw() {
 
 		}
 		
-		// iteratively recording multiple impulse responses
-
 		if (recordingPercent >= 100.0f) {
 			// TODO Delete me, just for testing
 			// Send msg to matlab
@@ -537,6 +514,25 @@ void ofApp::draw() {
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 	ofSphere(listenerLocation.x, listenerLocation.y, listenerLocation.z, 0.09);						//draw listener
+
+	Common::CVector3 axis, nose; 	
+	float angle;
+	Common::CQuaternion QListener = listenerTransform.GetOrientation();
+	QListener.ToAxisAngle(axis, angle);
+	if (angle < 0.000001) {
+		nose.x = listenerLocation.x + axis.x;
+		nose.y = listenerLocation.y + axis.y;
+		nose.z = listenerLocation.z + axis.z;
+	}
+	else {
+		float yaw, pitch, roll;
+		QListener.ToYawPitchRoll(yaw, pitch, roll);
+		nose.x = listenerLocation.x + cos (yaw);
+		nose.y = listenerLocation.y + sin (yaw);
+		nose.z = listenerLocation.z;
+	}
+	ofLine(listenerLocation.x, listenerLocation.y, listenerLocation.z,
+		nose.x, nose.y, nose.z);
 
 	//draw anechoic source
 	ofPushStyle();
@@ -636,8 +632,10 @@ void ofApp::draw() {
 	sprintf(messageStr, "posListener: %.2f %.2f %.2f", listenerLocation.x, listenerLocation.y, listenerLocation.z);
 	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 55);
 	
-	Common::CQuaternion QListener = listenerTransform.GetOrientation();
-	sprintf(messageStr, "QListener: %.2f %.2f %.2f %.2f", QListener.w, QListener.x, QListener.y, QListener.z);
+	//Common::CQuaternion QListener = listenerTransform.GetOrientation();
+	float yaw, pitch, roll;
+	QListener.ToYawPitchRoll(yaw, pitch, roll);
+	sprintf(messageStr, "Listener: %.1f %.1f %.1f %.1f O:%.0f", QListener.w, QListener.x, QListener.y, QListener.z,ofRadToDeg(yaw));
 	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 40);
 	Common::CVector3 sourceLocation = ISMHandler->getSourceLocation();
 	sprintf(messageStr, "posSource: %.2f %.2f %.2f", sourceLocation.x, sourceLocation.y, sourceLocation.z);
@@ -979,11 +977,11 @@ void ofApp::keyPressed(int key) {
 		break;
 	}
 	case 'A': //Rotate Left
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), 0.05);
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -PI/4);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case 'D': //Rotate Right
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -0.05);
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI/4);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case '+': //increases the reflection order 

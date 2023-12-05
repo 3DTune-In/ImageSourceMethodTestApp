@@ -36,7 +36,7 @@
 
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -47,7 +47,7 @@ load ("EnergyFactor.mat");
 
 %% ---------------------------------------------------------
 %% Set TMix & Slope
-Dp_Tmix = 26;
+Dp_Tmix = 12;
 W_Slope = 2;            %  It may be a different value than the one used for energy adjustment
 
 %% Set working folder
@@ -97,9 +97,9 @@ disp(message+" Distance Attenuation Enable");
 pause(0.1);
 
 %%  Enable Distance Attenuation Reverb 
-HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, true);
+HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message+" Distance Attenuation Reverb Enable");
+disp(message+" Distance Attenuation Reverb Disable");
 pause(0.1);
 
 %%  Send Play and Stop To ISM

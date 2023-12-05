@@ -73,13 +73,13 @@ reductionAbsorChange=0.6;
 %% MAX ITERATIONS 
 ITER_MAX = 13;
 
-% %% Absortions and Slopes
-% An=zeros(1,ITER_MAX);
-% Sn=zeros(1,ITER_MAX);
+%% Channel
+L=1; R=2;         % Channels
+C=R;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
-DpMax=32; DpMin=2;
-DpMinFit = 20;                   %% small distance values are not parsed
+DpMax=13; DpMin=2;
+DpMinFit = 9;                   %% small distance values are not parsed
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
@@ -90,7 +90,7 @@ RefOrd=40;
 W_Slope=2;                       % Value for energy adjustment
 RGain_dB = 24;
 RGain = db2mag(RGain_dB);
-save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB');
+save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB','C');
 
 %% File name associated with ISM simulation
 formatFileISM= "iIrRO%iDP%02iW%02i";
@@ -102,9 +102,6 @@ nameFileISM = sprintf(formatFileISM, RefOrd, DpMax, W_Slope)+'.wav';
 save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
-
-%% Channel
-L=1; R=2;                        % Channel
 
 %% ABSORTIONS
 %% 6 it
@@ -285,7 +282,7 @@ while ( iLoop < ITER_MAX)
     e_BRIR= calculateEnergy(t_BRIR);
     %%%%%%% PARSEVAL RELATION --> e_BRIR (in time) == E_BRIR (in frec)
     E_BRIR= calculateEnergyFrec(Fs, t_BRIR)/length(t_BRIR);
-    eBRIR_L= e_BRIR(L); eBRIR_R= e_BRIR(R);
+    eBRIR_L= e_BRIR(C);
     %% --------------
     %% Total Energy in time domain
     e_TotalIsm=zeros(NumIRs,2);
@@ -355,8 +352,8 @@ while ( iLoop < ITER_MAX)
     eL_Ism  = zeros(NumIRs,1);
     eL_Win  = zeros(NumIRs,1);
     eL_BRIR_W = zeros(NumIRs,1);
-    eL_Ism = e_TotalIsm(:,L);   % Ism without direct path
-    eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
+    eL_Ism = e_TotalIsm(:,C);   % Ism without direct path
+    eL_Win = e_TotalWin(:,C);   % Reverb files (hybrid windowed order 0 with no direct path)
     %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
 
     plot (x, eL_Ism,'r--*');   %Ism
@@ -373,6 +370,7 @@ while ( iLoop < ITER_MAX)
     legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
     %% -----------------------------                 % FIGURE 2 -- Total Factor
     figure;
+    Factor = zeros(NumIRs,1);
     Factor = sqrt (eL_Ism ./ eL_BRIR_W);
     plot (x, Factor,'b--*');
     %ylim([0.0 1.5]);
@@ -385,21 +383,21 @@ while ( iLoop < ITER_MAX)
     figure; hold on;
     y=zeros(1,length(NumIRs));
     for j=1:NB
-        eBand=E_BandBrir(j,L);
-        y = E_BandWin(j,:,L);
-        E_BandBrir_Win(j,:,L)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
-        plot (x, E_BandBrir_Win(j,:,L));
+        eBand=E_BandBrir(j,C);
+        y = E_BandWin(j,:,C);
+        E_BandBrir_Win(j,:,C)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
+        plot (x, E_BandBrir_Win(j,:,C));
     end
     title('E.BRIR-E.WIN-vs Pruning Distance');
     %% -----------------------------                  % FIGURE 4 -- Factor per Band
     figure; hold on;
     factorBand =zeros(NB, NumIRs,2);
     for j=1:NB
-        eBand=E_BandBrir(j,L);
-        y= E_BandWin(j,:,L);
-        E_BandBrir_Win(j,:,L)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
-        factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L));
-        plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
+        eBand=E_BandBrir(j,C);
+        y= E_BandWin(j,:,C);
+        E_BandBrir_Win(j,:,C)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
+        factorBand(j,:,C) = sqrt(E_BandIsm (j,:,C) ./ E_BandBrir_Win(j,:,C));
+        plot (x, factorBand(j,:,C),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
     end
     %ylim([0.0 2.5]); grid;
     xlabel('Distance (m)');  ylabel('Factor');
@@ -431,7 +429,7 @@ while ( iLoop < ITER_MAX)
 
     %% Partial Slopes
     for j=1:NB
-        Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from DpMinFit meters to the end
+        Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, C);  % from DpMinFit meters to the end
         xft=xf'; Fft= Ff'; % transpose
         % [fitObj, gof] = fit(xft,Fft,'poly1');
         [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');

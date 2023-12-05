@@ -7,9 +7,13 @@
 % Project: SONICOM
 % 
 % Copyright (C) 2023 Universidad de Málaga
+
+%% Channel
+L=1; R=2;         % Channels
+%% C= L or R;     % Channel to carry out the adjustment (ParamsISM.mat)
  
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\6';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 
@@ -56,31 +60,31 @@ Hybrid_2 = Hybrid.^2;
 EDCyBRIR= zeros(1, length(yBRIR));
 N= length(yBRIR);
 for I= 1:N
-   EDCyBRIR(I) = sum (yBRIR_2(I:N)) / (N);
+   EDCyBRIR(I) = sum (yBRIR_2(I:N,C)) / (N);
 end
    
 EDCIsm= zeros(1, length(yBRIR));
 N= length(Ism);
 for I= 1:N
-   EDCIsm(I) = sum (Ism_2(I:N)) / (N);
+   EDCIsm(I) = sum (Ism_2(I:N,C)) / (N);
 end
 
 EDCWind= zeros(1, length(yBRIR));
 N= length(Wind);
 for I= 1:N
-   EDCWind(I) = sum (Wind_2(I:N)) / (N);
+   EDCWind(I) = sum (Wind_2(I:N,C)) / (N);
 end
 
 EDCySum= zeros(1, length(ySum));
 N= length(ySum);
 for I= 1:N
-   EDCySum(I) = sum (ySum_2(I:N)) / (N);
+   EDCySum(I) = sum (ySum_2(I:N),C) / (N);
 end
 
 EDCHybrid= zeros(1, length(Hybrid));
 N= length(Hybrid);
 for I= 1:N
-   EDCHybrid(I) = sum (Hybrid_2(I:N)) / (N);
+   EDCHybrid(I) = sum (Hybrid_2(I:N,C)) / (N);
 end
 
 subplot(2,5,1);
@@ -134,10 +138,10 @@ title('EDCHybrid');
 %ylim([0.0 2e-5]);
 
 figure;
-
-plot (EDCyBRIR(1:30000));
 hold on;
+plot (EDCyBRIR(1:30000));
 plot (EDCHybrid(1:30000));
+legend( 'EDC-BRIR','EDC-Hybrid','Location','northeast');
 title('EDC BRIR vs Hybrid');
 ylabel('Energy decay');
 xlabel('Samples');
@@ -147,6 +151,7 @@ figure;
 hold on;
 plot (yBRIR(1:30000));
 plot (Hybrid(1:30000), 'r');
+legend( 'BRIR','Hybrid','Location','northeast');
 % plot (ySum(1:30000));
 title('IRs: BRIR vs Hybrid');
 xlabel('Samples');
@@ -158,8 +163,9 @@ plot(EDCyBRIRdB (1:44000));
 hold on;
 EDCHybriddB = 10*log10(EDCHybrid./EDCHybrid(1));
 plot(EDCHybriddB(1:44000), 'r');
+legend( 'EDC-BRIR','EDC-Hybrid','Location','northeast');
 
-%EDCySumdB = 10*log10(EDCySum./EDCySum(1));
+%EDCySumdB = 10*log10(EDCySum./EDCySum(C));
 %plot(EDCySumdB(1:44000), 'k');
 
 ylabel('Energy decay [dB]');

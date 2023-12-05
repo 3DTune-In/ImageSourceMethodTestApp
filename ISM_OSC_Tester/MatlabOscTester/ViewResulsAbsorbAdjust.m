@@ -32,7 +32,10 @@ load ("ParamsISM.mat")
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
-L=1; R=2;                        % Channel
+%% Channel
+L=1; R=2;         % Channels
+%% C= L or R;     % Channel to carry out the adjustment (ParamsISM.mat)
+
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
@@ -70,7 +73,7 @@ AudioFile=ISMFile.name;
 e_BRIR= calculateEnergy(t_BRIR);
 %%%%%%% PARSEVAL RELATION --> e_BRIR (in time) == E_BRIR (in frec)
 E_BRIR= calculateEnergyFrec(Fs, t_BRIR)/length(t_BRIR); 
-eBRIR_L= e_BRIR(L); eBRIR_R= e_BRIR(R);
+eBRIR_L= e_BRIR(C);
 %% --------------
 %% Total Energy in time domain
 e_TotalIsm=zeros(NumIRs,2);              
@@ -134,8 +137,8 @@ figure; hold on;
 eL_Ism  = zeros(NumIRs,1);
 eL_Win  = zeros(NumIRs,1);
 eL_BRIR_W = zeros(NumIRs,1);
-eL_Ism = e_TotalIsm(:,L);   % Ism without direct path
-eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
+eL_Ism = e_TotalIsm(:,C);   % Ism without direct path
+eL_Win = e_TotalWin(:,C);   % Reverb files (hybrid windowed order 0 with no direct path)eL_Ism
 %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
 
 plot (x, eL_Ism,'r--*');   %Ism
@@ -151,7 +154,8 @@ ylabel('Energy');
 title('Total Energy vs Pruning Distance');  
 legend('E.Ism',  'E.win','E.RIR-E.win',  'Location','northwest');
 %% -----------------------------                 % FIGURE 2 -- Total Factor
-figure;                                          
+figure; 
+Factor = zeros(NumIRs,1);
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
 plot (x, Factor,'b--*');
 %% ylim([0.0 1.2]);
@@ -179,24 +183,24 @@ grid;
 figure; hold on;                                 
 for j=1:NB
     subplot(NB,3,3*j-2);
-    y=  E_BandIsm(j,:,L);
+    y=  E_BandIsm(j,:,C);
     plot (x,y,'r--.');   %Ism
     legend('e-BandIsm', 'Location','northwest');
     ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
     
     subplot(NB,3,3*j-1);
-    y= E_BandWin(j,:,L);
+    y= E_BandWin(j,:,C);
     plot (x,y,'g--.');   % Windowed
     legend('e-BandWin', 'Location','northeast');
     ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
 
     subplot(NB,3,3*j);
-    eBand=E_BandBrir(j,L);
-    y= E_BandWin(j,:,L);
-    E_BandBrir_Win(j,:,L)=eBand(1,1)*ones(1, length(NumIRs))-y;
-    plot (x, E_BandBrir_Win(j,:,L) ,'b--.');   % Brir-Windowed
+    eBand=E_BandBrir(j,C);
+    y= E_BandWin(j,:,C);
+    E_BandBrir_Win(j,:,C)=eBand(1,1)*ones(1, length(NumIRs))-y;
+    plot (x, E_BandBrir_Win(j,:,C) ,'b--.');   % Brir-Windowed
     legend('e-Rir-Win', 'Location','southeast');
     ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
@@ -209,11 +213,11 @@ end
 figure; hold on;                                  
 factorBand =zeros(NB, NumIRs,2);
 for j=1:NB
-    eBand=E_BandBrir(j,L);
-    y= E_BandWin(j,:,L);
-    E_BandBrir_Win(j,:,L)=eBand(1,1)*ones(1, length(NumIRs))-y;
-    factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L)); 
-    plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
+    eBand=E_BandBrir(j,C);
+    y= E_BandWin(j,:,C);
+    E_BandBrir_Win(j,:,C)=eBand(1,1)*ones(1, length(NumIRs))-y;
+    factorBand(j,:,C) = sqrt(E_BandIsm (j,:,C) ./ E_BandBrir_Win(j,:,C)); 
+    plot (x, factorBand(j,:,C),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
 grid;
 %% ylim([0.0 3.5]);
@@ -236,7 +240,7 @@ gofplus = struct('gof', gof , 'p1', 0, 'p2', 0);    % Create struct to load data
 gofpArray = repmat (gofplus, 1, NB);                % Array of structures to store information for each band
 
 for j=1:NB
-   Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from 10 meters to the end
+   Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, C);  % from 10 meters to the end
    xft=xf'; Fft= Ff'; % transpose
       % [fitObj, gof] = fit(xft,Fft,'poly1');
    [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');

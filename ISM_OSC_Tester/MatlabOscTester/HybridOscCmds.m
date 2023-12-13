@@ -140,6 +140,18 @@ classdef HybridOscCmds
             oscsend(u,'/changeBRIR','s',str);
         end
 
+        %% Send listener location to the OSC server (ISM)
+        function SendListenerLocationToISM(u, coefVector)
+            m = repmat('f',1,length(coefVector));
+            oscsend(u,'/listenerLocation',m, coefVector);
+        end
+
+        %% Send source location to the OSC server (ISM)
+        function SendSourceLocationToISM(u, coefVector)
+            m = repmat('f',1,length(coefVector));
+            oscsend(u,'/sourceLocation',m, coefVector);
+        end
+
         %% Open a UDP connection with a OSC server
         function connectionToISM = InitConnectionToISM(port)
             connectionToISM = udp('127.0.0.1',port);

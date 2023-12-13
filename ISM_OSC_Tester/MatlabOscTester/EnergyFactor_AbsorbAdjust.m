@@ -49,6 +49,7 @@
 % RefOrd; 
 % W_Slope;                      
 % RGain_dB;
+% C;       % Channel to carry out the adjustment
 
 %% Output
 %  'ParamsISM.mat',      <-- 'RefOrd', 'DpMax','W_Slope','RGain_dB'
@@ -78,8 +79,8 @@ L=1; R=2;         % Channels
 C=R;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
-DpMax=13; DpMin=2;
-DpMinFit = 9;                   %% small distance values are not parsed
+DpMax=32; DpMin=2;
+DpMinFit = 22;                   %% small distance values are not parsed
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
@@ -178,7 +179,7 @@ disp(message+" Enable Distance Attenuation");
 pause(0.2);
 
 %%  Enable Distance Attenuation Reverb Enable To ISM
-HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, true);
+HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Distance Attenuation Reverb Enable");
 pause(0.2);

@@ -12,17 +12,12 @@ Common::CTimeMeasure startOfflineRecord;
 #endif
 #include <filesystem>
 
-//#define SMALL_ROOM 1
-//#define LAB_ROOM   1
-//#define INITIAL FILES    1
-
-
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 40
 #define MAX_DIST_SILENCED_FRAMES 500          //meters
 #define MIN_DIST_SILENCED_FRAMES 1           //meters
-#define INITIAL_DIST_SILENCED_FRAMES 3       //meters
+#define INITIAL_DIST_SILENCED_FRAMES 9       //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
@@ -85,8 +80,8 @@ void ofApp::setup() {
 	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // INITIAL FILES
 	//fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
 	//fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM Pos2
-	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM 
-	 
+	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM 
+	fullPathBRIR = fullPath;
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
 	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
@@ -2040,14 +2035,12 @@ void ofApp::resetAudio()
 	string pathResources = ofToDataPath("resources");
 	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		  // INITIAL FILES
 	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // 
-
-
-
+	
 	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_adjusted_44100_v2.sofa";   // LABROOM_con camino directo
 	//string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";         // SMALL_ROOM
 	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM_pos2
 	
-	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
+	BRIR::CreateFromSofa(fullPathBRIR, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
 	imageSourceDSPList = reCreateImageSourceDSP();
@@ -2162,7 +2155,6 @@ void ofApp::changeRoomGeometry(bool &_active)
 			if (!stopState) systemSoundStream.start();
 			return;
 		}
-
 	}
 	else {
 		ofLogError() << "Couldn't load file";
@@ -2230,11 +2222,11 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	
 	//listener located in the center of the room
-	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-	Common::CVector3 listenerLocation(roomCenter);
-	Common::CTransform listenerPosition = Common::CTransform();
-	listenerPosition.SetPosition(listenerLocation);
-	listener->SetListenerTransform(listenerPosition);
+	//Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
+	//Common::CVector3 listenerLocation(roomCenter);
+	//Common::CTransform listenerPosition = Common::CTransform();
+	//listenerPosition.SetPosition(listenerLocation);
+	//listener->SetListenerTransform(listenerPosition);
 
 	//moveSource(Common::CVector3(0, 0, 0));
 	
@@ -2392,8 +2384,9 @@ void ofApp::changeBRIR(bool& _active)
 		ofLogVerbose("The file exists - now checking the type via file extension");
 		if (fileExtension == "SOFA")
 		{
-			char* charFilename = new char[fullPath.length() + 1];
-			strcpy(charFilename, fullPath.c_str());
+			//char* charFilename = new char[fullPath.length() + 1];
+			//strcpy(charFilename, fullPath.c_str());
+			fullPathBRIR = fullPath;
 			bool sofaLoadResult = BRIR::CreateFromSofa(fullPath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
 			
 			if (!sofaLoadResult) {
@@ -2697,6 +2690,8 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
 	else if (message.getAddress() == "/changeRoom") OscCallBackChangeRoom (message);
 	else if (message.getAddress() == "/changeBRIR") OscCallBackChangeBRIR (message);
+	else if (message.getAddress() == "/listenerLocation") OscCallBackListenerLocation(message);
+	else if (message.getAddress() == "/sourceLocation") OscCallBackSourceLocation(message);
 
 	else std::cout << "Message OSC not recognised " << message << std::endl;
 }
@@ -3008,6 +3003,64 @@ void ofApp::OscCallBackChangeBRIR(const ofxOscMessage& message) {
 	changeFileFromOSC = false;
 	SendOSCMessageToMatlab_Ready();
 }
+
+void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> c;
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		c.push_back(message.getArgAsFloat(i));
+	}
+	std::cout << "Received Listener Location Command" << ",  " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
+
+	Common::CTransform listenerTransformOld = listener->GetListenerTransform();
+	Common::CVector3 listenerLocationOld = listenerTransformOld.GetPosition();
+	Common::CTransform listenerPositionNew = Common::CTransform();
+    Common::CVector3 listenerLocationNew(c[0], c[1], c[2]);             
+       
+	mainRoom = ISMHandler->getRoom();
+	float distanceNearestWall;
+	bool state = mainRoom.checkPointInsideRoom(listenerLocationNew, distanceNearestWall);
+	if (state == false)
+	;
+	else{
+		listenerPositionNew.SetPosition(listenerLocationNew);
+		listener->SetListenerTransform(listenerPositionNew);
+	}
+	
+	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
+	mainRoom = ISMHandler->getRoom();
+	imageSourceDSPList = reCreateImageSourceDSP();
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackSourceLocation(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> c;
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		c.push_back(message.getArgAsFloat(i));
+	}
+	std::cout << "Received Source Location Command" << ",  " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
+	
+	Common::CVector3 newLocation = Common::CVector3(c[0], c[1], c[2]);
+	mainRoom = ISMHandler->getRoom();
+	float distanceNearestWall;
+	bool state = mainRoom.checkPointInsideRoom(newLocation, distanceNearestWall);
+	if (state == false)
+		;
+	else 
+	{
+		ISMHandler->setSourceLocation(newLocation);
+		Common::CTransform sourcePosition;
+		sourcePosition.SetPosition(newLocation);
+		anechoicSourceDSP->SetSourceTransform(sourcePosition);
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
 
 void ofApp::SendOSCMessageToMatlab_Ready() {
 	oscManager.SendOSCCommand_ToMatlab();

@@ -181,6 +181,7 @@ private:
 		COscManager oscManager;					// OSC Manager
 		bool changeFileFromOSC;                 // initial value: false
 		char* charFilenameOSC;                  // file name with the geometry or BRIR of the room
+		string fullPathBRIR;
 
 
 		/// Methods to handle Audio
@@ -281,6 +282,8 @@ private:
 		void OscCallBackSaveIR();
 		void OscCallBackChangeRoom(const ofxOscMessage& message);
 		void OscCallBackChangeBRIR(const ofxOscMessage& message);
+		void OscCallBackListenerLocation(const ofxOscMessage& message);
+		void OscCallBackSourceLocation(const ofxOscMessage& message);
 		
 		void SendOSCMessageToMatlab_Ready();
 };

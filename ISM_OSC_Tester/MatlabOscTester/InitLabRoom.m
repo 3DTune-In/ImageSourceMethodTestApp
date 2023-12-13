@@ -1,3 +1,13 @@
+%% This script contains the OSC script to initialize the LAB ROOM
+
+% Authors: Fabian Arrebola (13/12/2023) 
+% contact: areyesa@uma.es
+% 3DDIANA research group. University of Malaga
+% Project: SONICOM
+% 
+% Copyright (C) 2023 Universidad de Málaga
+
+
 %% Open connection to send messages to ISM
 ISMPort = 12300;
 connectionToISM = HybridOscCmds.InitConnectionToISM(ISMPort);

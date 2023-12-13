@@ -78,7 +78,7 @@ end
 EDCySum= zeros(1, length(ySum));
 N= length(ySum);
 for I= 1:N
-   EDCySum(I) = sum (ySum_2(I:N),C) / (N);
+   EDCySum(I) = sum (ySum_2(I:N,C)) / (N);
 end
 
 EDCHybrid= zeros(1, length(Hybrid));

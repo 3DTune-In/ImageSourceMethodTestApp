@@ -25,6 +25,8 @@
 #include <cstring>
 #include <iostream>
 #include <algorithm>
+#include <filesystem>
+
 
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <HRTF/HRTFFactory.h>
@@ -37,6 +39,7 @@
 #include "WavWriter.h"
 #include "OscManager.hpp"
 #include "ofxOsc.h"
+#include "ofFileUtils.h"
 
 
 #define SAMPLERATE 44100
@@ -176,7 +179,8 @@ private:
 		bool setupDone;
 		
 		COscManager oscManager;					// OSC Manager
-
+		bool changeFileFromOSC;                 // initial value: false
+		char* charFilenameOSC;                  // file name with the geometry or BRIR of the room
 
 
 		/// Methods to handle Audio
@@ -275,5 +279,8 @@ private:
 		void OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message);
 		void OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& message);
 		void OscCallBackSaveIR();
+		void OscCallBackChangeRoom(const ofxOscMessage& message);
+		void OscCallBackChangeBRIR(const ofxOscMessage& message);
+		
 		void SendOSCMessageToMatlab_Ready();
 };

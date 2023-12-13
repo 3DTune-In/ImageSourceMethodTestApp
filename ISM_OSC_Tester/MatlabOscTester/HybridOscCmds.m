@@ -51,7 +51,7 @@ classdef HybridOscCmds
             end
 
             if saveIR == true
-                %% Send Save IR comand
+                %% Send Save IR command
                 HybridOscCmds.SendSaveIRToISM(connectionToISM);
                 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
                 disp(message+" SaveIR");
@@ -85,41 +85,41 @@ classdef HybridOscCmds
             oscsend(u,'/reverbGain','f',gain);
         end
 
-        %%  Send a SaveIR comand the OSC server (ISM)
+        %%  Send a SaveIR command the OSC server (ISM)
         function SendSaveIRToISM(u)
             oscsend(u,'/saveIR','N', "");
         end
 
-        %%  Send a Play comand the OSC server (ISM)
+        %%  Send a Play command the OSC server (ISM)
         function SendPlayToISM(u)
             oscsend(u,'/play','N', "");
         end
-        %%  Send a Stop comand the OSC server (ISM)
+        %%  Send a Stop command the OSC server (ISM)
         function SendStopToISM(u)
             oscsend(u,'/stop','N', "");
         end
 
-        %% Send DirectPathEnable comand to the OSC server (ISM)
+        %% Send DirectPathEnable command to the OSC server (ISM)
         function SendDirectPathEnableToISM(u, vbool)
             oscsend(u,'/directPathEnable','B',vbool);
         end
 
-        %% Send ReverbEnable comand to the OSC server (ISM)
+        %% Send ReverbEnable command to the OSC server (ISM)
         function SendReverbEnableToISM(u, vbool)
             oscsend(u,'/reverbEnable','B',vbool);
         end
 
-        %% Send SpatialisationEnable comand to the OSC server (ISM)
+        %% Send SpatialisationEnable command to the OSC server (ISM)
         function SendSpatialisationEnableToISM(u, vbool)
             oscsend(u,'/spatialisationEnable','B',vbool);
         end
 
-        %% Send DistanceAttenuationEnable comand to the OSC server (ISM)
+        %% Send DistanceAttenuationEnable command to the OSC server (ISM)
         function SendDistanceAttenuationEnableToISM(u, vbool)
             oscsend(u,'/distanceAttAnechoicEnable','B',vbool);
         end
 
-        %% Send DistanceAttenuationReverbEnable comand to the OSC server (ISM)
+        %% Send DistanceAttenuationReverbEnable command to the OSC server (ISM)
         function SendDistanceAttenuationReverbEnableToISM(u, vbool)
             oscsend(u,'/distanceAttReverbEnable','B',vbool);
         end
@@ -130,6 +130,15 @@ classdef HybridOscCmds
            oscsend(u,'/absortions',m, coefVector);    
         end
 
+        %% Send ChangeRoom command to the OSC server (ISM)
+        function SendChangeRoomToISM(u, str)
+            oscsend(u,'/changeRoom','s',str);
+        end
+
+        %% Send ChangeBRIR command to the OSC server (ISM)
+        function SendChangeBRIRToISM(u, str)
+            oscsend(u,'/changeBRIR','s',str);
+        end
 
         %% Open a UDP connection with a OSC server
         function connectionToISM = InitConnectionToISM(port)

@@ -10,10 +10,11 @@ Common::CProfilerDataSet dsProcessFrameTime;
 //Common::CProfilerDataSet dsProcessReverb;
 Common::CTimeMeasure startOfflineRecord;
 #endif
+#include <filesystem>
 
 //#define SMALL_ROOM 1
 //#define LAB_ROOM   1
-//#define LORENZO    1
+//#define INITIAL FILES    1
 
 
 #define SOURCE_STEP 0.02f
@@ -55,7 +56,7 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);			     // LORENZO
+	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);			     // INITIAL VALUES
 	//Common::CVector3 listenerLocation(0.2, 0.0, -0.59);            // SMALL_ROOM
 	Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);             // LAB_ROOM
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
@@ -81,7 +82,7 @@ void ofApp::setup() {
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // LORENZO
+	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // INITIAL FILES
 	//fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
 	//fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM Pos2
 	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM 
@@ -98,7 +99,7 @@ void ofApp::setup() {
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 
 	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	//fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";	 // LORENZO
+	//fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";	 // INITIAL FILES
 	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
 	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";
 	//fullPath = pathResources + "\\" + "spequena_05.xml";           // SMALL_ROOM
@@ -184,7 +185,7 @@ void ofApp::setup() {
 	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic SOURCE
-	//Common::CVector3 initialLocation(1, 0, 0);					// LORENZO
+	//Common::CVector3 initialLocation(1, 0, 0);					// INITIAL FILES
 	//Common::CVector3 initialLocation(13, 0, -4);					// THEATER_ROOM
 	Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM
 	//Common::CVector3 initialLocation(-1.2, 0, -0.59);             // SMALL_ROOM
@@ -334,6 +335,7 @@ void ofApp::setup() {
 
 	// OSC
 	oscManager.Setup(OSC_DEFAULT_TARGET_PORT, OSC_DEFAULT_TARGET_IP, OSC_DEFAULT_LISTEN_PORT, std::bind(&ofApp::OscCallback, this, std::placeholders::_1));	
+	changeFileFromOSC = false;
 }
 
 
@@ -2036,8 +2038,11 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		        // LORENZO
-	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // LAB_ROOM
+	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		  // INITIAL FILES
+	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // 
+
+
+
 	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_adjusted_44100_v2.sofa";   // LABROOM_con camino directo
 	//string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";         // SMALL_ROOM
 	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM_pos2
@@ -2100,6 +2105,7 @@ void ofApp::stopToPlay(bool &_active)
 
 void ofApp::changeRoomGeometry(bool &_active)
 {
+	string fileNameUsr;
 	changeRoomGeometryControl = false;
 
 	if (setupDone == false) return;
@@ -2114,22 +2120,36 @@ void ofApp::changeRoomGeometry(bool &_active)
 	stopToPlayControl.set("Play", false);
 
 	ISM::RoomGeometry newRoom;
-
-	//string pathData = ofToDataPath("", true);
+		
 	string pathData = ofToDataPath("", false);
-
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
+	ofFileDialogResult openFileResult;
+	string fileExtension, fileName, fullPath;
+	if (changeFileFromOSC) {
+		string pathResources = ofToDataPath("resources");
+		openFileResult.filePath = pathResources;
+		openFileResult.fileName = charFilenameOSC;
+		fullPath = pathResources + "\\" + charFilenameOSC;
+		ofFile file(fullPath);
+		if (file.exists()) {
+			openFileResult.bSuccess = true;
+			fileExtension = ofToUpper(file.getExtension());
+		}
+		else
+			openFileResult.bSuccess = false;
+	}
+	else {
+		openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
+		ofFile file(openFileResult.getPath());
+		fileExtension = ofToUpper(file.getExtension());
+		fullPath = openFileResult.getPath();
+		fileName = openFileResult.getName();
+	}
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
-
-	    ofFile file(openFileResult.getPath());
 		ofLogVerbose("The file exists - now checking the type via file extension");
-		string fileExtension = ofToUpper(file.getExtension());
 		if (fileExtension == "XML")
 		{
-			string pathData = openFileResult.getPath();
-			//	string fileName = openFileResult.getName();
-			if (!xml.load(pathData))
+			if (!xml.load(fullPath))
 			{
 				ofLogError() << "Couldn't load file";
 				if (!stopState) systemSoundStream.start();
@@ -2208,6 +2228,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	mainRoom = ISMHandler->getRoom();
 	imageSourceDSPList = reCreateImageSourceDSP();
 
+	
 	//listener located in the center of the room
 	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
 	Common::CVector3 listenerLocation(roomCenter);
@@ -2215,7 +2236,8 @@ void ofApp::changeRoomGeometry(bool &_active)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
 
-	moveSource(Common::CVector3(0, 0, 0));
+	//moveSource(Common::CVector3(0, 0, 0));
+	
 			
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
@@ -2341,19 +2363,38 @@ void ofApp::changeBRIR(bool& _active)
 	stopToPlayControl.set("Play", false);
 
 	string pathData = ofToDataPath("", false);
+	
+	ofFileDialogResult openFileResult;
+	string fileExtension, fileName, fullPath;
+	if (changeFileFromOSC) {
+		string pathResources = ofToDataPath("resources");
+		openFileResult.filePath = pathResources;
+		openFileResult.fileName = charFilenameOSC;
+		fullPath = pathResources + "\\" + charFilenameOSC;
+		ofFile file(fullPath);
+		if (file.exists()) {
+			openFileResult.bSuccess = true;
+			fileExtension = ofToUpper(file.getExtension());
+		}
+		else
+			openFileResult.bSuccess = false;
+	}
+	else {
+		openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
+		ofFile file(openFileResult.getPath());
+		fileExtension = ofToUpper(file.getExtension());
+		fullPath = openFileResult.getPath();
+		fileName = openFileResult.getName();
+	}
 
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new BRIR");
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
-		ofFile file(openFileResult.getPath());
 		ofLogVerbose("The file exists - now checking the type via file extension");
-		string fileExtension = ofToUpper(file.getExtension());
 		if (fileExtension == "SOFA")
 		{
-			string pathData = openFileResult.getPath();
-			char* charFilename = new char[pathData.length() + 1];
-			strcpy(charFilename, pathData.c_str());
-			bool sofaLoadResult = BRIR::CreateFromSofa(pathData, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+			char* charFilename = new char[fullPath.length() + 1];
+			strcpy(charFilename, fullPath.c_str());
+			bool sofaLoadResult = BRIR::CreateFromSofa(fullPath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
 			
 			if (!sofaLoadResult) {
 				cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
@@ -2362,14 +2403,14 @@ void ofApp::changeBRIR(bool& _active)
 			}
 			else
 			{
-				cout << "Load new HRTF File " << pathData << endl << endl;
+				cout << "Load new BRIR File " << fullPath << endl << endl;
 			}
 		}
 		else
 		{
 			ofLogError() << "Extension must be SOFA";
 			if (!stopState) systemSoundStream.start();
-			cout << "Load new BRIR File " << pathData << endl << endl;
+			cout << "Load new BRIR File " << fullPath << endl << endl;
 			return;
 		}
 	}
@@ -2654,6 +2695,8 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/distanceAttReverbEnable")    OscCallBackDistanceAttenuationReverbEnable(message);
 	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
 	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
+	else if (message.getAddress() == "/changeRoom") OscCallBackChangeRoom (message);
+	else if (message.getAddress() == "/changeBRIR") OscCallBackChangeBRIR (message);
 
 	else std::cout << "Message OSC not recognised " << message << std::endl;
 }
@@ -2930,6 +2973,39 @@ void ofApp::OscCallBackAbsortions(const ofxOscMessage& message) {
 		std::cout << absortionsWalls.at(0).at(j) << ", ";
 	}
 	std::cout << std::endl;
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+void ofApp::OscCallBackChangeRoom(const ofxOscMessage& message) {
+	changeFileFromOSC = true;
+
+	std::string filemaneOSC = message.getArgAsString(0);
+
+	charFilenameOSC = new char[filemaneOSC.length() + 1];
+	strcpy(charFilenameOSC, filemaneOSC.c_str());
+
+	std::cout << "Received ChangeRoom Command" << ",  " << charFilenameOSC << std::endl;
+
+	changeRoomGeometryControl.set(true);
+
+	changeFileFromOSC = false;
+	SendOSCMessageToMatlab_Ready();
+
+}
+void ofApp::OscCallBackChangeBRIR(const ofxOscMessage& message) {
+	changeFileFromOSC = true;
+
+	std::string filemaneOSC = message.getArgAsString(0);
+
+	charFilenameOSC = new char[filemaneOSC.length() + 1];
+	strcpy(charFilenameOSC, filemaneOSC.c_str());
+
+	std::cout << "Received changeBRIR Command" << ",  " << charFilenameOSC << std::endl;
+
+	changeBRIRControl.set(true);
+
+	changeFileFromOSC = false;
 	SendOSCMessageToMatlab_Ready();
 }
 

@@ -19,6 +19,10 @@ listenPort = 12301;
 receiver = HybridOscCmds.InitOscServer(listenPort);
 [receiver osc_listener] = HybridOscCmds.AddListenerAddress(receiver, '/ready');
 
+%% Set Room
+HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'small_room_A_Izq.xml');
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+
 %% Listener Location 
 position =[0.2 0.0 -0.59];
 HybridOscCmds.SendListenerLocationToISM (connectionToISM, position);
@@ -29,16 +33,15 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'sofa_reverb140cm_quad_reverb_44100.sofa');
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
-%% Set Room
-HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'small_room_A_Izq.xml');
-message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-
 %% Set Source Location 
 position =[-1.2 0.0 -0.59];
 HybridOscCmds.SendSourceLocationToISM (connectionToISM, position);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
-%%  Send Play ToISM
+%% configureHybrid (connectionToISM, receiver, osc_listener,                W_Slope,  DistMax,       RefOrd,   RGain  ,  SaveIR)
+  HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     2,         30,            3,       15.8489,   false);
+
+%%  Send Play 
 HybridOscCmds.SendPlayToISM(connectionToISM);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Play");

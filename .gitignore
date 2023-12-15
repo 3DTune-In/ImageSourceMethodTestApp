@@ -11,11 +11,13 @@
 bin/*
 !bin/*.dll
 !bin/data/
+!bin/data/resources/*.sofa
 bin/data/*.csv
 bin/hdf*.dll
 bin/libcurl.dll
 bin/zlib1.dll
 bin/netcdf.dll
+!bin/data/resources
 
 # Installer
 Installer/ISM Simulator Installer/Release/

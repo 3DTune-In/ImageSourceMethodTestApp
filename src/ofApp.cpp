@@ -51,8 +51,6 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	//Common::CVector3 listenerLocation(0.0, 0.0, 0.0);			     // INITIAL VALUES
-	//Common::CVector3 listenerLocation(0.2, 0.0, -0.59);            // SMALL_ROOM
 	Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);             // LAB_ROOM
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
@@ -77,9 +75,6 @@ void ofApp::setup() {
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	//fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		     // INITIAL FILES
-	//fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";       // SMALL_ROOM
-	//fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM Pos2
 	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM 
 	fullPathBRIR = fullPath;
 	                                  
@@ -92,12 +87,6 @@ void ofApp::setup() {
 
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-
-	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	//fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";	 // INITIAL FILES
-	//fullPath = pathResources + "\\" + "lab_B1_AbsorConverg.xml";
-	//fullPath = pathResources + "\\" + "lab_B1_Absorb5.xml";
-	//fullPath = pathResources + "\\" + "spequena_05.xml";           // SMALL_ROOM
 	fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";       // LAB_ROOM
 
 	if (!xml.load(fullPath))
@@ -180,10 +169,7 @@ void ofApp::setup() {
 	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic SOURCE
-	//Common::CVector3 initialLocation(1, 0, 0);					// INITIAL FILES
-	//Common::CVector3 initialLocation(13, 0, -4);					// THEATER_ROOM
 	Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM
-	//Common::CVector3 initialLocation(-1.2, 0, -0.59);             // SMALL_ROOM
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -1270,9 +1256,6 @@ void ofApp::keyPressed(int key) {
 		else
 			cout << "DistanceAttenuationReverb Disabled" << "\n";
 
-
-
-
 		//#if 0
 		if (!bDisableReverb)
 		{
@@ -2033,14 +2016,7 @@ void ofApp::resetAudio()
 	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;		  // INITIAL FILES
-	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa"; // 
-	
-	//string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_adjusted_44100_v2.sofa";   // LABROOM_con camino directo
-	//string fullPath = pathResources + "\\" + "sofa_reverb140cm_quad_reverb_44100.sofa";         // SMALL_ROOM
-	//string fullPath = pathResources + "\\" + "Pos2_reverb154cm_quad_reverb_44100.sofa";       // SMALL_ROOM_pos2
-	
-	BRIR::CreateFromSofa(fullPathBRIR, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
+	BRIR::CreateFromSofa(fullPathBRIR, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
 	imageSourceDSPList = reCreateImageSourceDSP();

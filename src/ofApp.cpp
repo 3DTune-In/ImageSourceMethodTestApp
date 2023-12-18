@@ -21,8 +21,8 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
-#define MIN_WIN_SLOPE 2.915                   //mseg
-#define INITIAL_WIN_SLOPE 2                  //mseg
+#define MIN_WIN_SLOPE 2                       //mseg
+#define INITIAL_WIN_SLOPE 2                   //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
 
@@ -60,13 +60,12 @@ void ofApp::setup() {
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	
-	string fullPath = pathResources + "\\" + "hrtf.sofa";                   //"hrtf.sofa"= pathFile;
-	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";  // To test the Filterbank
+	string fullPath = pathResources + "\\" + "D1_44K_16bit_256tap_FIR_SOFA.sofa";
+	//string fullPath = pathResources + "\\" + "3DTI_HRTF_D2_128s_44100Hz.sofa";       //"hrtf.sofa"= pathFile;
+	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";             // To test the Filterbank
 
 	bool specifiedDelays;
 	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
-	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);                 //VSTUDIO
-	//bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);  //VSTUDIO
 	if (!sofaLoadResult) {
 		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
 	}
@@ -79,15 +78,12 @@ void ofApp::setup() {
 	fullPathBRIR = fullPath;
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
-	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
-	
+		
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
-
-
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-	fullPath = pathResources + "\\" + "lab_B1_Absorb_0_5.xml";       // LAB_ROOM
+	fullPath = pathResources + "\\" + "lab_room_A_Izq.xml";       // LAB_ROOM
 
 	if (!xml.load(fullPath))
 	{
@@ -177,13 +173,10 @@ void ofApp::setup() {
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
 	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	//anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
 	anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
 	stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic        
 
 	// DistanceAttenuation
-	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								
-	stateDistanceAttenuationAnechoic = true; 
 	anechoicSourceDSP->DisableDistanceAttenuationReverb();
 	stateDistanceAttenuationReverb = false; 
 	
@@ -194,10 +187,8 @@ void ofApp::setup() {
 	
 	fullPath = pathResources + "\\" + "speech_female.wav";
 	const char* _filePath = fullPath.c_str();
-	LoadWavFile(source1Wav, _filePath);
-	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
-	//LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
-	//LoadWavFile(source1Wav, "sweep0_5.wav");										// Loading .wav file										   
+	LoadWavFile(source1Wav, _filePath);                                    // Loading .wav file
+							   
 	//AudioDevice Setup
 	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
 	//// the app crashes when systemSoundStream.start(); or stop() are called.
@@ -322,9 +313,6 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	//float width = ofGetWidth();
-	//float height = ofGetHeight();
-
 	// OSC
 	oscManager.ReceiveOSCCommand();
 }
@@ -335,10 +323,7 @@ void ofApp::draw() {
 	if (recordingOffline)											//OF_KEY_F9 (OFFLINE WAV RECORD)
 	{
 		uint64_t frameStart = ofGetElapsedTimeMillis();
-		//int bufferSize = 512;
 		int bufferSize = myCore.GetAudioState().bufferSize;
-
-
 
 		if (offlineRecordBuffers == 0) {
 
@@ -1520,8 +1505,6 @@ void ofApp::processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 	// Reverberation processing of direct path
 	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedSamples);
 	// Adding reverberated sound to the direct path
-	//bufferReverb.left.ApplyGain(0.25);
-	//bufferReverb.right.ApplyGain(0.25);
 	bufferOutput.left += bufferReverb.left;
 	bufferOutput.right += bufferReverb.right;
 
@@ -1726,7 +1709,7 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 		maxDistanceSourcesToListener = samples2meters(numSamplesThreshold);
 		maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
 		windowSlopeWidth = samples2millisec(numsamplesWindowSlope);
-		windowSlopeControl = windowSlopeWidth;
+		windowSlopeControl.set(windowSlopeWidth);
 	}
 	//
 	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
@@ -1741,7 +1724,7 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 	}
 	
 	windowSlopeWidth = meters2millisec(windowSlopeInMeters);
-	windowSlopeControl = windowSlopeWidth;
+	windowSlopeControl.set(windowSlopeWidth);
 
 	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
 		
@@ -1750,7 +1733,7 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 	{   // NumberOfSilencedFrames cannot be negative
 		numberOfSilencedFrames = 0;
 		windowSlopeWidth = INITIAL_WIN_SLOPE;
-		windowSlopeControl = INITIAL_WIN_SLOPE;
+		windowSlopeControl.set(INITIAL_WIN_SLOPE);
 	}
 
 	float windowThreshold = 0.001 * meters2millisec(maxDistanceSourcesToListener);
@@ -1766,22 +1749,39 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 	if (!stopState) systemSoundStream.start();
 }
 
-void ofApp::changeWinThreshold(int& _windowThresold)
+void ofApp::changeWinThreshold(int& _windowThreshold)
 {
 	if (setupDone == false) return;
+	
+	if (!stopState) systemSoundStream.stop();
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
 
-	float windowThresold = _windowThresold;
-	float maxDistanceSourcesToListener = (windowThresold * myCore.GetMagnitudes().GetSoundSpeed()) / 1000;
+	if (_windowThreshold < windowSlopeWidth / 2) {
+		_windowThreshold = windowSlopeWidth / 2 + 1;
+	}
 
+	float windowThreshold = _windowThreshold;   // in millisec
+	float maxDistanceSourcesToListener = (windowThreshold * myCore.GetMagnitudes().GetSoundSpeed()) / 1000;
+	changeMaxDistanceImageSources(maxDistanceSourcesToListener);
+	
+	float windowThresholdInSec = 0.001 * windowThreshold;
+	environment->SetFadeInWindow(windowThresholdInSec, (0.001 * windowSlopeWidth), reverbGainLinear);
+	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
+	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
+		
 	maxDistanceImageSourcesToListenerControl.set((int)maxDistanceSourcesToListener);
 
+	if (!stopState) systemSoundStream.start();
 }
 
 
 void ofApp::changeWindowSlope(int& _windowSlope)
 {
 	if (setupDone == false) return;
-
+		
 	if (!stopState) systemSoundStream.stop();
 	stopState = true;
 	playState = false;
@@ -1797,6 +1797,8 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 	if (millisec2meters(windowSlope) >= 2 * maxDistanceSourcesToListener)  // 
 	{	//  WindowSlope (window size to implement the "crossfade") must be less than the Threshold
 		windowSlope = meters2millisec(maxDistanceSourcesToListener); //millisecs
+		windowSlopeControl.set(windowSlope);
+		_windowSlope = windowSlope;
 	}
 
 	int numSamplesThreshold = meters2samples(float (maxDistanceSourcesToListener));
@@ -1806,7 +1808,7 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
 	if (numSamplesTotal > BRIRLength)
 	{   // WindowThreshold + WindowSlope must be less than BRIR duration
-		windowSlopeControl = MIN_WIN_SLOPE; //millisecs
+		windowSlopeControl.set(MIN_WIN_SLOPE); //millisecs
 		_windowSlope = MIN_WIN_SLOPE;       //millisecs
 	}
 
@@ -1814,7 +1816,7 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 	{  // NumSamples of windowSlope/2 must be greater than the NumSamples of Threshold
 		numSamplesWindowSlope = numSamplesThreshold-2;
 		_windowSlope = samples2millisec(numSamplesWindowSlope);
-		windowSlopeControl = _windowSlope;
+		windowSlopeControl.set(_windowSlope);
 	}
 
 	windowSlopeWidth = _windowSlope;
@@ -1826,7 +1828,7 @@ void ofApp::changeWindowSlope(int& _windowSlope)
 	{  // NumberOfSilencedFrames cannot be negative 
 		numberOfSilencedFrames = 0;
 		windowSlopeWidth = MIN_WIN_SLOPE;
-		windowSlopeControl = MIN_WIN_SLOPE;
+		windowSlopeControl.set(MIN_WIN_SLOPE);
 	}
 
 	environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth), reverbGainLinear);

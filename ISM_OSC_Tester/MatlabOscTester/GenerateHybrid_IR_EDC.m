@@ -36,7 +36,7 @@
 
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -47,11 +47,11 @@ load ("EnergyFactor.mat");
 
 %% ---------------------------------------------------------
 %% Set TMix & Slope
-Dp_Tmix = 12;
+Dp_Tmix = 11;
 W_Slope = 2;            %  It may be a different value than the one used for energy adjustment
 
 %% Set working folder
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 % delete *.wav;
 save ('ParamsHYB.mat','RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','FactorMeanValue');
 absorbData= absorbData1;
@@ -77,6 +77,7 @@ receiver = HybridOscCmds.InitOscServer(listenPort);
 % SendDirectPathEnableToISM(connectionToISM, false);
 % message = WaitingOneOscMessageStringVector(receiver, osc_listener);
 % disp(message);
+%% -----------------
 
 %%  Set Ro=1
 HybridOscCmds.SendReflecionOrderToISM(connectionToISM, 1);

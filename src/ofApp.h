@@ -181,6 +181,7 @@ private:
 		COscManager oscManager;					// OSC Manager
 		bool changeFileFromOSC;                 // initial value: false
 		char* charFilenameOSC;                  // file name with the geometry or BRIR of the room
+		char* charFolderOSC= "workFolder";                    // working folder name
 		string fullPathBRIR;
 
 
@@ -284,6 +285,7 @@ private:
 		void OscCallBackChangeBRIR(const ofxOscMessage& message);
 		void OscCallBackListenerLocation(const ofxOscMessage& message);
 		void OscCallBackSourceLocation(const ofxOscMessage& message);
+		void OscCallBackChangeWorkFolder(const ofxOscMessage& message);
 		
 		void SendOSCMessageToMatlab_Ready();
 };

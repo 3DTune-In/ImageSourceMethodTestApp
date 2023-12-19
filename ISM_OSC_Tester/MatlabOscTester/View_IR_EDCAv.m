@@ -9,7 +9,7 @@
 % Copyright (C) 2023 Universidad de Málaga
  
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\12';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 
@@ -20,7 +20,7 @@ load ("FiInfSlopes.mat");
 load ("EnergyFactor.mat");
 
 %% Set working folder
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 load ("ParamsHYB.mat");
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -81,9 +81,21 @@ ITER_MAX = 13;
 DpMax=15; DpMin=2;
 DpMinFit = 10;                   %% small distance values are not parsed
 
+%% Path
+addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'); 
+
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+nameFolder='workFolder';
+workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
+if exist(workFolder, 'dir') == 7
+    disp('folder exist');
+else
+    mkdir(workFolder);
+    disp('created work folder');
+end
+cd (workFolder);
 delete *.wav;
+
 
 %% SAVE Configuration parameters for ISM simulation
 RefOrd=40; 
@@ -155,6 +167,11 @@ listenPort = 12301;
 receiver = HybridOscCmds.InitOscServer(listenPort);
 [receiver osc_listener] = HybridOscCmds.AddListenerAddress(receiver, '/ready');
 
+%% Set Working Folder
+HybridOscCmds.SendWorkFolderToISM(connectionToISM, nameFolder);
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+"Work Folder");
+
 %% Reflecion Order = 0
 HybridOscCmds.SendReflecionOrderToISM(connectionToISM, 0);
 % Waiting msg from ISM
@@ -215,7 +232,7 @@ disp(message+" Dissable Reverb");
 pause(0.2);
 
 %% Rename to BRIR.wav
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+cd (workFolder);
 movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
 
 %% Send Initial absortions
@@ -240,7 +257,7 @@ HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,    W_Slo
 pause(0.2);
 disp(message+ " ISM DpMax ");
 %% Rename to ISM_DpMax.wav
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+cd (workFolder);
 movefile (nameFileISM, "ISM_DpMax.wav");
 
 %%   BANDS
@@ -276,7 +293,7 @@ fitSlopes=false;
 while ( iLoop < ITER_MAX)
     disp(iLoop);
     %% Folder with impulse responses
-    cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+    cd (workFolder);
         
     %% Number of Impulse Responses
     NumIRs = DpMax-DpMin+1;
@@ -583,7 +600,7 @@ while ( iLoop < ITER_MAX)
        disp(message+" SaveIR");
        pause(0.5);
 
-       cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr';
+       cd (workFolder);
        movefile (nameFileISM, "ISM_DpMax.wav");
 
        AudioFile=ISMFile.name;

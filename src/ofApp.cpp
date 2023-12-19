@@ -336,7 +336,8 @@ void ofApp::draw() {
 				/// TODO just for testing delete and replace with the previous code that is as comments
 				string pathData = ofToDataPath("");
 				string pathResources = ofToDataPath("resources");
-				fileNameUsr = pathResources + "\\SeriesIr\\";
+				//fileNameUsr = pathResources + "\\workFolder\\";
+				fileNameUsr = pathResources + "\\"+ charFolderOSC +"\\";
 			}
 			else
 			{
@@ -2670,6 +2671,8 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/changeBRIR") OscCallBackChangeBRIR (message);
 	else if (message.getAddress() == "/listenerLocation") OscCallBackListenerLocation(message);
 	else if (message.getAddress() == "/sourceLocation") OscCallBackSourceLocation(message);
+	else if (message.getAddress() == "/workFolder") OscCallBackChangeWorkFolder(message);
+
 
 	else std::cout << "Message OSC not recognised " << message << std::endl;
 }
@@ -2979,6 +2982,18 @@ void ofApp::OscCallBackChangeBRIR(const ofxOscMessage& message) {
 	changeBRIRControl.set(true);
 
 	changeFileFromOSC = false;
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackChangeWorkFolder(const ofxOscMessage& message) {
+	
+	std::string folderOSC = message.getArgAsString(0);
+
+	charFolderOSC = new char[folderOSC.length() + 1];
+	strcpy(charFolderOSC, folderOSC.c_str());
+
+	std::cout << "Received changeWorkFolder Command" << ",  " << charFolderOSC << std::endl;
+
 	SendOSCMessageToMatlab_Ready();
 }
 

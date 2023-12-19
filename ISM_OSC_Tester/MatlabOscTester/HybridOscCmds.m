@@ -140,6 +140,11 @@ classdef HybridOscCmds
             oscsend(u,'/changeBRIR','s',str);
         end
 
+        %% Send ChangeWorkFolder command to the OSC server (ISM)
+        function SendWorkFolderToISM(u, str)
+            oscsend(u,'/workFolder','s',str);
+        end
+
         %% Send listener location to the OSC server (ISM)
         function SendListenerLocationToISM(u, coefVector)
             m = repmat('f',1,length(coefVector));

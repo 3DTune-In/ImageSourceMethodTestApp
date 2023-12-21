@@ -284,6 +284,7 @@ private:
 		void OscCallBackChangeRoom(const ofxOscMessage& message);
 		void OscCallBackChangeBRIR(const ofxOscMessage& message);
 		void OscCallBackListenerLocation(const ofxOscMessage& message);
+		void OscCallBackListenerOrientation(const ofxOscMessage& message);
 		void OscCallBackSourceLocation(const ofxOscMessage& message);
 		void OscCallBackChangeWorkFolder(const ofxOscMessage& message);
 		

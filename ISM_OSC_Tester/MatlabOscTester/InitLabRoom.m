@@ -7,6 +7,9 @@
 % 
 % Copyright (C) 2023 Universidad de Málaga
 
+posS =[-2.4 -0.3 -0.8];
+posL =[-2.4 -1.5 -0.8];
+[yaw, pitch, roll] = relativePos2Orientation(posL, posS);
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -24,8 +27,15 @@ HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'lab_room_A_Izq.xml');
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
 %% Listener Location 
-position =[-2.4 -1.5 -0.8];
-HybridOscCmds.SendListenerLocationToISM (connectionToISM, position);
+positionL = [-2.4 -1.5 -0.8];
+HybridOscCmds.SendListenerLocationToISM (connectionToISM, positionL);
+% Waiting msg from ISM
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+
+%% Listener Orientation
+orientationL= zeros(1,3);
+orientationL(1) = yaw; orientationL(2) = pitch; orientationL(3) = roll;
+HybridOscCmds.SendListenerOrientationToISM (connectionToISM, orientationL);
 % Waiting msg from ISM
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
@@ -34,8 +44,8 @@ HybridOscCmds.SendChangeBRIRToISM(connectionToISM, '2_KU100_reverb_120cm_origina
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
 %% Set Source Location 
-position =[-2.4 -0.3 -0.8];
-HybridOscCmds.SendSourceLocationToISM (connectionToISM, position);
+positionS = [-2.4 -0.3 -0.8];
+HybridOscCmds.SendSourceLocationToISM (connectionToISM, positionS);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
 %% configureHybrid (connectionToISM, receiver, osc_listener,                W_Slope,  DistMax,       RefOrd,   RGain  ,  SaveIR)

@@ -2670,6 +2670,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/changeRoom") OscCallBackChangeRoom (message);
 	else if (message.getAddress() == "/changeBRIR") OscCallBackChangeBRIR (message);
 	else if (message.getAddress() == "/listenerLocation") OscCallBackListenerLocation(message);
+	else if (message.getAddress() == "/listenerOrientation") OscCallBackListenerOrientation(message);
 	else if (message.getAddress() == "/sourceLocation") OscCallBackSourceLocation(message);
 	else if (message.getAddress() == "/workFolder") OscCallBackChangeWorkFolder(message);
 
@@ -3009,8 +3010,8 @@ void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
 	Common::CTransform listenerTransformOld = listener->GetListenerTransform();
 	Common::CVector3 listenerLocationOld = listenerTransformOld.GetPosition();
 	Common::CTransform listenerPositionNew = Common::CTransform();
-    Common::CVector3 listenerLocationNew(c[0], c[1], c[2]);             
-       
+	Common::CVector3 listenerLocationNew(c[0], c[1], c[2]);
+
 	mainRoom = ISMHandler->getRoom();
 	float distanceNearestWall;
 	bool state = mainRoom.checkPointInsideRoom(listenerLocationNew, distanceNearestWall);
@@ -3020,7 +3021,7 @@ void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
 		listenerPositionNew.SetPosition(listenerLocationNew);
 		listener->SetListenerTransform(listenerPositionNew);
 	}
-	
+
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
 	mainRoom = ISMHandler->getRoom();
@@ -3028,6 +3029,38 @@ void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
 
 	SendOSCMessageToMatlab_Ready();
 }
+
+void ofApp::OscCallBackListenerOrientation(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> c;
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		c.push_back(message.getArgAsFloat(i));
+	}
+	std::cout << "Received Listener Orientation Command" << ",  " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
+
+	Common::CTransform lT = listener->GetListenerTransform();
+	Common::CVector3 lLocation = lT.GetPosition();
+	Common::CQuaternion lO = lT.GetOrientation();
+
+	float yaw, pitch, roll;
+	yaw = c[0]; pitch = c[1]; roll = c[2];
+	lT.SetOrientation (lO.FromYawPitchRoll(yaw, pitch, roll));
+	listener->SetListenerTransform(lT);
+		
+	ISMHandler->setReflectionOrder(0);
+	reflectionOrderControl = 0;
+	
+	Common::CVector3 axis, nose;
+	nose.x = lLocation.x + cos(yaw);
+	nose.y = lLocation.y + sin(yaw);
+	nose.z = lLocation.z;
+    ofLine(lLocation.x, lLocation.y, lLocation.z,
+	nose.x, nose.y, nose.z);
+
+	SendOSCMessageToMatlab_Ready();
+}
+
 
 void ofApp::OscCallBackSourceLocation(const ofxOscMessage& message) {
 

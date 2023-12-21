@@ -151,6 +151,12 @@ classdef HybridOscCmds
             oscsend(u,'/listenerLocation',m, coefVector);
         end
 
+         %% Send listener orientation to the OSC server (ISM)
+         function SendListenerOrientationToISM(u, coefVector)
+            m = repmat('f',1,length(coefVector));
+            oscsend(u,'/listenerOrientation',m, coefVector);
+        end
+
         %% Send source location to the OSC server (ISM)
         function SendSourceLocationToISM(u, coefVector)
             m = repmat('f',1,length(coefVector));

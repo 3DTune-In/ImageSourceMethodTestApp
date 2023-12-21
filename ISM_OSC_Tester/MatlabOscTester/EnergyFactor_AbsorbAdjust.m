@@ -76,7 +76,7 @@ ITER_MAX = 13;
 
 %% Channel
 L=1; R=2;         % Channels
-C=R;              % Channel to carry out the adjustment
+C=L;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
 DpMax=32; DpMin=2;
@@ -87,7 +87,9 @@ addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tes
 
 %% Folder with impulse responses
 nameFolder='workFolder';
-workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
+resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+workFolder = strcat(resourcesFolder,nameFolder);
+% workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
 if exist(workFolder, 'dir') == 7
     disp('folder exist');
 else

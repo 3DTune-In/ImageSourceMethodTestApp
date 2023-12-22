@@ -32,12 +32,12 @@ HybridOscCmds.SendListenerLocationToISM (connectionToISM, positionL);
 % Waiting msg from ISM
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
-% %% Listener Orientation
-% orientationL= zeros(1,3);
-% orientationL(1) = yaw; orientationL(2) = pitch; orientationL(3) = roll;
-% HybridOscCmds.SendListenerOrientationToISM (connectionToISM, orientationL);
-% % Waiting msg from ISM
-% message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+%% Listener Orientation
+orientationL= zeros(1,3);
+orientationL(1) = yaw; orientationL(2) = pitch; orientationL(3) = roll;
+HybridOscCmds.SendListenerOrientationToISM (connectionToISM, orientationL);
+% Waiting msg from ISM
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
 %% Set BRIR
 HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'sofa_reverb140cm_quad_reverb_44100.sofa');

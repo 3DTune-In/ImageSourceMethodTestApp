@@ -1,6 +1,5 @@
 #include "ofApp.h"
 
-
 #define USE_PROFILER
 #ifdef USE_PROFILER
 #include <Windows.h>
@@ -52,15 +51,25 @@ void ofApp::setup() {
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
 	Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);             // LAB_ROOM
+	//Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);             // LAB_ROOM_ROT
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
+
+	//Common::CTransform lT = listener->GetListenerTransform();
+	//Common::CVector3 lLocation = lT.GetPosition();
+	//Common::CQuaternion lO = lT.GetOrientation();
+	//float yaw, pitch, roll;
+	//yaw = 0; pitch = 0; roll = 0;
+	//lT.SetOrientation(lO.FromYawPitchRoll(yaw, pitch, roll));
+	//listener->SetListenerTransform(lT);
+		
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	
-	string fullPath = pathResources + "\\" + "D1_44K_16bit_256tap_FIR_SOFA.sofa";
+	string fullPath = pathResources + "\\" + "HRTF_SADIE_II_D1_44100_24bit_256tap_FIR_SOFA_aligned.sofa";
+	//string fullPath = pathResources + "\\" + "D1_44K_16bit_256tap_FIR_SOFA.sofa";
 	//string fullPath = pathResources + "\\" + "3DTI_HRTF_D2_128s_44100Hz.sofa";       //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";             // To test the Filterbank
 
@@ -73,8 +82,9 @@ void ofApp::setup() {
 	/************************/
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas_44100.sofa";   // LAB_ROOM 
+	environment->SetReverberationOrder(TReverberationOrder::THREEDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";   // LAB_ROOM 
+	
 	fullPathBRIR = fullPath;
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
@@ -83,8 +93,9 @@ void ofApp::setup() {
 	ISM::RoomGeometry trapezoidal;
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-	fullPath = pathResources + "\\" + "lab_room_A_Izq.xml";       // LAB_ROOM
-
+	fullPath = pathResources + "\\" + "lab_room_Ini_Izq.xml";       // LAB_ROOM
+	//fullPath = pathResources + "\\" + "lab_room_Ini_Rot.xml";       // LAB_ROOM_ROT
+	
 	if (!xml.load(fullPath))
 	{
 		ofLogError() << "Couldn't load file";
@@ -165,7 +176,8 @@ void ofApp::setup() {
 	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic SOURCE
-	Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM
+	Common::CVector3 initialLocation(-2.4, -0.3, -0.8);        // LAB_ROOM
+	//Common::CVector3 initialLocation(-0.3, 2.4, -0.8);           // LAB_ROOM_ROT
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -230,7 +242,7 @@ void ofApp::setup() {
 	//// Setup windowThreshold and windowSlope
 
 	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
-	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -30, 30));
+	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -40, 40));
 
 	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);
 	leftPanel.add(winThresholdControl.set("WinThreshold (ms)", (INITIAL_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
@@ -497,7 +509,7 @@ void ofApp::draw() {
 		float yaw, pitch, roll;
 		QListener.ToYawPitchRoll(yaw, pitch, roll);
 		nose.x = listenerLocation.x + cos (yaw);
-		nose.y = listenerLocation.y + sin (yaw);
+		nose.y = listenerLocation.y - sin (yaw);
 		nose.z = listenerLocation.z;
 	}
 	ofLine(listenerLocation.x, listenerLocation.y, listenerLocation.z,
@@ -584,8 +596,9 @@ void ofApp::draw() {
 	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 115);
 	sprintf(messageStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
 	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight()-100);
-	sprintf(messageStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
-	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 85);
+	//sprintf(messageStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
+	sprintf(messageStr, "Max distance images-listener: %d", int(maxDistanceImageSourcesToListenerControl.get()));
+		ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 85);
 //#if 0
 	if (!bDisableReverb) 
 	{
@@ -795,7 +808,8 @@ void ofApp::keyPressed(int key) {
 			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
 
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
+			maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
+			ISMHandler->setMaxDistanceImageSources(maxDistanceISM, millisec2meters(windowSlopeWidth));
 
 			imageSourceDSPList = reCreateImageSourceDSP();
 			if (!stopState) systemSoundStream.start();
@@ -811,7 +825,8 @@ void ofApp::keyPressed(int key) {
 			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
 
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
+			maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
+			ISMHandler->setMaxDistanceImageSources(maxDistanceISM, millisec2meters(windowSlopeWidth));
 
 			imageSourceDSPList = reCreateImageSourceDSP();
 			if (!stopState) systemSoundStream.start();
@@ -946,11 +961,19 @@ void ofApp::keyPressed(int key) {
 		break;
 	}
 	case 'A': //Rotate Left
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -PI/4);
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI/4);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case 'D': //Rotate Right
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI/4);
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -PI/4);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'Z': //Rotate Roll Left
+		listenerTransform.Rotate(Common::CVector3(1, 0, 0), -PI/4);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	case 'C': //Rotate Roll Right
+		listenerTransform.Rotate(Common::CVector3(1, 0, 0), PI/4);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case '+': //increases the reflection order 
@@ -1254,6 +1277,12 @@ void ofApp::keyPressed(int key) {
 
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
 
+		Common::CTransform lT = listener->GetListenerTransform();
+		Common::CVector3 lLocation = lT.GetPosition();
+		Common::CQuaternion lO = lT.GetOrientation();
+		float yaw, pitch, roll;
+		lO.ToYawPitchRoll(yaw, pitch, roll);
+		cout << "Yaw = " << (yaw*180/PI) << " Pitch = " << (pitch*180/PI) << " Roll = " << (roll * 180 / PI) << "\n";
 		break;
 
 	}
@@ -2014,9 +2043,11 @@ void ofApp::resetAudio()
 	
 	myCore.RemoveEnvironment(environment);
 
+
+
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	environment->SetReverberationOrder(TReverberationOrder::THREEDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	BRIR::CreateFromSofa(fullPathBRIR, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
@@ -3045,7 +3076,10 @@ void ofApp::OscCallBackListenerOrientation(const ofxOscMessage& message) {
 
 	float yaw, pitch, roll;
 	yaw = c[0]; pitch = c[1]; roll = c[2];
-	lT.SetOrientation (lO.FromYawPitchRoll(yaw, pitch, roll));
+	//lT.SetOrientation (lO.FromYawPitchRoll(yaw, pitch, roll));
+	lT.Rotate(Common::CVector3(0, 0, 1), yaw);
+	lT.Rotate(Common::CVector3(0, 1, 0), pitch);
+	lT.Rotate(Common::CVector3(1, 0, 0), roll);
 	listener->SetListenerTransform(lT);
 		
 	ISMHandler->setReflectionOrder(0);

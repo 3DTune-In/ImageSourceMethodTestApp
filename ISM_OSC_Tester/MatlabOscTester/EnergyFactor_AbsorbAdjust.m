@@ -62,32 +62,47 @@
 %  'ISMDpMax.wav'        <-- IR_ISM
 
 %% Absorption saturation values
-absorMax=0.95;
-absorMin=0.05;
-maxChange=0.15;
-reductionAbsorChange=0.6;
 % absorMax=0.95;
 % absorMin=0.05;
-% maxChange=0.15;
-% reductionAbsorChange=0.6;
+% maxChange=0.50;
+% reductionAbsorChange=0.9;
+absorMax=0.999;
+absorMin=0.001;
+maxChange=0.15;
+reductionAbsorChange=0.6;
+
+%% BRIR used for adjustment: measured ('M') or simulated ('S')
+BRIR_used = 'M';
+
+%% Room to simulate: Lab ('Lab') or Small ('Sm') 
+Room = 'Lab';
 
 %% MAX ITERATIONS 
 ITER_MAX = 13;
 
-%% Channel
+%% Channel: Left (L) or Right (R)
 L=1; R=2;         % Channels
-C=L;              % Channel to carry out the adjustment
+C=R;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
-DpMax=32; DpMin=2;
-DpMinFit = 22;                   %% small distance values are not parsed
+if Room == 'Lab'          % Lab  
+   DpMax=38; DpMin=2;
+   DpMinFit = 17;                  %% Smaller distance values will be discarded
+elseif Room == 'Sm'      % Small
+   DpMax=16; DpMin=2;
+   DpMinFit = 10;                   %% Smaller distance values will be discarded
+else
+   disp('Error: Room to be simulated must be indicated');
+   exit;
+end
+
 
 %% Path
 addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'); 
 
 %% Folder with impulse responses
-nameFolder='workFolder';
-resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+nameFolder='\workFolder';
+resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources';
 workFolder = strcat(resourcesFolder,nameFolder);
 % workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
 if exist(workFolder, 'dir') == 7
@@ -102,9 +117,9 @@ delete *.wav;
 %% SAVE Configuration parameters for ISM simulation
 RefOrd=40; 
 W_Slope=2;                       % Value for energy adjustment
-RGain_dB = 24;
+RGain_dB = 0;
 RGain = db2mag(RGain_dB);
-save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB','C');
+save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB','C','BRIR_used','Room');
 
 %% File name associated with ISM simulation
 formatFileISM= "iIrRO%iDP%02iW%02i";
@@ -118,24 +133,18 @@ save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
 %% ABSORTIONS
-%% 6 it
 
-% %% Pablo absortions
-% absorbData = [
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.40 0.40 0.30  0.20  0.17  0.15    0.10  0.10  0.20;
-% 0.20 0.20 0.25  0.35  0.50  0.30    0.25  0.40  0.40;];
-
-absorbData = [
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;];
+if exist('FiInfAbsorb.mat', 'file') == 2
+    load ("FiInfAbsorb.mat");
+    absorbData =absorbData1;
+else
+    absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;];
+end
 
 absorbData0 = absorbData;
 absorbData1 = absorbData;
@@ -196,7 +205,7 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Enable Distance Attenuation");
 pause(0.2);
 
-%%  Enable Distance Attenuation Reverb Enable To ISM
+%%  Disable Distance Attenuation Reverb Enable To ISM
 HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Distance Attenuation Reverb Enable");
@@ -369,13 +378,20 @@ while ( iLoop < ITER_MAX)
     %% --------------------------                    % FIGURE 1 -- Total: ISM, Windowed, BRIR-Windowed
     figure; hold on;
     eL_Ism  = zeros(NumIRs,1);
+    eR_Ism  = zeros(NumIRs,1);
     eL_Win  = zeros(NumIRs,1);
     eL_BRIR_W = zeros(NumIRs,1);
-    eL_Ism = e_TotalIsm(:,C);   % Ism without direct path
+    eL_Ism = e_TotalIsm (:,C);   % Ism without direct path
+    if (C==L) C2=R;
+    else C2=L;    
+    end    
+    eR_Ism = e_TotalIsm (:,C2);
+    eR_Win = e_TotalWin(:,C2);
     eL_Win = e_TotalWin(:,C);   % Reverb files (hybrid windowed order 0 with no direct path)
     %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
 
-    plot (x, eL_Ism,'r--*');   %Ism
+    plot (x, eL_Ism,'m--*');   %Ism
+    plot (x, eR_Ism,'c--*');
     plot (x, eL_Win,'g--o');   % Windowed
     %plot (x,eL_Total,'b--+'); % Total
     grid;
@@ -386,12 +402,12 @@ while ( iLoop < ITER_MAX)
     xlabel('Distance (m)');
     ylabel('Energy');
     title('Total Energy vs Pruning Distance');
-    legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
+    legend('E-IsmAd', 'E-IsmOt', 'E-win','EBRIR-E-win',  'Location','northwest');
     %% -----------------------------                 % FIGURE 2 -- Total Factor
     figure;
     Factor = zeros(NumIRs,1);
     Factor = sqrt (eL_Ism ./ eL_BRIR_W);
-    plot (x, Factor,'b--*');
+    plot (x, Factor,'k--*');
     %ylim([0.0 1.5]);
     xlabel('Distance (m)');
     ylabel('Factor');
@@ -587,7 +603,7 @@ while ( iLoop < ITER_MAX)
     % disp(message);
     % pause (1)
 %% ----------- ------------------
-    b = mod( iLoop , 4 ) ;
+    b = mod( iLoop , 1 ) ;
     if (b==0)|| (fitSlopes == true) || (iLoop==ITER_MAX-1)
         % actual folder
         current_folder = pwd;

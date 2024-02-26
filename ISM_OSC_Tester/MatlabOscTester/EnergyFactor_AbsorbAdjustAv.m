@@ -61,8 +61,8 @@
 %  'ISMDpMax.wav'        <-- IR_ISM
 
 %% Absorption saturation values
-absorMax=0.95;
-absorMin=0.05;
+absorMax=0.999;
+absorMin=0.001;
 maxChange=0.15;
 reductionAbsorChange=0.6;
 % absorMax=0.95;
@@ -70,23 +70,40 @@ reductionAbsorChange=0.6;
 % maxChange=0.15;
 % reductionAbsorChange=0.6;
 
+%% BRIR used for adjustment: measured ('M') or simulated ('S')
+BRIR_used = 'M';
+
+%% Room to simulate: Lab ('L') or Small ('S') 
+Room = 'Lab';
+
 %% MAX ITERATIONS 
 ITER_MAX = 13;
 
-% %% Absortions and Slopes
-% An=zeros(1,ITER_MAX);
-% Sn=zeros(1,ITER_MAX);
+%% Channel: Left (L) or Right (R)
+L=1; R=2;         % Channels
+C=0;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
-DpMax=15; DpMin=2;
-DpMinFit = 10;                   %% small distance values are not parsed
+if Room == 'Lab'          % Lab  
+   DpMax=40; DpMin=2;
+   DpMinFit = 17;                  %% Smaller distance values will be discarded
+elseif Room == 'Sm'      % Small
+   DpMax=17; DpMin=2;
+   DpMinFit = 8;                   %% Smaller distance values will be discarded
+else
+   disp('Error: Room to be simulated must be indicated');
+   exit;
+end
+
 
 %% Path
 addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'); 
 
 %% Folder with impulse responses
-nameFolder='workFolder';
-workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
+nameFolder='\workFolder';
+resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+workFolder = strcat(resourcesFolder,nameFolder);
+% workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
 if exist(workFolder, 'dir') == 7
     disp('folder exist');
 else
@@ -96,13 +113,12 @@ end
 cd (workFolder);
 delete *.wav;
 
-
 %% SAVE Configuration parameters for ISM simulation
 RefOrd=40; 
 W_Slope=2;                       % Value for energy adjustment
-RGain_dB = 24;
+RGain_dB = 0;
 RGain = db2mag(RGain_dB);
-save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB');
+save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB','C','BRIR_used','Room');
 
 %% File name associated with ISM simulation
 formatFileISM= "iIrRO%iDP%02iW%02i";
@@ -115,28 +131,19 @@ save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
-%% Channel
-L=1; R=2;                        % Channel
-
 %% ABSORTIONS
-%% 6 it
 
-% %% Pablo absortions
-% absorbData = [
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.18 0.18 0.34	0.42  0.59	0.43	0.83  0.68	0.68;
-% 0.40 0.40 0.30  0.20  0.17  0.15    0.10  0.10  0.20;
-% 0.20 0.20 0.25  0.35  0.50  0.30    0.25  0.40  0.40;];
-
-absorbData = [
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
-0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;];
+if exist('FiInfAbsorb.mat', 'file') == 2
+    load ("FiInfAbsorb.mat");
+    absorbData =absorbData1;
+else
+    absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;
+        0.5 0.5 0.5	0.5 0.5	0.5	0.5 0.5	0.5;];
+end
 
 absorbData0 = absorbData;
 absorbData1 = absorbData;
@@ -197,7 +204,7 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Enable Distance Attenuation");
 pause(0.2);
 
-%%  Enable Distance Attenuation Reverb Enable To ISM
+%%  Disable Distance Attenuation Reverb Enable To ISM
 HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Distance Attenuation Reverb Enable");
@@ -231,9 +238,24 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Dissable Reverb");
 pause(0.2);
 
-%% Rename to BRIR.wav
+%% BRIR used for adjustment: measured (M) or simulated (S)
 cd (workFolder);
-movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';
+if BRIR_used == 'S'
+   movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';    % simulated
+elseif BRIR_used == 'M'
+    if Room == 'Lab'
+       copyfile '..\LabBRIR.wav' 'BRIR.wav';      % measured
+    elseif Room == 'Sm'
+       copyfile '..\SmallBRIR.wav' 'BRIR.wav';    % measured
+    else
+       disp('Error: Room to be simulated must be indicated');
+       exit;
+    end
+else
+   disp('Error: It must be indicated whether the adjustment is going to be made with the measured or simulated BRIR');
+   exit;
+end
+
 
 %% Send Initial absortions
 walls_absor = zeros(1,54);
@@ -303,9 +325,8 @@ while ( iLoop < ITER_MAX)
     %%%%%%% PARSEVAL RELATION --> e_BRIR (in time) == E_BRIR (in frec)
     E_BRIR= calculateEnergyFrec(Fs, t_BRIR)/length(t_BRIR);
 
-    %eBRIR_L= e_BRIR(L); eBRIR_R= e_BRIR(R);
     %% Average of both channels
-    eBRIR_L = (e_BRIR(L)+e_BRIR(R))./2;
+    eBRIR_A = (e_BRIR(L)+e_BRIR(R))./2;
 
     %% --------------
     %% Total Energy in time domain
@@ -366,40 +387,42 @@ while ( iLoop < ITER_MAX)
     eSumBands=0; %checksum
     for j=1:NB
         %eSumBands = eSumBands+E_BandWin(j,i,:);
-        e = calculateEnergyBand(Fs, t_BRIR, Blo(j), Bhi(j))/length(t_BRIR);  %/(Bhi(j)-Blo(j)+1);
+        e = calculateEnergyBand(Fs, t_BRIR, Blo(j), Bhi(j))/length(t_BRIR);  %/(Bhi(j)-Blo(j)+1);eL_Win
         E_BandBrir(j,:) = e;
         eSumBands = eSumBands+E_BandBrir(j,:);
     end
     eSumBands= squeeze(eSumBands);
     %% --------------------------                    % FIGURE 1 -- Total: ISM, Windowed, BRIR-Windowed
     figure; hold on;
-    eL_Ism  = zeros(NumIRs,1);
-    eL_Win  = zeros(NumIRs,1);
-    eL_BRIR_W = zeros(NumIRs,1);
+    aA_Ism  = zeros(NumIRs,1);
+    eA_Win  = zeros(NumIRs,1);
+    eA_BRIR_W = zeros(NumIRs,1);
     %% Only one channel
-    %eL_Ism = e_TotalIsm(:,L);   % Ism without direct path
+    eL_Ism = e_TotalIsm(:,L);   
+    eR_Ism = e_TotalIsm(:,R);   % Ism without direct path
     %eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
     %% Average of both channels
-    eL_Ism = (e_TotalIsm(:,L)+e_TotalIsm(:,R))./2;   % Ism without direct path
-    eL_Win = (e_TotalWin(:,L)+e_TotalWin(:,R))./2;   % Reverb files (hybrid windowed order 0 with no direct path)
-    
+    eA_Ism = (e_TotalIsm(:,L)+e_TotalIsm(:,R))./2;   % Ism without direct path
+    eA_Win = (e_TotalWin(:,L)+e_TotalWin(:,R))./2;   % Reverb files (hybrid windowed order 0 with no direct path)
     %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
 
-    plot (x, eL_Ism,'r--*');   %Ism
-    plot (x, eL_Win,'g--o');   % Windowed
+    plot (x, eA_Ism,'m--.');   %Ism
+    plot (x, eL_Ism, 'b--.');
+    plot (x, eR_Ism,'r--.');
+    plot (x, eA_Win,'g--o');   % Windowed
     %plot (x,eL_Total,'b--+'); % Total
     grid;
 
-    eL_BRIR_W(:,1) = eBRIR_L*ones(length(NumIRs))-eL_Win;
-    plot (x, eL_BRIR_W,'k--x');
+    eA_BRIR_W(:,1) = eBRIR_A*ones(length(NumIRs))-eA_Win;
+    plot (x, eA_BRIR_W,'k--x');
     %ylim([0.0 0.8]);
     xlabel('Distance (m)');
     ylabel('Energy');
     title('Total Energy vs Pruning Distance');
-    legend('E-Ism',  'E-win','EBRIR-E-win',  'Location','northwest');
+    legend('E-Ism', 'E-Ism_L', 'E-Ism_R', 'E-win','EBRIR-E-win',  'Location','northwest');
     %% -----------------------------                 % FIGURE 2 -- Total Factor
     figure;
-    Factor = sqrt (eL_Ism ./ eL_BRIR_W);
+    Factor = sqrt (eA_Ism ./ eA_BRIR_W);
     plot (x, Factor,'b--*');
     %ylim([0.0 1.5]);
     xlabel('Distance (m)');
@@ -613,7 +636,7 @@ while ( iLoop < ITER_MAX)
     % disp(message);
     % pause (1)
 %% ----------- ------------------
-    b = mod( iLoop , 4 ) ;
+    b = mod( iLoop , 1 ) ;
     if (b==0)|| (fitSlopes == true) || (iLoop==ITER_MAX-1)
         % actual folder
         current_folder = pwd;

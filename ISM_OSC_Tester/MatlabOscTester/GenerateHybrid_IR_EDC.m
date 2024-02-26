@@ -47,7 +47,7 @@ load ("EnergyFactor.mat");
 
 %% ---------------------------------------------------------
 %% Set TMix & Slope
-Dp_Tmix = 11;
+Dp_Tmix = 28;
 W_Slope = 2;            %  It may be a different value than the one used for energy adjustment
 
 %% Set working folder

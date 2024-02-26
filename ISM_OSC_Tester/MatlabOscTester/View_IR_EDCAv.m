@@ -33,7 +33,8 @@ nameFileWin = sprintf(formatFileWin, Dp_Tmix, W_Slope)+'.wav';
 formatFileHyb= "tIrRO%iDP%02iW%02i";
 nameFileHyb = sprintf(formatFileHyb, RefOrd, Dp_Tmix, W_Slope)+'HYB.wav';
 
-formatFileBRIR= "wIrRO0DP01W02";
+%formatFileBRIR= "wIrRO0DP01W02";
+formatFileBRIR= "BRIR";
 nameFileBRIR = sprintf(formatFileBRIR)+'.wav';
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -47,6 +48,7 @@ ySum=Ism+Wind;
 %ySum=HybridRT;
 
 %yBRIR_2 = yBRIR.^2;
+yBRIR = yBRIR .* (FactorMeanValue*FactorMeanValue);
 yBRIR_2 = yBRIR.^2;
 Ism_2 = Ism.^2;
 Wind_2 = Wind.^2;
@@ -154,9 +156,9 @@ title('EDCHybrid');
 figure; 
 hold on;
 plot (EDCyBRIR(1:30000,1),'b');
-plot (EDCyBRIR(1:30000,2),'--b');
+plot (EDCyBRIR(1:30000,2),'r');
 
-plot (EDCHybrid(1:30000,1),'r');
+plot (EDCHybrid(1:30000,1),'--b');
 plot (EDCHybrid(1:30000,2),'--r');
 legend( 'BRIR_L','BRIR_R','Hybrid_L','Hybrid_R','Location','northeast');
 title('EDC BRIR vs Hybrid');
@@ -167,9 +169,9 @@ xlabel('Samples');
 figure;
 hold on;
 plot (yBRIR(1:30000,1), 'b');
-plot (yBRIR(1:30000,2), '--b');
+plot (yBRIR(1:30000,2), 'r');
 
-plot (Hybrid(1:30000,1), 'r');
+plot (Hybrid(1:30000,1), '--b');
 plot (Hybrid(1:30000,2), '--r');
 legend( 'BRIR_L','BRIR_R','Hybrid_L','Hybrid_R','Location','northeast');
 % plot (ySum(1:30000));
@@ -182,10 +184,10 @@ hold on;
 EDCyBRIRdB(:,1) = 10*log10(EDCyBRIR(:,1)./EDCyBRIR(1,1));
 plot(EDCyBRIRdB (1:44000,1), 'b');
 EDCyBRIRdB(:,2) = 10*log10(EDCyBRIR(:,2)./EDCyBRIR(1,2));
-plot(EDCyBRIRdB (1:44000,2), '--b');
+plot(EDCyBRIRdB (1:44000,2), 'r');
 
 EDCHybriddB(:,1) = 10*log10(EDCHybrid(:,1)./EDCHybrid(1,1));
-plot(EDCHybriddB(1:44000,1), 'r');
+plot(EDCHybriddB(1:44000,1), '--b');
 EDCHybriddB(:,2) = 10*log10(EDCHybrid(:,2)./EDCHybrid(1,2));
 plot(EDCHybriddB(1:44000,2), '--r');
 

@@ -26,8 +26,8 @@
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\IZQ-40METROS-LAB\';
-% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m ValorMedio Simple';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot';
 load ("DistanceRange.mat");
 load ("ParamsISM.mat")
 
@@ -40,8 +40,8 @@ L=1; R=2;         % Channels
 
 %% Folder with impulse responses
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\SeriesIr\IZQ-40METROS-LAB\12';
-% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 32 2 20\12'
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m ValorMedio Simple\12';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot\11';
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");
 
@@ -136,15 +136,22 @@ eSumBands= squeeze(eSumBands);
 %% --------------------------                    % FIGURE 1 -- Total: ISM, Windowed, BRIR-Windowed
 figure; hold on;                                 
 eL_Ism  = zeros(NumIRs,1);
+eR_Ism  = zeros(NumIRs,1);
 eL_Win  = zeros(NumIRs,1);
 eL_BRIR_W = zeros(NumIRs,1);
 eL_Ism = e_TotalIsm(:,C);   % Ism without direct path
 eL_Win = e_TotalWin(:,C);   % Reverb files (hybrid windowed order 0 with no direct path)eL_Ism
 %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
+if (C==L) C2=R;
+else C2=L;    
+end 
+eR_Ism = e_TotalIsm (:,C2);
+eR_Win = e_TotalWin(:,C2);
 
-plot (x, eL_Ism,'r--*');   %Ism
+plot (x, eL_Ism,'m--*');   %Ism
+plot (x, eR_Ism,'c--*');
 plot (x, eL_Win,'g--o');   % Windowed
-%plot (x,eL_Total,'b--+'); % Total
+%plot (x,eL_Total,'c--+'); % Total
 grid;
 
 eL_BRIR_W(:,1) = eBRIR_L*ones(length(NumIRs))-eL_Win;
@@ -153,12 +160,12 @@ plot (x, eL_BRIR_W,'k--x');
 xlabel('Distance (m)');  
 ylabel('Energy'); 
 title('Total Energy vs Pruning Distance');  
-legend('E.Ism',  'E.win','E.RIR-E.win',  'Location','northwest');
+legend('E-IsmAd', 'E-IsmOt', 'E-win','EBRIR-E-win',  'Location','northwest');
 %% -----------------------------                 % FIGURE 2 -- Total Factor
 figure; 
 Factor = zeros(NumIRs,1);
 Factor = sqrt (eL_Ism ./ eL_BRIR_W);
-plot (x, Factor,'b--*');
+plot (x, Factor,'k--*');
 %% ylim([0.0 1.2]);
 
 FactorMeanValue=0;
@@ -185,7 +192,7 @@ figure; hold on;
 for j=1:NB
     subplot(NB,3,3*j-2);
     y=  E_BandIsm(j,:,C);
-    plot (x,y,'r--.');   %Ism
+    plot (x,y,'m--.');   %Ism
     legend('e-BandIsm', 'Location','northwest');
     ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
@@ -201,7 +208,7 @@ for j=1:NB
     eBand=E_BandBrir(j,C);
     y= E_BandWin(j,:,C);
     E_BandBrir_Win(j,:,C)=eBand(1,1)*ones(1, length(NumIRs))-y;
-    plot (x, E_BandBrir_Win(j,:,C) ,'b--.');   % Brir-Windowed
+    plot (x, E_BandBrir_Win(j,:,C) ,'c--.');   % Brir-Windowed
     legend('e-Rir-Win', 'Location','southeast');
     ylim([0.0 0.1]);
     %% ylim([0.0 0.01*j]);    grid;
@@ -213,24 +220,32 @@ end
 %% -----------------------------                  % FIGURE 4 -- Factor per Band
 figure; hold on;                                  
 factorBand =zeros(NB, NumIRs,2);
-for j=1:NB
+vMaxT=0.0;
+for j=2:NB
     eBand=E_BandBrir(j,C);
     y= E_BandWin(j,:,C);
     E_BandBrir_Win(j,:,C)=eBand(1,1)*ones(1, length(NumIRs))-y;
-    factorBand(j,:,C) = sqrt(E_BandIsm (j,:,C) ./ E_BandBrir_Win(j,:,C)); 
+    factorBand(j,:,C) = sqrt(E_BandIsm (j,:,C) ./ E_BandBrir_Win(j,:,C));
+
+    vMaxB = max (factorBand(j,:,C));
+    if (vMaxT < vMaxB) 
+        vMaxT=vMaxB; 
+    end
+
     plot (x, factorBand(j,:,C),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
 grid;
-%% ylim([0.0 3.5]);
+ylim([0 vMaxT]);
+
 xlabel('Distance (m)');  ylabel('Factor'); 
-legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
+legend( 'B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
 title('Factor per Band vs Pruning Distance');  
 
 
 %% Curve Fitting                                   % FIGURE 5 -- Fit for each Band     
 xf=[DpMinFit:1:DpMax]; % from 10 meters to the end
 figure; hold on;                                     
-leg = {'B1', 'a1','B2', 'a2','B3','a3','B4','a4','B5', 'a5','B6','a6','B7','a7','B8','a8','B9','a9'};
+leg = {'B2', 'a2','B3','a3','B4','a4','B5', 'a5','B6','a6','B7','a7','B8','a8','B9','a9'};
 
 %fitObj= cfit.empty(0,NB); % Create empty array of specified class cfit
 %cfitData = struct(cfit);
@@ -240,7 +255,7 @@ gof = struct([]);                                   % Create empty struct
 gofplus = struct('gof', gof , 'p1', 0, 'p2', 0);    % Create struct to load data per band
 gofpArray = repmat (gofplus, 1, NB);                % Array of structures to store information for each band
 
-for j=1:NB
+for j=2:NB
    Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, C);  % from 10 meters to the end
    xft=xf'; Fft= Ff'; % transpose
       % [fitObj, gof] = fit(xft,Fft,'poly1');
@@ -254,7 +269,7 @@ for j=1:NB
    p=plot(fitObj, xft,Fft, '--o');
    p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
 end   
-%% ylim([0.0 3.5]);
+ylim([0 vMaxT]);
 xlabel('Distance (m)');  ylabel('Factor'); 
 legend( leg, 'Location','northwest'); grid;
 title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 

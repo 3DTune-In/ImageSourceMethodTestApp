@@ -12,7 +12,7 @@
 L=1; R=2;         % Channels
 %% C= L or R;     % Channel to carry out the adjustment (ParamsISM.mat)
  
-%% Set folder with IRs and Params
+%% Set folder with Params
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
@@ -41,11 +41,20 @@ formatFileBRIR= "wIrRO0DP01W02";
 nameFileBRIR = sprintf(formatFileBRIR)+'.wav';
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[yBRIR,Fs] = audioread(nameFileBRIR);
+[yBRIR,Fs] = audioread(nameFileBRIR);          %simulated
 [Ism,Fs] = audioread(nameFileISM);
 [Wind,Fs] = audioread(nameFileWin);
 [Hybrid,Fs] = audioread(nameFileHyb);
-%[HybridRT, Fs] = audioread (nameFileRT);
+
+ if Room == 'Lab'
+    copyfile '..\LabBRIR.wav' 'BRIR.wav';      % measured
+ elseif Room == 'Sm'
+    copyfile '..\SmallBRIR.wav' 'BRIR.wav';    % measured
+ else
+    disp('Error: Room to be simulated must be indicated');
+    exit;
+end
+[mBRIR, Fs] = audioread ('BRIR.wav');
 
 ySum=Ism+Wind;
 %ySum=HybridRT;
@@ -57,13 +66,28 @@ Wind_2 = Wind.^2;
 ySum_2 = ySum.^2;
 Hybrid_2 = Hybrid.^2;
 
+mBRIR = mBRIR .* FactorMeanValue;
+mBRIR_2 = mBRIR .^2;
+
+if (C== 0) C=1;
+end
+    
 EDCyBRIR= zeros(1, length(yBRIR));
 N= length(yBRIR);
 for I= 1:N
    EDCyBRIR(I) = sum (yBRIR_2(I:N,C)) / (N);
 end
-   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+EDCmBRIR= zeros(1, length(mBRIR));
+N= length(mBRIR);
+for I= 1:N
+   EDCmBRIR(I) = sum (mBRIR_2(I:N,C)) / (N);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+
 EDCIsm= zeros(1, length(yBRIR));
+EDCIsm2= zeros(1, length(yBRIR));
 N= length(Ism);
 for I= 1:N
    EDCIsm(I) = sum (Ism_2(I:N,C)) / (N);
@@ -87,6 +111,7 @@ for I= 1:N
    EDCHybrid(I) = sum (Hybrid_2(I:N,C)) / (N);
 end
 
+figure;
 subplot(2,5,1);
 plot (yBRIR(1:30000));
 ylim([-0.08 0.08]);
@@ -139,23 +164,39 @@ title('EDCHybrid');
 
 figure;
 hold on;
-plot (EDCyBRIR(1:30000));
-plot (EDCHybrid(1:30000));
-legend( 'EDC-BRIR','EDC-Hybrid','Location','northeast');
-title('EDC BRIR vs Hybrid');
+plot (EDCyBRIR(1:44000));
+plot (EDCHybrid(1:44000));
+plot (EDCmBRIR(1:44000),'k');
+legend( 'EDC-sim-BRIR','EDC-Hybrid','EDC-measA-BRIR','Location','northeast');
+title('EDC sim-BRIR vs Hybrid vs meas&A-BRIR');
 ylabel('Energy decay');
 xlabel('Samples');
 %ylim([0.0 1e-4]);
 
 figure;
-hold on;
-plot (yBRIR(1:30000));
-plot (Hybrid(1:30000), 'r');
-legend( 'BRIR','Hybrid','Location','northeast');
+subplot (4,1,1);
+plot (yBRIR(1:24000));
+%ylim ([-0.1 0.1]);
+title('simulated & AMP BRIR');
+subplot (4,1,2);
+plot (Hybrid(1:24000));
+title('Hybrid');
+ylim ([-0.1 0.1]);
+subplot (4,1,3);
+plot (mBRIR(1:24000));
+ylim ([-0.1 0.1]);
+title('measured&Amp BRIR');
+subplot (4,1,4);
+mBRIR = mBRIR ./ FactorMeanValue;
+plot (mBRIR(1:24000));
+ylim ([-0.1 0.1]);
+title('measured BRIR');
+
+%legend( 'simBRIR','Hybrid','Location','northeast');
 % plot (ySum(1:30000));
-title('IRs: BRIR vs Hybrid');
+%title('IRs: simBRIR vs Hybrid');
 xlabel('Samples');
-hold off;
+%hold off;
 
 figure;
 EDCyBRIRdB =10*log10(EDCyBRIR./EDCyBRIR(1));
@@ -163,11 +204,19 @@ plot(EDCyBRIRdB (1:44000));
 hold on;
 EDCHybriddB = 10*log10(EDCHybrid./EDCHybrid(1));
 plot(EDCHybriddB(1:44000), 'r');
-legend( 'EDC-BRIR','EDC-Hybrid','Location','northeast');
+EDCmBRIRdB =10*log10(EDCmBRIR./EDCmBRIR(1));
+plot(EDCmBRIRdB (1:44000), 'k');
+
+legend( 'EDC-sim-BRIR','EDC-Hybrid','EDC-meas&A-BRIR','Location','northeast');
 
 %EDCySumdB = 10*log10(EDCySum./EDCySum(C));
 %plot(EDCySumdB(1:44000), 'k');
 
 ylabel('Energy decay [dB]');
 xlabel('Samples');
-title('EDC BRIR vs Hybrid');
+title('EDC sim-BRIR vs Hybrid vs meas&A-BRIR');
+
+% figure;
+% plot(EDCmBRIRdB (1:44000), 'k');
+% title('EDC meas&A-BRIR');
+disp('end');

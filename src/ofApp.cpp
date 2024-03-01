@@ -88,7 +88,12 @@ void ofApp::setup() {
 	fullPathBRIR = fullPath;
 	                                  
 	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
-		
+
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	float secToRecordIR = ((float)BRIRLength) / sampleRate;
+	changeSecondsToRecordIR(secToRecordIR);
+			
 	// Room setup
 	ISM::RoomGeometry trapezoidal;
 
@@ -147,7 +152,7 @@ void ofApp::setup() {
 	   //Get BRIRLength
 	windowSlopeWidth = INITIAL_WIN_SLOPE;
 	reverbGainLinear = 1.0;
-	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	//int BRIRLength = environment->GetBRIR()->GetBRIRLength();
 	int samplesWindowSlope = millisec2samples(windowSlopeWidth);
 	if (numberOfSilencedSamples + samplesWindowSlope/2 > BRIRLength) 
 	{
@@ -267,8 +272,8 @@ void ofApp::setup() {
 	leftPanel.add(playToStopControl.set("Stop", true));
 	   	
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", 1, 1, MAX_SECONDS_TO_RECORD));
-
+	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", secToRecordIR, 1, MAX_SECONDS_TO_RECORD));
+	
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("Save IR", false));
 
@@ -1724,6 +1729,7 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 	int numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope/2;
 
 	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+
 	if (numSamplesTotal > BRIRLength)
 	{   // WindowThreshold + WindowSlope must be less than BRIR duration
 		numSamplesTotal = BRIRLength - numsamplesWindowSlope;
@@ -1972,10 +1978,14 @@ void ofApp::recordWavOffline(bool& _active)
 	stopToPlayControl.set("Play", false);
 }
 
-void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
+void ofApp::changeSecondsToRecordIR(float &_secondsToRecordIR)
 {
 	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=MAX_SECONDS_TO_RECORD)
-	   secondsToRecordIR = _secondsToRecordIR;
+	{
+		secondsToRecordIR = _secondsToRecordIR;
+		numberOfSecondsToRecordControl.set(secondsToRecordIR);
+	}
+	   
 }
 
 void ofApp::toogleHelpDisplay(bool &_active)
@@ -2407,6 +2417,10 @@ void ofApp::changeBRIR(bool& _active)
 			else
 			{
 				cout << "Load new BRIR File " << fullPath << endl << endl;
+				int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+				float sampleRate = myCore.GetAudioState().sampleRate;
+				float secToRecordIR = ((float)BRIRLength) / sampleRate;
+				changeSecondsToRecordIR(secToRecordIR);
 			}
 		}
 		else

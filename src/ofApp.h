@@ -106,7 +106,7 @@ private:
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<bool> recordOfflineIRScanControl;
 		ofParameter<bool> recordOfflineWAVControl;
-		ofParameter<int> numberOfSecondsToRecordControl;
+		ofParameter<float> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
 		ofParameter<bool> changeRoomGeometryControl;
 		ofParameter<bool> changeHRTFControl;
@@ -148,7 +148,7 @@ private:
 		bool bDisableReverb;                                                                         // true;
 		int numberOfSilencedFrames = 0;
 		int numberOfSilencedSamples = 0;
-		int secondsToRecordIR = 1;
+		float secondsToRecordIR;
 		int numberIRScan = 0;
 
 		float windowSlopeWidth;  //millisec
@@ -223,7 +223,7 @@ private:
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
 		void recordWavOffline(bool& active);
-		void changeSecondsToRecordIR(int &secondsToRecordIR);
+		void changeSecondsToRecordIR(float &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);
 		void changeHRTF(bool& active);

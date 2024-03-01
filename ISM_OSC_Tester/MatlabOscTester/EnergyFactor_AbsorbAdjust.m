@@ -350,7 +350,7 @@ while ( iLoop < ITER_MAX)
         e_TotalWin(i,:)= e;
         %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec)
         E_TotalWin= calculateEnergyFrec(Fs, ir_Win)/length(ir_Win);
-        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Ism); %(Bhi(NB)-Blo(1)+1);
+        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Win); %(Bhi(NB)-Blo(1)+1);
         %eSumBandsW=zeros(1,2); %checksum
         eSumBandsW=0; %checksum
           

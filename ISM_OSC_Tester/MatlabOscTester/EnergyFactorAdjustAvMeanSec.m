@@ -85,7 +85,7 @@ C=0;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
 if Room == 'Lab'          % Lab  
-   DpMax=28; DpMin=2;
+   DpMax=36; DpMin=2;
    DpMinFit = 17;                  %% Smaller distance values will be discarded
 elseif Room == 'Sm'      % Small
    DpMax=17; DpMin=2;
@@ -373,7 +373,7 @@ while ( iLoop < ITER_MAX)
         e_TotalWin(i,:)= e;
         %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec)
         E_TotalWin= calculateEnergyFrec(Fs, ir_Win)/length(ir_Win);
-        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Ism); %(Bhi(NB)-Blo(1)+1);
+        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Win); %(Bhi(NB)-Blo(1)+1);
         %eSumBandsW=zeros(1,2); %checksum
         eSumBandsW=0; %checksum
           

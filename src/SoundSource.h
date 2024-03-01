@@ -36,7 +36,7 @@ public :
 
 	void setInitialized();
 
-	void startRecordOfflineOfImpulseResponse(int _secondsToRecord);
+	void startRecordOfflineOfImpulseResponse(float _secondsToRecord);
 
 	void endRecordOfflineOfImpulseResponse();
 

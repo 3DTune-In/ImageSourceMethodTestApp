@@ -1,8 +1,9 @@
 %% This Scritp carry out the process of adjusting absorptions 
 %% and obtaining the Energy Factor for the hybrid method
-%% (this script replaces EnergyFactor_9Bands_OSC_FAST5.m)
+%% Adjustment method: Averages + Secant
+%% Channel used:      Average of L and R.
 
-% Author: Fabian Arrebola (22/02/2023) 
+% Author: Fabian Arrebola (22/02/2024) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
 % Project: SONICOM

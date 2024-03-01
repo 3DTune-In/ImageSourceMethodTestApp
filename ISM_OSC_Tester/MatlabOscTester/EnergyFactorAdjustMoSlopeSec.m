@@ -1,9 +1,9 @@
 %% This Scritp carry out the process of adjusting absorptions 
 %% and obtaining the Energy Factor for the hybrid method
-%% Adjustment method:  Averages + Secant
-%% Channel used:       L or R --> C (line 87)
+%% Adjustment method:  Slopes + Secant
+%% Channel used:       L or R --> C (line 86)
 
-% Author: Fabian Arrebola (23/02/2024) 
+% Author: Fabian Arrebola (28/11/2023) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
 % Project: SONICOM
@@ -70,7 +70,7 @@
 absorMax=0.999;
 absorMin=0.001;
 maxChange=0.15;
-reductionAbsorChange=0.9;
+reductionAbsorChange=0.6;
 
 %% BRIR used for adjustment: measured ('M') or simulated ('S')
 BRIR_used = 'M';
@@ -87,8 +87,8 @@ C=R;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
 if Room == 'Lab'          % Lab  
-   DpMax=32; DpMin=2;
-   DpMinFit = 20;                  %% Smaller distance values will be discarded
+   DpMax=38; DpMin=2;
+   DpMinFit = 17;                  %% Smaller distance values will be discarded
 elseif Room == 'Sm'      % Small
    DpMax=16; DpMin=2;
    DpMinFit = 10;                   %% Smaller distance values will be discarded
@@ -154,10 +154,6 @@ absorbData2 = absorbData;
 slopes0 = zeros(1,9);
 slopes1 = zeros(1,9);
 slopes2 = zeros(1,9);
-
-distAu0 = zeros(1,9);
-distAu1 = zeros(1,9);
-distAu2 = zeros(1,9);
 
 Sn=zeros(ITER_MAX, 9);
 An=zeros(ITER_MAX, 9);
@@ -432,7 +428,6 @@ while ( iLoop < ITER_MAX)
     %% -----------------------------                  % FIGURE 4 -- Factor per Band
     figure; hold on;
     factorBand =zeros(NB, NumIRs,2);
-    FactorMeanBand=zeros(1,NB);
     for j=1:NB
         eBand=E_BandBrir(j,C);
         y= E_BandWin(j,:,C);
@@ -482,8 +477,6 @@ while ( iLoop < ITER_MAX)
         % fitObj.p1;    % cfitArray(j).coeffValues(1,1);
         p=plot(fitObj, xft,Fft, '--o');
         p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
-
-        FactorMeanBand(1,j) = mean(Ff);
     end
     %ylim([0.0 2.5]);
     xlabel('Distance (m)');  ylabel('Factor');
@@ -501,26 +494,15 @@ while ( iLoop < ITER_MAX)
     for j=1:NB
         slopes(1,j) = gofpArray(j).p1;
         ordO(1,j)   = gofpArray(j).p2;
-        distAu(1,j) = FactorMeanBand (1,j) -1;
         slopeB = slopes (1,j);
         if (abs(slopeB)>slopeMax)
             slopeMax=abs(slopeB);
         end
         ordOB = ordO (1,j);
-        DistAuB = distAu(1,j);
-        if (abs (DistAuB)  > 0)
+        if (abs (slopeB)  > 0)
             % for k=1:4    %excluding ceil and floor
              for k=1:6
-                newAbsorb = absorbData (k,j) + (FactorMeanBand (1,j) -1)*0.1;
-
-                if abs (newAbsorb - absorbData(k,j) ) > maximumAbsorChange(j);
-                    if newAbsorb > absorbData(k,j)
-                        newAbsorb = absorbData(k,j) + maximumAbsorChange(j);
-                    else
-                        newAbsorb = absorbData(k,j) - maximumAbsorChange(j);
-                    end
-                end
-
+                newAbsorb = absorbData (k,j) + slopeB*alfa; 
                 if newAbsorb > 0.0 && newAbsorb < 1.0
                     absorbData (k,j) = newAbsorb;
                 elseif newAbsorb <= 0.0
@@ -538,9 +520,6 @@ while ( iLoop < ITER_MAX)
     %% update absorption values
     absorbData0 = absorbData1;
     absorbData1 = absorbData2;
-    %% update calculated differences
-    distAu0=distAu1;
-    distAu1=distAu;
 
     %% ---------------------------------
 
@@ -550,10 +529,10 @@ while ( iLoop < ITER_MAX)
     else
         %% calculate new absorptions
         for j=1:NB
-            if (abs (distAu0(1,j) - distAu1(1,j) ) > 0.0000001)
-                newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
+            if (abs (slopes0(1,j) - slopes1(1,j) ) > 0.0000001)
+                newAbsorb = (-slopes0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(slopes1(1,j)-slopes0(1,j))+absorbData0(1,j); 
 
-                if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
+                if sign(slopes1(1,j)) ~= sign(slopes0(1,j))
                     maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
                 end
 
@@ -566,8 +545,8 @@ while ( iLoop < ITER_MAX)
                 end
 
             else 
-                newAbsorb =  absorbData1(1,j)+distAu1(1,j)*0.01; %%%%%%%%%%%
-                disp("Very similar diffs. Band: "+ int2str(j) ); 
+                newAbsorb =  absorbData1(1,j)+slopes1(1,j); %%%%%%%%%%%
+                disp("Very similar slopes. Band: "+ int2str(j) ); 
                 % disp (newAbsorb);
             end
 
@@ -584,9 +563,9 @@ while ( iLoop < ITER_MAX)
     end
 
  
-    vSlope = sprintf(formatSlope,distAu0);
+    vSlope = sprintf(formatSlope,slopes0);
     disp(vSlope);
-    vSlope = sprintf(formatSlope,distAu1);
+    vSlope = sprintf(formatSlope,slopes1);
     disp(vSlope);
     vSlope = sprintf(formaTotalMaxSlope, totalSlope, slopeMax);  
     disp(vSlope);

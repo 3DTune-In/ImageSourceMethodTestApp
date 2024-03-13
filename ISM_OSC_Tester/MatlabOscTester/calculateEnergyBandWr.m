@@ -7,10 +7,26 @@
 % 
 % Copyright (C) 2023 Universidad de Málaga
 
-function [energy]= calculateEnergyBand (Nf, IR, Lo, Hi)
+function [energy]= calculateEnergyBandWr (Nf, IR, Lo, Hi)
 
+Lini=length(IR);
 L=Nf;
-Y = fft(IR,Nf);
+
+IRp =zeros(L,2);
+
+if (Lini<=L)
+    IRp(1:Lini,:)=IR(1:Lini,:);
+    IRp(Lini+1:L,:)=0;
+else
+    IRp(1:L,:)=IR(1:L,:);
+    j=1;
+    for i=L+1:Lini
+        IRp(j,:) = IR(j,:) + IR(i,:);
+        j= mod(j, L) + 1;
+    end
+end
+
+Y = fft(IRp);
 Ya= abs(Y);
 Y2= Ya.^2;
 

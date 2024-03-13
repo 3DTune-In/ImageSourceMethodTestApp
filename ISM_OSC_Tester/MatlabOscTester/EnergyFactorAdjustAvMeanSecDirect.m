@@ -1,9 +1,9 @@
 %% This Scritp carry out the process of adjusting absorptions 
 %% and obtaining the Energy Factor for the hybrid method
-%% Adjustment method:  Slopes + Secant
-%% Channel used:       Average of L and R
+%% Adjustment method: Averages + Secant + Direct or Indirect
+%% Channel used:      Average of L and R.
 
-% Author: Fabian Arrebola (28/11/2023) 
+% Author: Fabian Arrebola (11/03/2024) 
 % contact: areyes@uma.es
 % 3DDIANA research group. University of Malaga
 % Project: SONICOM
@@ -64,7 +64,7 @@
 %% Absorption saturation values
 absorMax=0.9999;
 absorMin=0.0001;
-maxChange=0.15;
+maxChange=0.10;
 reductionAbsorChange=0.6;
 % absorMax=0.95;
 % absorMin=0.05;
@@ -154,15 +154,19 @@ slopes0 = zeros(1,9);
 slopes1 = zeros(1,9);
 slopes2 = zeros(1,9);
 
+distAu0 = zeros(1,9);
+distAu1 = zeros(1,9);
+distAu2 = zeros(1,9);
+
 Sn=zeros(ITER_MAX, 9);
 An=zeros(ITER_MAX, 9);
 
 maximumAbsorChange=[maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange];
 
-formatSlope = "Slope: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
+formatSlope = "DifAu: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsor = "Absor: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsorChange= "AbChg: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
-formaTotalMaxSlope= "TotalSlope: %.5f  MaxPartialSlope: %.5f";
+formaTotalMaxSlope= "TotalSlope: %.5f  factorMeanValue: %.5f";
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -281,6 +285,8 @@ pause(0.2);
 disp(message+ " ISM DpMax ");
 %% Rename to ISM_DpMax.wav
 cd (workFolder);
+
+
 movefile (nameFileISM, "ISM_DpMax.wav");
 
 %%   BANDS
@@ -311,7 +317,7 @@ ISMFile=dir(['ISM_DpMax.wav']);      %ISM obtained with a pruning max distance
 AudioFile=ISMFile.name;
 [t_ISM,Fs] = audioread(AudioFile);
 pause(0.5);
-delete (ISMFile.name);
+% delete (ISMFile.name);
 
 fitSlopes=false;
 while ( iLoop < ITER_MAX)
@@ -338,24 +344,24 @@ while ( iLoop < ITER_MAX)
     %% Energy per band in frequency domain 
     E_BandIsm =zeros(NB,NumIRs,2);
     E_BandWin=zeros(NB,NumIRs,2);
-    E_BandBrir_Win=zeros(NB,NumIRs,2);        %BRIR-Win
+    E_BandBrir_Win=zeros(NB,NumIRs,2);       %BRIR-Win
+    E_BandBrirDir=zeros(NB,NumIRs,2);        %BRIR Direct
 
     %% Calculate total and partial energies
     maxDistSL = DpMin;
     for i=1:NumIRs
         %%  Ism IRs -------------------------------------
         ir_Ism =  windowingISM_RIR (Fs, t_ISM, maxDistSL, 2, 1);
-%         subplot(2,1,1);
-%         plot (ir_Ism);
         e= calculateEnergy(ir_Ism);
         e_TotalIsm(i,:)= e;
         % PARSEVAL RELATION --> e_TotalIsm (in time) == E_TotalIsm (in frec)
         E_TotalIsm= calculateEnergyFrec(Fs, ir_Ism)/length(ir_Ism);
-        E_TotalIsm2= calculateEnergyBandWr(Nf, ir_Ism, Blo(1), Bhi(NB))/Nf;
+        E_TotalIsm2= calculateEnergyBandWr(Nf, ir_Ism, Blo(1), Bhi(NB))/ Nf;     
         %eSumBandsI=zeros(1,2);
         eSumBandsI=0; %checksum
         for j=1:NB
-            e = calculateEnergyBandWr(Nf, ir_Ism, Blo(j), Bhi(j)) / Nf;
+            e = calculateEnergyBand   (Nf, ir_Ism, Blo(j), Bhi(j)) / Nf;          
+            e2 =calculateEnergyBandWr (Nf, ir_Ism, Blo(j), Bhi(j)) / Nf;
             E_BandIsm(j,i,:) = e;
             eSumBandsI = eSumBandsI+E_BandIsm(j,i,:);
         end
@@ -363,24 +369,38 @@ while ( iLoop < ITER_MAX)
 
         %%  Windowed IRs -------------------------------
         ir_Win =  windowingISM_RIR (Fs, t_BRIR, maxDistSL, 2, 0);
-%         subplot(2,1,2);
-%         plot (ir_Win);
         e = calculateEnergy(ir_Win);
         e_TotalWin(i,:)= e;
         %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec)
         E_TotalWin= calculateEnergyFrec(Fs, ir_Win)/length(ir_Win);
-        E_TotalWin2= calculateEnergyBandWr(Nf, ir_Win, Blo(1), Bhi(NB))/Nf;
+        E_TotalWin2= calculateEnergyBandWr(Nf, ir_Win, Blo(1), Bhi(NB)) / Nf;    
         %eSumBandsW=zeros(1,2); %checksum
-        eSumBandsW=0; %checksum
-          
+        eSumBandsW=0; %checksum 
         for j=1:NB
-            e = calculateEnergyBandWr(Nf, ir_Win, Blo(j), Bhi(j))/Nf; 
+            e = calculateEnergyBand   (Nf, ir_Win, Blo(j), Bhi(j))/ Nf;           
+            e2 =calculateEnergyBandWr (Nf, ir_Win, Blo(j), Bhi(j))/ Nf;
             E_BandWin(j,i,:) = e;
             eSumBandsW= eSumBandsW+E_BandWin(j,i,:);
         end
         eSumBandsW= squeeze(eSumBandsW);
+        %%  Direct BRIRs IRs -------------------------------
+        ir_Brir = windowingISM_RIR (Fs, t_BRIR, maxDistSL, 2, 1);
+        e = calculateEnergy(ir_Brir);
+        e_TotalBrir(i,:)= e;
+        %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec)
+        E_TotalBrir= calculateEnergyFrec(Fs, ir_Brir)/length(ir_Brir);
+        E_TotalBrir2= calculateEnergyBandWr(Nf, ir_Brir, Blo(1), Bhi(NB)) / Nf;    
+        %eSumBandsW=zeros(1,2); %checksum
+        eSumBandsD=0; %checksum   
+        for j=1:NB
+            e = calculateEnergyBandWr (Nf, ir_Brir, Blo(j), Bhi(j))/ Nf; 
+            e2 =calculateEnergyBand   (Nf, ir_Brir, Blo(j), Bhi(j))/ Nf;
+            E_BandBrirDir(j,i,:) = e;
+            eSumBandsD= eSumBandsD+E_BandBrirDir(j,i,:);
+        end
+        eSumBandsD= squeeze(eSumBandsD);
 
-         maxDistSL = maxDistSL+1;
+        maxDistSL = maxDistSL+1;
     end
     %% -------figure
     %% BRIR Energy for each band
@@ -389,8 +409,9 @@ while ( iLoop < ITER_MAX)
     eSumBands=0; %checksum
     for j=1:NB
         %eSumBands = eSumBands+E_BandWin(j,i,:);
-        e = calculateEnergyBandWr(Nf, t_BRIR, Blo(j), Bhi(j))/Nf;
-        E_BandBrir(j,:) = e;
+        e = calculateEnergyBand    (Nf, t_BRIR, Blo(j), Bhi(j))/Nf;                    
+        e2 = calculateEnergyBandWr (Nf, t_BRIR, Blo(j), Bhi(j))/Nf;
+        E_BandBrir(j,:) = e2;
         eSumBands = eSumBands+E_BandBrir(j,:);
     end
     eSumBands= squeeze(eSumBands);
@@ -399,15 +420,15 @@ while ( iLoop < ITER_MAX)
     aA_Ism  = zeros(NumIRs,1);
     eA_Win  = zeros(NumIRs,1);
     eA_BRIR_W = zeros(NumIRs,1);
-    %% Only one channel
+    %% channels L and E
     eL_Ism = e_TotalIsm(:,L);   
     eR_Ism = e_TotalIsm(:,R);   % Ism without direct path
     %eL_Win = e_TotalWin(:,L);   % Reverb files (hybrid windowed order 0 with no direct path)
     %% Average of both channels
     eA_Ism = (e_TotalIsm(:,L)+e_TotalIsm(:,R))./2;   % Ism without direct path
     eA_Win = (e_TotalWin(:,L)+e_TotalWin(:,R))./2;   % Reverb files (hybrid windowed order 0 with no direct path)
-    %eL_Total=e_Total([1:1:length(e_Total)],1);      % TOTAL Ism+Rever sin camino directo
-
+    eA_Brir= (e_TotalBrir(:,L)+e_TotalBrir(:,R))./2;
+    
     plot (x, eA_Ism,'m--.');   %Ism
     plot (x, eL_Ism, 'b--.');
     plot (x, eR_Ism,'r--.');
@@ -417,22 +438,34 @@ while ( iLoop < ITER_MAX)
 
     eA_BRIR_W(:,1) = eBRIR_A*ones(length(NumIRs))-eA_Win;
     plot (x, eA_BRIR_W,'k--x');
+    plot (x, eA_Brir,'k.');
     %ylim([0.0 0.8]);
     xlabel('Distance (m)');
     ylabel('Energy');
     title('Total Energy vs Pruning Distance');
-    legend('E-Ism', 'E-Ism_L', 'E-Ism_R', 'E-win','EBRIR-E-win',  'Location','northwest');
-    %% -----------------------------                 % FIGURE 2 -- Total Factor
-    figure;
-    Factor = sqrt (eA_Ism ./ eA_BRIR_W);
-    plot (x, Factor,'b--*');
+    legend('E-Ism', 'E-Ism_L', 'E-Ism_R', 'E-win','EBRIR-E-win', 'E-Brir',  'Location','northwest');
+    %% -----------------------------                 % FIGURE 2 -- Total eFactor
+    figure; hold on;
+    FactorI = sqrt (eA_Ism ./ eA_BRIR_W);
+    FactorD = sqrt (eA_Ism ./ eA_Brir);
+    FCropI = FactorI(DpMinFit:DpMax-DpMin+1);
+    factorMeanValueI = mean(FCropI);
+    FCropD = FactorD(DpMinFit:DpMax-DpMin+1);
+    factorMeanValueD = mean(FCropD);
+    %% -----------------------------
+    Factor = FactorD;                    % for adjustment (FactorI: BRIR-Win) 
+    factorMeanValue = factorMeanValueD;  % for adjustment (factorMeanValueI)
+    %%                                   % factorBand = factorBandD / factorBandI;             
+    %% -----------------------------
+    plot (x, FactorI,'b*');
+    plot (x, FactorD,'k--.');
     %ylim([0.0 1.5]);
     xlabel('Distance (m)');
-    ylabel('Factor');
-    title('Factor (total) vs Pruning Distance');
-    legend('SQRT(eTotalIsm/(eBRIR-eTotalWin))', 'Location','southwest');
+    ylabel('eFactor');
+    title('eFactor (total) vs Pruning Distance');
+    legend('SQRT(eTotalIsm/(eBRIR-eTotalWin))', 'SQRT(eTotalIsm/(eBrir))', 'Location','southwest');
     grid;
-    %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed
+    %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed, BRIR
     figure; hold on;
     y=zeros(1,length(NumIRs));
     for j=1:NB
@@ -446,11 +479,19 @@ while ( iLoop < ITER_MAX)
         y = E_BandWin(j,:,R);
         E_BandBrir_Win(j,:,R)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
         plot (x, (E_BandBrir_Win(j,:,L)+E_BandBrir_Win(j,:,R))./2);
+        plot (x, (E_BandBrirDir(j,:,L)+E_BandBrirDir(j,:,R))./2 , '--.');      
     end
-    title('E.BRIR-E.WIN-vs Pruning Distance');
-    %% -----------------------------                  % FIGURE 4 -- Factor per Band
+    title('E.BRIR-E.WIN & E-Brir(direct) -vs Pruning Distance');
+    legend('EBRIR-E-win', 'E-Brir',  'Location','northwest');
+    %% -----------------------------                  % FIGURE 4 -- eFactor per Band
     figure; hold on;
-    factorBand =zeros(NB, NumIRs,2);
+    factorBandI =zeros(NB, NumIRs,2);      % Indirect
+    FactorMeanBandI=zeros(1,NB);
+    factorBandD =zeros(NB, NumIRs,2);      % Direct
+    FactorMeanBandD=zeros(1,NB);
+
+    factorBand = factorBandD;              % for adjustment
+    FactorMeanBand=zeros(1,NB);
     for j=1:NB
         % eBand=E_BandBrir(j,L);
         % y= E_BandWin(j,:,L);
@@ -465,14 +506,17 @@ while ( iLoop < ITER_MAX)
 
         E_BandIsm (j,:,L) = (E_BandIsm (j,:,L)+E_BandIsm (j,:,R))./2;
         E_BandBrir_Win(j,:,L) = (E_BandBrir_Win(j,:,L)+E_BandBrir_Win(j,:,R))./2;
+        E_BandBrirDir(j,:,L) = (E_BandBrirDir(j,:,L)+E_BandBrirDir(j,:,R))./2;
         
-        factorBand(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L));
-        plot (x, factorBand(j,:,L),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
+        factorBandI(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrir_Win(j,:,L));
+        factorBandD(j,:,L) = sqrt(E_BandIsm (j,:,L) ./ E_BandBrirDir(j,:,L));
+        plot (x, factorBandI(j,:,L));   
+        plot (x, factorBandD(j,:,L) , '--.');       
     end
     %ylim([0.0 2.5]); grid;
-    xlabel('Distance (m)');  ylabel('Factor');
-    legend( 'B1','B2','B3','B4', 'B5','B6','B7','B8','B9','Location','northeast');
-    title('Factor per Band vs Pruning Distance');
+    xlabel('Distance (m)');  ylabel('eFactor');
+    legend( 'B1','1d','B2','2d', 'B3','3d','B4','4d','B5', '5d','B6','6d','B7', '7d','B8','8d','B9','9d','Location','northeast');
+    title('eFactor per Band vs Pruning Distance');
 
     
     %% Curve Fitting                                   % FIGURE 5 -- Fit for each Band
@@ -496,8 +540,8 @@ while ( iLoop < ITER_MAX)
     totalSlope  = fitObj.p1;
     % gofpArray(NB+1).p2  = fitObj.p2;
 
-
     %% Partial Slopes
+    factorBand=factorBandD;              % for adjustment
     for j=1:NB
         Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from DpMinFit meters to the end
         xft=xf'; Fft= Ff'; % transpose
@@ -511,32 +555,46 @@ while ( iLoop < ITER_MAX)
         % fitObj.p1;    % cfitArray(j).coeffValues(1,1);
         p=plot(fitObj, xft,Fft, '--o');
         p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
+
+        FactorMeanBand(1,j) = mean(Ff);
     end
     %ylim([0.0 2.5]);
-    xlabel('Distance (m)');  ylabel('Factor');
+    xlabel('Distance (m)');  ylabel('eFactor');
     legend( leg, 'Location','northwest'); grid;
-    title('CURVE FIT (9B)- Factor per Band vs Pruning Distance');
+    title('CURVE FIT (9B)- eFactor per Band vs Pruning Distance');
     hold off;
 
 
     %% -----------------------------------------------------------------
     %% Extrac slopes and new absortions (only 1ª and 2ª iterations) to send to ISM
     alfa = 0.01;
-    slopes=zeros(1,9);
-    ordO=zeros(1,9);
+    slopes=zeros(1,NB);
+    distAu=zeros(1,NB);
+    ordO=zeros(1,NB);
     slopeMax=0;
     for j=1:NB
         slopes(1,j) = gofpArray(j).p1;
         ordO(1,j)   = gofpArray(j).p2;
+        distAu(1,j) = FactorMeanBand (1,j) -1;
         slopeB = slopes (1,j);
         if (abs(slopeB)>slopeMax)
             slopeMax=abs(slopeB);
         end
         ordOB = ordO (1,j);
-        if (abs (slopeB)  > 0)
+        DistAuB = distAu(1,j);
+        if (abs (DistAuB)  > 0)
             % for k=1:4    %excluding ceil and floor
              for k=1:6
-                newAbsorb = absorbData (k,j) + slopeB*alfa; 
+                newAbsorb = absorbData (k,j) + (FactorMeanBand (1,j) -1)*0.1;
+
+                if abs (newAbsorb - absorbData(k,j) ) > maximumAbsorChange(j);
+                    if newAbsorb > absorbData(k,j)
+                        newAbsorb = absorbData(k,j) + maximumAbsorChange(j);
+                    else
+                        newAbsorb = absorbData(k,j) - maximumAbsorChange(j);
+                    end
+                end
+
                 if newAbsorb > 0.0 && newAbsorb < 1.0
                     absorbData (k,j) = newAbsorb;
                 elseif newAbsorb <= 0.0
@@ -554,6 +612,9 @@ while ( iLoop < ITER_MAX)
     %% update absorption values
     absorbData0 = absorbData1;
     absorbData1 = absorbData2;
+    %% update calculated differences
+    distAu0=distAu1;
+    distAu1=distAu;
 
     %% ---------------------------------
 
@@ -563,10 +624,10 @@ while ( iLoop < ITER_MAX)
     else
         %% calculate new absorptions
         for j=1:NB
-            if (abs (slopes0(1,j) - slopes1(1,j) ) > 0.0000001)
-                newAbsorb = (-slopes0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(slopes1(1,j)-slopes0(1,j))+absorbData0(1,j); 
+            if (abs (distAu0(1,j) - distAu1(1,j) ) > 0.0000001)
+                newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
 
-                if sign(slopes1(1,j)) ~= sign(slopes0(1,j))
+                if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
                     maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
                 end
 
@@ -579,8 +640,8 @@ while ( iLoop < ITER_MAX)
                 end
 
             else 
-                newAbsorb =  absorbData1(1,j)+slopes1(1,j); %%%%%%%%%%%
-                disp("Very similar slopes. Band: "+ int2str(j) ); 
+                newAbsorb =  absorbData1(1,j)+distAu1(1,j)*0.01; %%%%%%%%%%%
+                disp("Very similar diffs. Band: "+ int2str(j) ); 
                 % disp (newAbsorb);
             end
 
@@ -597,11 +658,11 @@ while ( iLoop < ITER_MAX)
     end
 
  
-    vSlope = sprintf(formatSlope,slopes0);
+    vSlope = sprintf(formatSlope,distAu0);
     disp(vSlope);
-    vSlope = sprintf(formatSlope,slopes1);
+    vSlope = sprintf(formatSlope,distAu1);
     disp(vSlope);
-    vSlope = sprintf(formaTotalMaxSlope, totalSlope, slopeMax);  
+    vSlope = sprintf(formaTotalMaxSlope, totalSlope, factorMeanValue);  
     disp(vSlope);
     vAbsor = sprintf(formatAbsorChange,maximumAbsorChange);
     disp(vAbsor);
@@ -613,7 +674,7 @@ while ( iLoop < ITER_MAX)
     disp(vAbsor);
        
     %% send new abssortion values (if any of the slopes exceeds the threshold)
-    if slopeMax > 0.002 || abs(totalSlope)> 0.002
+    if (abs(factorMeanValue-1.0) > 0.01)   %slopeMax > 0.002 || abs(totalSlope)> 0.002 
        absorbDataT = absorbData2';
        walls_absor = absorbDataT(:);
        HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor');

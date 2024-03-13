@@ -25,9 +25,9 @@
 %  'EnergyFactor.mat'     <--  'FactorMeanValue'
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m ValorMedio Simple';
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot';
 load ("DistanceRange.mat");
 load ("ParamsISM.mat")
 
@@ -37,14 +37,14 @@ x=[DpMin:1:DpMax];               % Initial and final pruning distance
 L=1; R=2;         % Channels
 %% C= L or R;     % Channel to carry out the adjustment (ParamsISM.mat)
 
-
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m ValorMedio Simple\12';
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot\11';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot\11';
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");
 
+colormap =[0.6350 0.0780 0.1840; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 0 0; 0 0 0; 0.9290 0.6940 0.1250; 0.4660 0.6740 0.1880 ];
 
 %%   BANDS
 %    62,5    125     250      500      1000       2000       4000       8000       16000
@@ -231,8 +231,8 @@ for j=2:NB
     if (vMaxT < vMaxB) 
         vMaxT=vMaxB; 
     end
-
-    plot (x, factorBand(j,:,C),"LineWidth",1.5);   % ,'color', [c(j,1) c(j,2) c(j,3)]
+    RGB= colormap(j,:);
+    plot (x, factorBand(j,:,C),"LineWidth",1.2, "Color", RGB );   % ,'color', [c(j,1) c(j,2) c(j,3)]
 end
 grid;
 ylim([0 vMaxT]);
@@ -267,7 +267,8 @@ for j=2:NB
       % disp(fitObj)  % disp(cfitArray(j)); 
       % fitObj.p1;    % cfitArray(j).coeffValues(1,1);
    p=plot(fitObj, xft,Fft, '--o');
-   p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
+   RGB= colormap(j,:);
+   p(2,1).Color = RGB; p(1,1).Color = RGB; p(1,1).LineWidth=1.25;
 end   
 ylim([0 vMaxT]);
 xlabel('Distance (m)');  ylabel('Factor'); 

@@ -62,9 +62,9 @@
 %  'ISMDpMax.wav'        <-- IR_ISM
 
 %% Absorption saturation values
-absorMax=0.999;
-absorMin=0.001;
-maxChange=0.15;
+absorMax=0.9999;
+absorMin=0.0001;
+maxChange=0.10;
 reductionAbsorChange=0.6;
 % absorMax=0.95;
 % absorMin=0.05;
@@ -297,10 +297,11 @@ movefile (nameFileISM, "ISM_DpMax.wav");
 % Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
 
 %%   9 BANDS
+Nf=44100;
 NB=9;
-B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22016;];
+B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22050;];
 Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
-Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
+Bhi=[  88     176      353      707      1414       2828       5657       11314        22050 ];
 
 %% Working loop
 rng('default');
@@ -356,11 +357,11 @@ while ( iLoop < ITER_MAX)
         e_TotalIsm(i,:)= e;
         % PARSEVAL RELATION --> e_TotalIsm (in time) == E_TotalIsm (in frec)
         E_TotalIsm= calculateEnergyFrec(Fs, ir_Ism)/length(ir_Ism);
-        E_TotalIsm2= calculateEnergyBand(Fs, ir_Ism, Blo(1), Bhi(NB))/length(ir_Ism);
+        E_TotalIsm2= calculateEnergyBandWr(Nf, ir_Ism, Blo(1), Bhi(NB))/ Nf;     %length(ir_Ism);
         %eSumBandsI=zeros(1,2);
         eSumBandsI=0; %checksum
         for j=1:NB
-            e = calculateEnergyBand(Fs, ir_Ism, Blo(j), Bhi(j)) / length(ir_Ism);  %(Bhi(j)-Blo(j)+1);
+            e = calculateEnergyBandWr(Nf, ir_Ism, Blo(j), Bhi(j)) / Nf;          %length(ir_Ism);  %(Bhi(j)-Blo(j)+1);
             E_BandIsm(j,i,:) = e;
             eSumBandsI = eSumBandsI+E_BandIsm(j,i,:);
         end
@@ -374,12 +375,12 @@ while ( iLoop < ITER_MAX)
         e_TotalWin(i,:)= e;
         %% PARSEVAL RELATION --> e_Totalwin (in time) == E_TotalWin (in frec)
         E_TotalWin= calculateEnergyFrec(Fs, ir_Win)/length(ir_Win);
-        E_TotalWin2= calculateEnergyBand(Fs, ir_Win, Blo(1), Bhi(NB))/length(ir_Win); %(Bhi(NB)-Blo(1)+1);
+        E_TotalWin2= calculateEnergyBandWr(Nf, ir_Win, Blo(1), Bhi(NB)) / Nf;    %length(ir_Win); %(Bhi(NB)-Blo(1)+1);
         %eSumBandsW=zeros(1,2); %checksum
         eSumBandsW=0; %checksum
           
         for j=1:NB
-            e = calculateEnergyBand(Fs, ir_Win, Blo(j), Bhi(j))/length(ir_Win); %/(Bhi(j)-Blo(j)+1);
+            e = calculateEnergyBandWr(Nf, ir_Win, Blo(j), Bhi(j))/ Nf;           %length(ir_Win); %/(Bhi(j)-Blo(j)+1);
             E_BandWin(j,i,:) = e;
             eSumBandsW= eSumBandsW+E_BandWin(j,i,:);
         end
@@ -394,7 +395,7 @@ while ( iLoop < ITER_MAX)
     eSumBands=0; %checksum
     for j=1:NB
         %eSumBands = eSumBands+E_BandWin(j,i,:);
-        e = calculateEnergyBand(Fs, t_BRIR, Blo(j), Bhi(j))/length(t_BRIR);  %/(Bhi(j)-Blo(j)+1);eL_Win
+        e = calculateEnergyBandWr(Nf, t_BRIR, Blo(j), Bhi(j))/Nf;                     %length(t_BRIR);  %/(Bhi(j)-Blo(j)+1);eL_Win
         E_BandBrir(j,:) = e;
         eSumBands = eSumBands+E_BandBrir(j,:);
     end

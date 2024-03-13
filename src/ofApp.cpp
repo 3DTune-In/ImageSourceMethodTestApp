@@ -272,7 +272,7 @@ void ofApp::setup() {
 	leftPanel.add(playToStopControl.set("Stop", true));
 	   	
 	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", secToRecordIR, 1, MAX_SECONDS_TO_RECORD));
+	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", secToRecordIR, 0.2, MAX_SECONDS_TO_RECORD));
 	
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("Save IR", false));

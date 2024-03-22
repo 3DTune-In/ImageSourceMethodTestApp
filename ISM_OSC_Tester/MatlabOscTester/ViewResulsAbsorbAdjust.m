@@ -22,12 +22,12 @@
 %% slopes of the energy factors
 
 %% Output
-%  'EnergyFactor.mat'     <--  'FactorMeanValue'
+%  'EnergyFactor.mat'     <--  'factorMeanValue'
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m ValorMedio Simple';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 load ("DistanceRange.mat");
 load ("ParamsISM.mat")
 
@@ -40,7 +40,7 @@ L=1; R=2;         % Channels
 %% Folder with impulse responses
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m ValorMedio Simple\12';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\R LAB 38m NoRot\11';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\6';
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");
 
@@ -73,7 +73,11 @@ AudioFile=ISMFile.name;
 %%%%%%%%%%%%%%%%
 e_BRIR= calculateEnergy(t_BRIR);
 %%%%%%% PARSEVAL RELATION --> e_BRIR (in time) == E_BRIR (in frec)
-E_BRIR= calculateEnergyFrec(Fs, t_BRIR)/length(t_BRIR); 
+E_BRIR= calculateEnergyFrec(Fs, t_BRIR)/length(t_BRIR);
+%% ---------
+%% for AV C= 0, for L C=1,  R for R C=2
+%C=1;
+%% ---------
 eBRIR_L= e_BRIR(C);
 %% --------------
 %% Total Energy in time domain
@@ -85,7 +89,7 @@ E_BandIsm =zeros(NB,NumIRs,2);
 E_BandWin=zeros(NB,NumIRs,2); 
 E_BandBrir_Win=zeros(NB,NumIRs,2);        %BRIR-Win
 
-%% Calculate total and partial energies
+%% factorMeanValuealculate total and partial energies
 maxDistSL = DpMin;
 for i=1:NumIRs
      %%  Ism IRs -------------------------------------
@@ -168,23 +172,23 @@ Factor = sqrt (eL_Ism ./ eL_BRIR_W);
 plot (x, Factor,'k--*');
 %% ylim([0.0 1.2]);
 
-FactorMeanValue=0;
+factorMeanValue=0;
 for j=DpMinFit:(DpMax-DpMin)+1
-    FactorMeanValue = FactorMeanValue+Factor(j,1);
+    factorMeanValue = factorMeanValue+Factor(j,1);
 end
-FactorMeanValue = FactorMeanValue/(DpMax-DpMinFit);
+factorMeanValue = factorMeanValue/(DpMax-DpMinFit);
 
 xlabel('Distance (m)');  
 ylabel('Factor'); 
 title('Factor (total) vs Pruning Distance');
 %% RGain = RGain_Linear*EnergyFactor;
-%RGain = FactorMeanValue*db2mag(RGain_dB); 
+%RGain = factorMeanValue*db2mag(RGain_dB); 
 formatLegendFactor= "Factor: %.3f -- RGain(dB): %.1f";
-legengFactor = sprintf(formatLegendFactor, FactorMeanValue, RGain_dB);  
+legengFactor = sprintf(formatLegendFactor, factorMeanValue, RGain_dB);  
 %legend('SQRT(eTotalIsm/(eRIR-eTotalwin))', 'Location','southeast');
 legend(legengFactor, 'Location','southeast');
 
-save ('EnergyFactor.mat','FactorMeanValue');
+save ('EnergyFactor.mat','factorMeanValue');
 
 grid;
 %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed

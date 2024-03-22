@@ -86,7 +86,7 @@ C=0;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
 if Room == 'Lab'          % Lab  
-   DpMax=38; DpMin=2;
+   DpMax=34; DpMin=2;
    DpMinFit = 17;                  %% Smaller distance values will be discarded
 elseif Room == 'Sm'      % Small
    DpMax=17; DpMin=2;

@@ -9,7 +9,7 @@
 % Copyright (C) 2023 Universidad de Málaga
  
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\7';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\11';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 
@@ -48,7 +48,7 @@ ySum=Ism+Wind;
 %ySum=HybridRT;
 
 %yBRIR_2 = yBRIR.^2;
-yBRIR = yBRIR .* (FactorMeanValue);
+yBRIR = yBRIR .* (factorMeanValue);
 yBRIR_2 = yBRIR.^2;
 Ism_2 = Ism.^2;
 Wind_2 = Wind.^2;

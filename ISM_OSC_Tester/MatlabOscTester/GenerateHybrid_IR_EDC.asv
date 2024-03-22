@@ -16,7 +16,7 @@
 %  'ParamsHYB.mat'   <--  'RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','factorMeanValue'
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\11';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\6';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -154,7 +154,7 @@ pause(0.5);
 %% LAB_ROOM
 %             configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      27.8,   true);
 % HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      RGain,   true);
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      -1,   true);
+HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      RGain,   true);
 %% SMALL_ROOM
 %             configureHybrid (connectionToISM, receiver, osc_listener,      2,      1,     0,     17.99,   true);
 

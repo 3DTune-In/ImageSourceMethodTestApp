@@ -86,7 +86,7 @@ C=0;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
 if Room == 'Lab'          % Lab  
-   DpMax=38; DpMin=2;
+   DpMax=34; DpMin=2;
    DpMinFit = 17;                  %% Smaller distance values will be discarded
 elseif Room == 'Sm'      % Small
    DpMax=17; DpMin=2;
@@ -653,7 +653,7 @@ while ( iLoop < ITER_MAX)
     disp(vAbsor);
        
     %% send new abssortion values (if any of the slopes exceeds the threshold)
-    if abs(slopeMax) >  0.008 || abs(totalSlope)>0.002
+    if abs(slopeMax) >  0.007 || abs(totalSlope)>0.002
        absorbDataT = absorbData2';
        walls_absor = absorbDataT(:);
        HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor');

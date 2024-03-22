@@ -14,7 +14,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 40
-#define MAX_DIST_SILENCED_FRAMES 500          //meters
+#define MAX_DIST_SILENCED_FRAMES 100          //meters
 #define MIN_DIST_SILENCED_FRAMES 1           //meters
 #define INITIAL_DIST_SILENCED_FRAMES 9       //meters
 #define MAX_SECONDS_TO_RECORD 30
@@ -50,8 +50,10 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);             // LAB_ROOM
-	//Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);             // LAB_ROOM_ROT
+	//Common::CVector3 listenerLocation(0, 0, 0.15);                 // Juntas_ROOM
+	Common::CVector3 listenerLocation(-0.45, 0.02, -0.68);           // A108_ROOM
+	//Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);           // LAB_ROOM
+	//Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);            // LAB_ROOM_ROT
 	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
 	listenerPosition.SetPosition(listenerLocation);
 	listener->SetListenerTransform(listenerPosition);
@@ -82,8 +84,10 @@ void ofApp::setup() {
 	/************************/
 	// Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::THREEDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";   // LAB_ROOM 
+	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	//fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";                      // LAB_ROOM 
+	fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa";         // A108_ROOM 
+	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa";  // Juntas_ROOM
 	
 	fullPathBRIR = fullPath;
 	                                  
@@ -98,7 +102,9 @@ void ofApp::setup() {
 	ISM::RoomGeometry trapezoidal;
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-	fullPath = pathResources + "\\" + "lab_room_Ini_Izq.xml";       // LAB_ROOM
+	//fullPath = pathResources + "\\" + "Juntas_room_Ini.xml";            // Juntas_ROOM
+	fullPath = pathResources + "\\" + "A108_room_VM.xml";            // A108_ROOM
+	//fullPath = pathResources + "\\" + "lab_room_Ini_Izq.xml";       // LAB_ROOM
 	//fullPath = pathResources + "\\" + "lab_room_Ini_Rot.xml";       // LAB_ROOM_ROT
 	
 	if (!xml.load(fullPath))
@@ -181,8 +187,10 @@ void ofApp::setup() {
 	mainRoom = ISMHandler->getRoom();
 
 	// setup of the anechoic SOURCE
-	Common::CVector3 initialLocation(-2.4, -0.3, -0.8);        // LAB_ROOM
-	//Common::CVector3 initialLocation(-0.3, 2.4, -0.8);           // LAB_ROOM_ROT
+	//Common::CVector3 initialLocation(2.0, 0.0, 0.15);                // Juntas_ROOM
+	Common::CVector3 initialLocation(1.55, 0.02, -0.68);            // A108_ROOM
+	//Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM
+	//Common::CVector3 initialLocation(-0.3, 2.4, -0.8);            // LAB_ROOM_ROT
 	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
@@ -194,6 +202,8 @@ void ofApp::setup() {
 	stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic        
 
 	// DistanceAttenuation
+	stateDistanceAttenuationAnechoic = true;
+
 	anechoicSourceDSP->DisableDistanceAttenuationReverb();
 	stateDistanceAttenuationReverb = false; 
 	
@@ -1281,15 +1291,21 @@ void ofApp::keyPressed(int key) {
 		//#endif
 
 		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
-
+		
 		Common::CTransform lT = listener->GetListenerTransform();
 		Common::CVector3 lLocation = lT.GetPosition();
 		Common::CQuaternion lO = lT.GetOrientation();
 		float yaw, pitch, roll;
 		lO.ToYawPitchRoll(yaw, pitch, roll);
 		cout << "Yaw = " << (yaw*180/PI) << " Pitch = " << (pitch*180/PI) << " Roll = " << (roll * 180 / PI) << "\n";
-		break;
 
+		cout << "Absortions = ";
+		for (int j = 0; j < NUM_BAND_ABSORTION; j++) {
+			std::cout << absortionsWalls.at(0).at(j) << ", ";
+		}
+		std::cout << "\n";
+
+		break;				
 	}
 	case 'z':
 	{			
@@ -2057,7 +2073,7 @@ void ofApp::resetAudio()
 
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::THREEDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	BRIR::CreateFromSofa(fullPathBRIR, environment);							// Loading SOFAcoustics BRIR file and applying it to the e

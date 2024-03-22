@@ -25,7 +25,7 @@
 %  'EnergyFactor.mat'     <--  'FactorMeanValue'
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\NoWrp 38metros AjusteDirecto';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AV 38m17m ValorMedio Secante 0200seg';
 % cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20';
 load ("DistanceRange.mat");
@@ -36,7 +36,7 @@ x=[DpMin:1:DpMax];               % Initial and final pruning distance
 L=1; R=2;                        % Channel
 
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\NoWrp 38metros AjusteDirecto\7';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\11';
 % cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AV 38m17m ValorMedio Secante 0200seg\7';
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");

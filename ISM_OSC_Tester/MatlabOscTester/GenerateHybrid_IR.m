@@ -12,11 +12,31 @@
 % 
 % Copyright (C) 2023 Universidad de Málaga
 
+
+% %% LAB ROOM
+% absorbData = [   %Gain 27.8
+% 0.92500 0.92500 0.89221 0.85145 0.35311 0.27687 0.18218 0.44888 0.82130;
+% 0.92500 0.92500 0.89221 0.85145 0.35311 0.27687 0.18218 0.44888 0.82130;
+% 0.92500 0.92500 0.89221 0.85145 0.35311 0.27687 0.18218 0.44888 0.82130;
+% 0.92500 0.92500 0.89221 0.85145 0.35311 0.27687 0.18218 0.44888 0.82130;
+% 0.92500 0.92500 0.89221 0.85145 0.35311 0.27687 0.18218 0.44888 0.82130;
+% 0.92500 0.92500 0.89221 0.85145 0.35311 0.27687 0.18218 0.44888 0.82130; ];
+
+% %% SMALL ROOM (17-2-10)
+% absorbData = [   % Gain = 17.99  slope= 2ms (17-2-10)
+% 0.92500 0.34816 0.38625 0.46871 0.70101 0.65432 0.72194 0.72926 0.92500  ;
+% 0.92500 0.34816 0.38625 0.46871 0.70101 0.65432 0.72194 0.72926 0.92500  ;
+% 0.92500 0.34816 0.38625 0.46871 0.70101 0.65432 0.72194 0.72926 0.92500  ;
+% 0.92500 0.34816 0.38625 0.46871 0.70101 0.65432 0.72194 0.72926 0.92500  ;
+% 0.92500 0.34816 0.38625 0.46871 0.70101 0.65432 0.72194 0.72926 0.92500  ;
+% 0.92500 0.34816 0.38625 0.46871 0.70101 0.65432 0.72194 0.72926 0.92500  ;];
+
 %% Output
-%  'ParamsHYB.mat'   <--  'RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','factorMeanValue'
+%  'ParamsHYB.mat'   <--  'RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','FactorMeanValue'
+
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\11';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\BRIR AV LAB 38m ValorMedio Secante\7';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -27,18 +47,18 @@ load ("EnergyFactor.mat");
 
 %% ---------------------------------------------------------
 %% Set TMix & Slope
-Dp_Tmix = 20;
+Dp_Tmix = 24;
 W_Slope = 2;            %  It may be a different value than the one used for energy adjustment
 
 %% Set working folder
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 % delete *.wav;
-save ('ParamsHYB.mat','RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','factorMeanValue');
+save ('ParamsHYB.mat','RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','FactorMeanValue');
 absorbData= absorbData1;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% RGain = RGain_Linear*EnergyFactor;
-RGain = factorMeanValue*db2mag(RGain_dB); 
+RGain = FactorMeanValue*db2mag(RGain_dB); 
 
 %% ---------------------------------------------------------
 
@@ -110,55 +130,14 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Enable Reverb");
 pause(0.1);
 
-%% w file 
+%% t file 
 
 %% LAB_ROOM
 %% configureHybrid (connectionToISM, receiver, osc_listener,                W_Slope,  DistMax,       RefOrd,   RGain,  SaveIR)
-%             configureHybrid (connectionToISM, receiver, osc_listener,     2,         22,            0,       27.8,   true);
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     W_Slope,  Dp_Tmix,        0,       RGain,  true);
-%% SMALL_ROOM
-%             configureHybrid (connectionToISM, receiver, osc_listener,      2,     14,            0,         17.99,   true);
-pause(0.5);
-
-%% t file
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,      W_Slope,      -1,           RefOrd,        -1,   true);
-pause(0.5);
-
-%% Disable Reverb
-HybridOscCmds.SendReverbEnableToISM(connectionToISM, false);
-message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message+" Disable Reverb");
-pause(0.5);
-
-%% i file
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     -1,    -1,      -1,       -1,   true);
-pause(0.5);
-
-%% Reflecion Order = 0
-HybridOscCmds.SendReflecionOrderToISM(connectionToISM, 0);
-% Waiting msg from ISM
-message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message);
-pause(0.5);
-
-%% Enable Reverb
-HybridOscCmds.SendReverbEnableToISM(connectionToISM, true);
-message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message+" Enable Reverb");
-pause(0.5);
+%             configureHybrid (connectionToISM, receiver, osc_listener,     2,         22,            RefOrd,       27.8,   true);
+HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     W_Slope,  Dp_Tmix,        RefOrd,       RGain,  true);
 
 
-%% BRIR
-%% configureHybrid (connectionToISM, receiver, osc_listener, 
-%%                                                                       W_Slope, DistMax, RefOrd, RGain, SaveIR)
-%% LAB_ROOM
-%             configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      27.8,   true);
-% HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      RGain,   true);
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,     2,      1,     0,      -1,   true);
-%% SMALL_ROOM
-%             configureHybrid (connectionToISM, receiver, osc_listener,      2,      1,     0,     17.99,   true);
-
-pause(0.1);
 
 % Close, doesn't work properly
 HybridOscCmds.CloseOscServer(receiver, osc_listener);

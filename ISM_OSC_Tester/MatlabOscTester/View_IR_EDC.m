@@ -13,7 +13,7 @@ L=1; R=2;         % Channels
 %% C= L or R;     % Channel to carry out the adjustment (ParamsISM.mat)
  
 %% Set folder with Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\12';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\6';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 
@@ -66,7 +66,7 @@ Wind_2 = Wind.^2;
 ySum_2 = ySum.^2;
 Hybrid_2 = Hybrid.^2;
 
-mBRIR = mBRIR .* FactorMeanValue;
+mBRIR = mBRIR .* factorMeanValue;
 mBRIR_2 = mBRIR .^2;
 
 if (C== 0) C=1;
@@ -187,7 +187,7 @@ plot (mBRIR(1:24000));
 ylim ([-0.1 0.1]);
 title('measured&Amp BRIR');
 subplot (4,1,4);
-mBRIR = mBRIR ./ FactorMeanValue;
+mBRIR = mBRIR ./ factorMeanValue;
 plot (mBRIR(1:24000));
 ylim ([-0.1 0.1]);
 title('measured BRIR');

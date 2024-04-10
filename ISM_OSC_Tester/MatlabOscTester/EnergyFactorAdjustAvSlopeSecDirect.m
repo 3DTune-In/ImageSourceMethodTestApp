@@ -74,8 +74,8 @@ reductionAbsorChange=0.6;
 %% BRIR used for adjustment: measured ('M') or simulated ('S')
 BRIR_used = 'M';
 
-%% Room to simulate: Lab ('L') or Small ('S') 
-Room = 'Lab';
+%% Room to simulate: A108, sJun, Lab or Sm (Small) 
+Room = 'sJun';
 
 %% MAX ITERATIONS 
 ITER_MAX = 25;
@@ -85,12 +85,18 @@ L=1; R=2;         % Channels
 C=0;              % Channel to carry out the adjustment
 
 %% PRUNING DISTANCES
-if Room == 'Lab'          % Lab  
+if Room == 'A108'            % Aula 108  
+   DpMax=40; DpMin=2;
+   DpMinFit = 20;                %% Smaller distance values will be discarded
+elseif Room == 'sJun'            % Sala Juntas
    DpMax=34; DpMin=2;
-   DpMinFit = 17;                  %% Smaller distance values will be discarded
-elseif Room == 'Sm'      % Small
+   DpMinFit = 17;                %% Smaller distance values will be discarded
+elseif Room == 'Lab'         % Lab  
+   DpMax=38; DpMin=2;
+   DpMinFit = 17;            %% Smaller distance values will be discarded
+elseif Room == 'Sm'          % Small
    DpMax=17; DpMin=2;
-   DpMinFit = 8;                   %% Smaller distance values will be discarded
+   DpMinFit = 8;                 %% Smaller distance values will be discarded
 else
    disp('Error: Room to be simulated must be indicated');
    exit;
@@ -244,7 +250,11 @@ cd (workFolder);
 if BRIR_used == 'S'
    movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';    % simulated
 elseif BRIR_used == 'M'
-    if Room == 'Lab'
+    if     Room == 'A108'
+       copyfile '..\A108BRIR.wav' 'BRIR.wav';      % measured
+    elseif Room == 'sJun'
+       copyfile '..\sJunBRIR.wav' 'BRIR.wav';      % measured
+    elseif Room == 'Lab'
        copyfile '..\LabBRIR.wav' 'BRIR.wav';      % measured
     elseif Room == 'Sm'
        copyfile '..\SmallBRIR.wav' 'BRIR.wav';    % measured
@@ -311,7 +321,7 @@ ISMFile=dir(['ISM_DpMax.wav']);      %ISM obtained with a pruning max distance
 AudioFile=ISMFile.name;
 [t_ISM,Fs] = audioread(AudioFile);
 pause(0.5);
-delete (ISMFile.name);
+% delete (ISMFile.name);
 
 fitSlopes=false;
 while ( iLoop < ITER_MAX)
@@ -666,6 +676,7 @@ while ( iLoop < ITER_MAX)
        pause(0.5);
 
        cd (workFolder);
+       delete (ISMFile.name);
        movefile (nameFileISM, "ISM_DpMax.wav");
 
        AudioFile=ISMFile.name;

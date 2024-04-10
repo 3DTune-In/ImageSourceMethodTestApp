@@ -976,7 +976,7 @@ void ofApp::keyPressed(int key) {
 		break;
 	}
 	case 'A': //Rotate Left
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI/4);
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI/32);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	case 'D': //Rotate Right

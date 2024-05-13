@@ -30,6 +30,8 @@ into the same folder as the project solution or the folder containing the exe fi
 **Note 2:** The use of the third party library Libsofa may require the user to add to the environment variable PATH the **absolute** path of the folder containing the libsofa libs. For example, in a 64-bit Microsoft Windows, you can find that folder in `3dti_AudioToolkit\3dti_ResourceManager\third_party_libraries\sofacoustics\libsofa\dependencies\lib\win\x64`
 
 
-
+Acknowledgement
+-
+This project has received funding from the Spanish National Project SAVLab, under grant No. PID2019-107854GB-I00.
 
 

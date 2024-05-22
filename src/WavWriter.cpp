@@ -36,7 +36,7 @@
 WavWriter::WavWriter()
 {
 	nchannels = 2;		// Stereo
-	samplerate = 44100;	// 44100 Hz
+	samplerate = 48000;	// 44100 Hz
 	bytespersample = 2; // 16 bits	
 	datachunkstart = 0;
 	SetupSampleRange();

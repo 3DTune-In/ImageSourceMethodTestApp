@@ -42,7 +42,7 @@
 #include "ofFileUtils.h"
 
 
-#define SAMPLERATE 44100
+#define SAMPLERATE 48000
 #define BUFFERSIZE 512
 
 #define LENGTH_OF_NORMALS 0.2

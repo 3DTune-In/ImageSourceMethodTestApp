@@ -11,7 +11,7 @@ class SoundSource {
 
 public :
 
-	SoundSource() : position{ 0 }, endFrame{ 0 }, endChunk{ 0 }, sampleRate{44100}, initialized{ false } {}
+	SoundSource() : position{ 0 }, endFrame{ 0 }, endChunk{ 0 }, sampleRate{48000}, initialized{ false } {}
 
 	
 	/** \brief Loads a mono, 16-bit, 44.1kHz ".wav" file

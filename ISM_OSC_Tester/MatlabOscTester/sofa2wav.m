@@ -1,3 +1,12 @@
+%% This script extracts from the BRIR (sofa ambisonic file) the wav file 
+%% associated with the measured impulse response
+
+% Authors: Fabian Arrebola (02/03/2024) 
+% contact: areyesa@uma.es
+% 3DDIANA research group. University of Malaga
+% Project: SONICOM
+% 
+% Copyright (C) 2024 Universidad de Málaga
 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources';
 
@@ -7,8 +16,9 @@ cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resourc
 
 
 %% ROOM
-%% brirMeas = SOFAload('Sala108_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa');
-brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa');
+brirMeas = SOFAload('Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
+%brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
+%%brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa');
 %% brirMeas = SOFAload('lab138_3_KU100_reverb_120cm_adjusted_44100.sofa');
 
 dataMeas = brirMeas.Data.IR;

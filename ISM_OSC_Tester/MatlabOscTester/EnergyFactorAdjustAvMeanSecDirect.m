@@ -75,10 +75,10 @@ reductionAbsorChange=0.6;
 BRIR_used = 'M';
 
 %% Room to simulate: A108, sJun, Lab or Sm (Small) 
-Room = 'sJun';
+Room = 'A108';
 
 %% MAX ITERATIONS 
-ITER_MAX = 13;
+ITER_MAX = 7;
 
 %% Channel: Left (L) or Right (R)
 L=1; R=2;         % Channels
@@ -307,11 +307,11 @@ movefile (nameFileISM, "ISM_DpMax.wav");
 % Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
 
 %%   9 BANDS
-Nf=44100;
+Nf=48000;
 NB=9;
 B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22050;];
 Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
-Bhi=[  88     176      353      707      1414       2828       5657       11314        22050 ];
+Bhi=[  88     176      353      707      1414       2828       5657       11314        22630 ];
 
 %% Working loop
 rng('default');

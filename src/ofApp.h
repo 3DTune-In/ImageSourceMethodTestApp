@@ -287,6 +287,7 @@ private:
 		void OscCallBackListenerOrientation(const ofxOscMessage& message);
 		void OscCallBackSourceLocation(const ofxOscMessage& message);
 		void OscCallBackChangeWorkFolder(const ofxOscMessage& message);
+		void OscCallBackChangeTimeSaveIR(const ofxOscMessage& message);
 		
 		void SendOSCMessageToMatlab_Ready();
 };

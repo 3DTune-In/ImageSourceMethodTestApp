@@ -107,7 +107,7 @@ void ofApp::setup() {
 
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
 	//fullPath = pathResources + "\\" + "Juntas_room_Ini.xml";            // Juntas_ROOM
-	fullPath = pathResources + "\\" + "A108_room_VM.xml";            // A108_ROOM
+	fullPath = pathResources + "\\" + "A108_room_Ini.xml";            // A108_ROOM
 	//fullPath = pathResources + "\\" + "lab_room_Ini_Izq.xml";       // LAB_ROOM
 	//fullPath = pathResources + "\\" + "lab_room_Ini_Rot.xml";       // LAB_ROOM_ROT
 	
@@ -1796,11 +1796,11 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 	environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
 
-	imageSourceDSPList = reCreateImageSourceDSP();
-
 	winThresholdControl.set("WinThreshold (ms)", (maxDistanceSourcesToListener * 1000) / myCore.GetMagnitudes().GetSoundSpeed());
 
 	maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
+
+	imageSourceDSPList = reCreateImageSourceDSP();
 		
 	if (!stopState) systemSoundStream.start();
 }
@@ -2738,6 +2738,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/listenerOrientation") OscCallBackListenerOrientation(message);
 	else if (message.getAddress() == "/sourceLocation") OscCallBackSourceLocation(message);
 	else if (message.getAddress() == "/workFolder") OscCallBackChangeWorkFolder(message);
+	else if (message.getAddress() == "/timeRecordIR") OscCallBackChangeTimeSaveIR(message);
 
 
 	else std::cout << "Message OSC not recognised " << message << std::endl;
@@ -3062,6 +3063,18 @@ void ofApp::OscCallBackChangeWorkFolder(const ofxOscMessage& message) {
 
 	SendOSCMessageToMatlab_Ready();
 }
+
+void ofApp::OscCallBackChangeTimeSaveIR(const ofxOscMessage& message) {
+
+	float secondsToRecordIR = message.getArgAsFloat(0);  //getArgAsFloat(0);	
+	std::cout << "Received Change Time to Record IR Command" << ",  " << secondsToRecordIR << std::endl;
+
+	changeSecondsToRecordIR(secondsToRecordIR);
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+
 
 void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
 

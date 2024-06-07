@@ -90,6 +90,11 @@ classdef HybridOscCmds
             oscsend(u,'/saveIR','N', "");
         end
 
+        %% Send timeRecordIR to the OSC server (ISM)
+        function SendTimeRecordIRToISM(u, gain)
+            oscsend(u,'/timeRecordIR','f',gain);
+        end
+
         %%  Send a Play command the OSC server (ISM)
         function SendPlayToISM(u)
             oscsend(u,'/play','N', "");

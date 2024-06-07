@@ -75,9 +75,15 @@ HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         
 pause(0.2);
 disp(message+" RIR");
 
+%%  Enable Distance Attenuation Reverb Enable To ISM
+HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+disp(message+" Distance Attenuation Reverb Enable");
+pause(0.2);
+
 
 %% Set Absortions
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m valorMedio\7';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\ANALISIS FILTERBANK PARALLEL\sJuntas 34m17m valorMedio 48K\12';
 % cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m Pendiente\7';
 load ("FiInfAbsorb.mat");
 %% Send Initial absortions

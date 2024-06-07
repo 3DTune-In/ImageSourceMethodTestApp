@@ -16,7 +16,7 @@
 %  'ParamsHYB.mat'   <--  'RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','factorMeanValue'
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\11';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\4';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -24,6 +24,12 @@ load ("ParamsISM.mat");
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");
 load ("EnergyFactor.mat");
+
+%% Read BRIR to get its lenght
+formatFileBRIR= "BRIR";
+nameFileBRIR = sprintf(formatFileBRIR)+'.wav';
+[yBRIR,Fs] = audioread(nameFileBRIR);
+TimeToRecord= length(yBRIR)/Fs;
 
 %% ---------------------------------------------------------
 %% Set TMix & Slope
@@ -111,6 +117,14 @@ disp(message+" Enable Reverb");
 pause(0.1);
 
 %% w file 
+
+%% Set Time to Record Impulse Response
+HybridOscCmds.SendTimeRecordIRToISM(connectionToISM, TimeToRecord);
+% Waiting msg from ISM
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+msg = sprintf('%s Time to Record Impulse Response = %d', message, TimeToRecord);
+disp (msg);
+pause(0.2);
 
 %% LAB_ROOM
 %% configureHybrid (connectionToISM, receiver, osc_listener,                W_Slope,  DistMax,       RefOrd,   RGain,  SaveIR)

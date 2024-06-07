@@ -77,7 +77,7 @@ reductionAbsorChange=0.9;
 BRIR_used = 'M';
 
 %% Room to simulate: A108, sJun, Lab or Sm (Small) 
-Room = 'sJun';
+Room = 'A108';
 
 %% MAX ITERATIONS 
 ITER_MAX = 15;
@@ -638,32 +638,28 @@ while ( iLoop < ITER_MAX)
 
     %% ---------------------------------
 
+    changeAbsor = 0;
     if (iLoop < 2 )
         %% first new absortions
-       absorbData2 = absorbData;            
+       absorbData2 = absorbData; 
+       changeAbsor = changeAbsor + 5;
     else
         %% calculate new absorptions
         for j=1:NB
-            if (abs (distAu0(1,j) - distAu1(1,j) ) > 0.0000001)
-                newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
+            newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
 
-                if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
-                    maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
-                end
-
-                if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j)
-                   if newAbsorb > absorbData1(1,j)  
-                      newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
-                   else 
-                      newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
-                   end
-                end
-
-            else 
-                newAbsorb =  absorbData1(1,j)+distAu1(1,j)*0.01; %%%%%%%%%%%
-                disp("Very similar diffs. Band: "+ int2str(j) ); 
-                % disp (newAbsorb);
+            if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
+                maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
             end
+
+            if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j)
+                if newAbsorb > absorbData1(1,j)
+                    newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
+                else
+                    newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
+                end
+            end
+   
 
             if (newAbsorb <= 0.0)
                 newAbsorb = absorMin;
@@ -674,6 +670,9 @@ while ( iLoop < ITER_MAX)
             for k=1:6
                 absorbData2 (k,j) = newAbsorb;
             end  
+            if (abs(FactorMeanBand (1,j)-1) > 0.05)
+                changeAbsor = changeAbsor + 1;
+            end
         end
     end
 
@@ -694,7 +693,8 @@ while ( iLoop < ITER_MAX)
     disp(vAbsor);
        
     %% send new abssortion values (if any of the slopes exceeds the threshold)
-    if (abs(factorMeanValue-1.0) > 0.01)  %slopeMax > 0.002 || abs(totalSlope)> 0.002 
+    %% if (abs(factorMeanValue-1.0) > 0.01)  %slopeMax > 0.002 || abs(totalSlope)> 0.002 
+    if changeAbsor > 0 || abs(factorMeanValue-1.0) > 0.01
        absorbDataT = absorbData2';
        walls_absor = absorbDataT(:);
        HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor');

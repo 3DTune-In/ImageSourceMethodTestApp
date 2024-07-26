@@ -38,7 +38,7 @@ HybridOscCmds.SendListenerOrientationToISM (connectionToISM, orientationL);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
 %% Set Room
-HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'A108_room_VM.xml');
+HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'A108_room_INI.xml');
 %HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'A108_room_VM_Slope.xml');
 %HybridOscCmds.SendChangeRoomToISM(connectionToISM, 'A108_room_Slope.xml');
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
@@ -46,10 +46,10 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 positionS = posS;
 HybridOscCmds.SendSourceLocationToISM (connectionToISM, positionS);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-%% Set BRIR
+%% Set BRIR Binaural
 HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
-%HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa');
-% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, '2_KU100_reverb_120cm_adjusted_44100_v2.sofa');
+%% Set RIR Omni
+% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 pause(1);
 %%  Send Play and Stop ToISM
@@ -63,10 +63,7 @@ disp(message+" Stop");
 pause(0.5);
 %% Set RGain
 % configureHybrid (connectionToISM, receiver, osc_listener,              W_Slope, DistMax, RefOrd, RGain, SaveIR) 
-%HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,       3,    1,   false);
 HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,       4,    1,   false);
-%HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,        2,    20,       4,    0.949,   false);
-%HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,       4,    1.499,   false);
 pause(0.2);
 disp(message+" RIR");
 
@@ -76,9 +73,10 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Distance Attenuation Reverb Enable");
 pause(0.2);
 
-%% Set Absortions
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\ANALISIS FILTERBANK PARALLEL\A108 40m20m valorMedio\6';
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 40m20m pendiente\11';
+%% Set Absortions Binaural
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
+%% Set Absortions Omni
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
 load ("FiInfAbsorb.mat");
 %% Send Initial absortions
 absorbData1 = absorbData1/2;

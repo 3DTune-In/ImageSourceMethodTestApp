@@ -13,7 +13,7 @@ Common::CTimeMeasure startOfflineRecord;
 
 #define PARALLEL 0
 #define CASCADE  1
-#define EQUALIZERTYPE PARALLEL
+#define EQUALIZERTYPE CASCADE
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
@@ -74,7 +74,10 @@ void ofApp::setup() {
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	string fullPath = pathResources + "\\" + "HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	//string fullPath = pathResources + "\\" + "HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	string fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa";
+	//string fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa";
+
 	//string fullPath = pathResources + "\\" + "D1_44K_16bit_256tap_FIR_SOFA.sofa";
 	//string fullPath = pathResources + "\\" + "3DTI_HRTF_D2_128s_44100Hz.sofa";       //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";             // To test the Filterbank
@@ -90,8 +93,12 @@ void ofApp::setup() {
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
 	//fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";                      // LAB_ROOM 
-	fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";             // A108_ROOM 
+	//fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";             // A108_ROOM 
 	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";  // Juntas_ROOM
+	fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa";       
+	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa";   
+
+	
 	
 	fullPathBRIR = fullPath;
 	                                  

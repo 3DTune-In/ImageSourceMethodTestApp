@@ -16,9 +16,8 @@
 %
 %% This script:
 %  1) Open a connection to send/receive messages to ISM simulator
-%  2) Select the BRIR to make the adjustment
-%     a) Generate the BRIR file from a simulation with DistMax=1m, RO=0, W_Slope=2 ms and RGain value set by the user
-%     b) Load the BRIR measured for the room to be simulated
+%  2) Generate the BRIR file from a simulation with 
+%     DistMax=1m, RO=0, W_Slope=2 ms and RGain value set by the user
 %  3) Send Initial absortions
 %  4) Generate the IR file associated with ISM with Maximum pruning distance
 %     ISM_DpMax:  DistMax=DpMax, RO=40. 
@@ -45,13 +44,9 @@
 %  6.11) Create new folder to save slopes, absortions, IRs files (see
 %        output)
 
-%% Input - Configure
-% BRIR_used --> BRIR used for adjustment: measured ('M') or simulated ('S')
-% Room      --> Room to simulate: A108, sJun, Lab or Sm (Small) 
-% ITER_MAX  --> MAX ITERATIONS
-% nameFolder --> Folder with impulse responses
-
-% DpMax; DpMin; DpMinFit; --> (PRUNING DISTANCES)
+%% Input
+% ITER_MAX 
+% DpMax; DpMin; DpMinFit;  (PRUNING DISTANCES)
 % RefOrd; 
 % W_Slope;                      
 % RGain_dB;
@@ -66,15 +61,15 @@
 %  'BRIR.wav'            <-- IR_Reverb
 %  'ISMDpMax.wav'        <-- IR_ISM
 
-clear all;
-
 %% Absorption saturation values
 absorMax=0.9999;
 absorMin=0.0001;
-maxChange=0.1;                %0.1
-reductionAbsorChange=0.75;     %0.6
+maxChange=0.10;
+reductionAbsorChange=0.6;
+% absorMax=0.95;
+% absorMin=0.05;
 % maxChange=0.15;
-% reductionAbsorChange=0.75;
+% reductionAbsorChange=0.6;
 
 %% BRIR used for adjustment: measured ('M') or simulated ('S')
 BRIR_used = 'M';
@@ -83,7 +78,7 @@ BRIR_used = 'M';
 Room = 'sJun';
 
 %% MAX ITERATIONS 
-ITER_MAX = 15;
+ITER_MAX = 13;
 
 %% Channel: Left (L) or Right (R)
 L=1; R=2;         % Channels
@@ -149,12 +144,12 @@ if exist('FiInfAbsorb.mat', 'file') == 2
     load ("FiInfAbsorb.mat");
     absorbData =absorbData1;
 else
-    absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;];
+    absorbData = [0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+        0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+        0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+        0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+        0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;
+        0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50;];
 end
 
 absorbData0 = absorbData;
@@ -293,15 +288,6 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 msg = sprintf('%s Ref Order = %d', message, RefOrd);
 disp (msg);
 pause(0.2);
-
-%% Set Time to Record Impulse Response
-HybridOscCmds.SendTimeRecordIRToISM(connectionToISM, 0.2);
-% Waiting msg from ISM
-message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-msg = sprintf('%s Time to Record Impulse Response = %d', message, 0.2);
-disp (msg);
-pause(0.2);
-
 %% ISM_DpMax
 % configureHybrid (connectionToISM, receiver, osc_listener,                W_Slope, DistMax,   RefOrd,     RGain, SaveIR) 
 HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,    W_Slope,    DpMax,     -1,        -1,   true);
@@ -309,6 +295,7 @@ pause(0.2);
 disp(message+ " ISM DpMax ");
 %% Rename to ISM_DpMax.wav
 cd (workFolder);
+
 
 movefile (nameFileISM, "ISM_DpMax.wav");
 
@@ -608,7 +595,7 @@ while ( iLoop < ITER_MAX)
         if (abs (DistAuB)  > 0)
             % for k=1:4    %excluding ceil and floor
              for k=1:6
-                newAbsorb = absorbData (k,j) + (FactorMeanBand (1,j)-1)*0.05;
+                newAbsorb = absorbData (k,j) + (FactorMeanBand (1,j) -1)*0.1;
 
                 if abs (newAbsorb - absorbData(k,j) ) > maximumAbsorChange(j);
                     if newAbsorb > absorbData(k,j)
@@ -641,28 +628,32 @@ while ( iLoop < ITER_MAX)
 
     %% ---------------------------------
 
-    changeAbsor = 0;
     if (iLoop < 2 )
         %% first new absortions
-       absorbData2 = absorbData; 
-       changeAbsor = changeAbsor + 5;
+       absorbData2 = absorbData;            
     else
         %% calculate new absorptions
         for j=1:NB
-            newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
+            if (abs (distAu0(1,j) - distAu1(1,j) ) > 0.0000001)
+                newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
 
-            if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
-                maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
-            end
-
-            if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j)
-                if newAbsorb > absorbData1(1,j)
-                    newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
-                else
-                    newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
+                if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
+                    maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
                 end
+
+                if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j)
+                   if newAbsorb > absorbData1(1,j)  
+                      newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
+                   else 
+                      newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
+                   end
+                end
+
+            else 
+                newAbsorb =  absorbData1(1,j)+distAu1(1,j)*0.01; %%%%%%%%%%%
+                disp("Very similar diffs. Band: "+ int2str(j) ); 
+                % disp (newAbsorb);
             end
-   
 
             if (newAbsorb <= 0.0)
                 newAbsorb = absorMin;
@@ -673,9 +664,6 @@ while ( iLoop < ITER_MAX)
             for k=1:6
                 absorbData2 (k,j) = newAbsorb;
             end  
-            if (abs(FactorMeanBand (1,j)-1) > 0.05)
-                changeAbsor = changeAbsor + 1;
-            end
         end
     end
 
@@ -696,8 +684,7 @@ while ( iLoop < ITER_MAX)
     disp(vAbsor);
        
     %% send new abssortion values (if any of the slopes exceeds the threshold)
-    %% if (abs(factorMeanValue-1.0) > 0.01)  %slopeMax > 0.002 || abs(totalSlope)> 0.002 
-    if changeAbsor > 0 || abs(factorMeanValue-1.0) > 0.01
+    if (abs(factorMeanValue-1.0) > 0.01)   || abs(totalSlope)> 0.005 
        absorbDataT = absorbData2';
        walls_absor = absorbDataT(:);
        HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor');
@@ -723,7 +710,7 @@ while ( iLoop < ITER_MAX)
     % disp(message);
     % pause (1)
 %% ----------- ------------------
-    b = mod(iLoop,1 ) ;
+    b = mod( iLoop , 1 ) ;
     if (b==0)|| (fitSlopes == true) || (iLoop==ITER_MAX-1)
         % actual folder
         current_folder = pwd;

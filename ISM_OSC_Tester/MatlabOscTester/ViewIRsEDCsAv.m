@@ -10,6 +10,7 @@
  
 %% Set folder with IRs and Params
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\7';
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m valorMedio\7';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 
@@ -21,6 +22,7 @@ load ("EnergyFactor.mat");
 
 %% Set working folder
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m valorMedio';
 load ("ParamsHYB.mat");
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

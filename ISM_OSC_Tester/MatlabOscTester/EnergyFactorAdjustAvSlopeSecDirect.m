@@ -62,10 +62,10 @@
 %  'ISMDpMax.wav'        <-- IR_ISM
 
 %% Absorption saturation values
-absorMax=0.9999;
-absorMin=0.0001;
-maxChange=0.10;
-reductionAbsorChange=0.6;
+absorMax=0.99;
+absorMin=0.01;
+maxChange=0.15;
+reductionAbsorChange=0.8;
 % absorMax=0.95;
 % absorMin=0.05;
 % maxChange=0.15;
@@ -75,10 +75,10 @@ reductionAbsorChange=0.6;
 BRIR_used = 'M';
 
 %% Room to simulate: A108, sJun, Lab or Sm (Small) 
-Room = 'sJun';
+Room = 'A108';
 
 %% MAX ITERATIONS 
-ITER_MAX = 25;
+ITER_MAX = 10;
 
 %% Channel: Left (L) or Right (R)
 L=1; R=2;         % Channels
@@ -211,8 +211,8 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Enable Distance Attenuation");
 pause(0.2);
 
-%%  Disable Distance Attenuation Reverb Enable To ISM
-HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
+%%  Enable Distance Attenuation Reverb Enable To ISM
+HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, true);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Distance Attenuation Reverb Enable");
 pause(0.2);
@@ -663,7 +663,7 @@ while ( iLoop < ITER_MAX)
     disp(vAbsor);
        
     %% send new abssortion values (if any of the slopes exceeds the threshold)
-    if abs(slopeMax) >  0.007 || abs(totalSlope)>0.002
+    if abs(slopeMax) >  0.007 || abs(totalSlope)>0.002 || iLoop < 3
        absorbDataT = absorbData2';
        walls_absor = absorbDataT(:);
        HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor');

@@ -26,18 +26,22 @@
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AV 38m17m ValorMedio Secante 0200seg';
-% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 28 2 20';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT';
 load ("DistanceRange.mat");
 load ("ParamsISM.mat");
+
 
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
 L=1; R=2;                        % Channel
 
 %% Folder with impulse responses
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\11';
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AV 38m17m ValorMedio Secante 0200seg\7';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\7';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+
 load ("FiInfAbsorb.mat");
 load ("FiInfSlopes.mat");
 
@@ -48,11 +52,11 @@ colormap =[0.6350 0.0780 0.1840; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 0 0; 0 0 0; 0.929
 % B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22016;];
 
 %%   9 BANDS
-Nf=44100;
+Nf=48000;
 NB=9;
 B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22050;];
 Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
-Bhi=[  88     176      353      707      1414       2828       5657       11314        22050 ];
+Bhi=[  88     176      353      707      1414       2828       5657       11314        22630 ];
 
 %% Number of Impulse Responses
 NumIRs = DpMax-DpMin+1;

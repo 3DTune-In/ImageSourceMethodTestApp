@@ -37,7 +37,7 @@ clear all;
 
 %% parameter used for adjustment
 paramAdj =  'EDT'; % 'T20', 'C50','C80', 'D50', 'C50'
-DiffMax = 0.2;
+DiffMax = 0.25;
 
 NB=9;
 
@@ -339,13 +339,13 @@ while ( iLoop < ITER_MAX)
     for j=1:NB
      
         %distAu(1,j) = FactorMeanBand (1,j) -1;
-        distAu(1,j) = -(raResults_reference.EDT.freqData(j,1) - raResults_hybrid.EDT.freqData(j,1));
+        distAu(1,j) = raResults_hybrid.EDT.freqData(j,1)- raResults_reference.EDT.freqData(j,1);
                 
         DistAuB = distAu(1,j);
         if (abs (DistAuB)  > 0)
             % for k=1:4    %excluding ceil and floor
              for k=1:6
-                newAbsorb = absorbData (k,j) + distAu(1,j)*0.01;
+                newAbsorb = absorbData (k,j) - distAu(1,j)*0.1;
 
                 if abs (newAbsorb - absorbData(k,j) ) > maximumAbsorChange(j);
                     if newAbsorb > absorbData(k,j)
@@ -380,6 +380,7 @@ while ( iLoop < ITER_MAX)
     else
         %% calculate new absorptions
         for j=1:NB
+          
             newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
 
             if sign(distAu1(1,j)) ~= sign(distAu0(1,j))

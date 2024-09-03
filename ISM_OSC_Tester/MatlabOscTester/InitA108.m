@@ -1,4 +1,4 @@
-%% This script contains the OSC script to initialize the LAB ROOM
+%% This script contains the OSC script to initialize the A108 ROOM
 
 % Authors: Fabian Arrebola (13/12/2023) 
 % contact: areyesa@uma.es
@@ -46,6 +46,12 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 positionS = posS;
 HybridOscCmds.SendSourceLocationToISM (connectionToISM, positionS);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+
+%% Set HRTF Binaural
+% HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa');
+%% Set HRTF Omni
+HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa')
+
 %% Set BRIR Binaural
 HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
 %% Set RIR Omni

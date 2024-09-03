@@ -180,8 +180,9 @@ private:
 		
 		COscManager oscManager;					// OSC Manager
 		bool changeFileFromOSC;                 // initial value: false
-		char* charFilenameOSC;                  // file name with the geometry or BRIR of the room
+		char* charFilenameOSC;                  // file name with the HRTF or geometry or BRIR of the room
 		char* charFolderOSC= "workFolder";                    // working folder name
+		string fullPathHRTF;
 		string fullPathBRIR;
 
 
@@ -282,6 +283,7 @@ private:
 		void OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& message);
 		void OscCallBackSaveIR();
 		void OscCallBackChangeRoom(const ofxOscMessage& message);
+		void OscCallBackChangeHRTF(const ofxOscMessage& message);
 		void OscCallBackChangeBRIR(const ofxOscMessage& message);
 		void OscCallBackListenerLocation(const ofxOscMessage& message);
 		void OscCallBackListenerOrientation(const ofxOscMessage& message);

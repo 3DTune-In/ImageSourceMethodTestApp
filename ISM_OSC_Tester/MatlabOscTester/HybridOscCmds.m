@@ -140,6 +140,11 @@ classdef HybridOscCmds
             oscsend(u,'/changeRoom','s',str);
         end
 
+        %% Send ChangeHRTF command to the OSC server (ISM)
+        function SendChangeHRTFToISM(u, str)
+            oscsend(u,'/changeHRTF','s',str);
+        end
+
         %% Send ChangeBRIR command to the OSC server (ISM)
         function SendChangeBRIRToISM(u, str)
             oscsend(u,'/changeBRIR','s',str);

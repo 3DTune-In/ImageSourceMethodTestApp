@@ -37,12 +37,12 @@ clear all;
 
 %% parameter used for adjustment
 paramAdj =  'EDT'; % 'T20', 'C50','C80', 'D50', 'C50'
-DiffMax = 0.25;
+DiffMax = 0.05;
 
 NB=9;
 
 %% Set Distance por Tmix
-DpTmix = 20;
+DpTmix = 30;
 
 %% Absorption saturation values
 absorMax=0.9999;
@@ -118,20 +118,20 @@ x=[DpMin:1:DpMax];               % Initial and final pruning distance
 %     load ("FiInfAbsorb.mat");
 %     absorbData =absorbData1;
 % else
-%     absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;];
-% end
+%     absorbData = [0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+%                   0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+%                   0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+%                   0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+%                   0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+%                   0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;];
+% end    
 
-absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;];
+absorbData = [0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+                  0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+                  0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+                  0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+                  0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;
+                  0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30 0.30;];
 
 absorbData0 = absorbData;
 absorbData1 = absorbData;
@@ -149,7 +149,7 @@ An=zeros(ITER_MAX, 9);
 
 maximumAbsorChange=[maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange];
 
-formatSlope = "parAd: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
+formatParAd = "parAd: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsor = "Absor: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsorChange= "AbChg: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formaTotalMaxSlope= "TotalSlope: %.5f  factorMeanValue: %.5f";
@@ -345,7 +345,7 @@ while ( iLoop < ITER_MAX)
         if (abs (DistAuB)  > 0)
             % for k=1:4    %excluding ceil and floor
              for k=1:6
-                newAbsorb = absorbData (k,j) - distAu(1,j)*0.1;
+                newAbsorb = absorbData (k,j) - distAu(1,j)*0.01;
 
                 if abs (newAbsorb - absorbData(k,j) ) > maximumAbsorChange(j);
                     if newAbsorb > absorbData(k,j)
@@ -381,11 +381,18 @@ while ( iLoop < ITER_MAX)
         %% calculate new absorptions
         for j=1:NB
           
-            newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
+            if (abs(distAu(1,j)) > DiffMax)
+                newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
+            else
+                newAbsorb = absorbData1(1,j);
+            end
 
             if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
                 maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
             end
+
+            if (newAbsorb < absorMin) newAbsorb = absorMin; end
+            if (newAbsorb > absorMax) newAbsorb = absorMax; end
 
             if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j) 
                 if newAbsorb > absorbData1(1,j) 
@@ -409,9 +416,9 @@ while ( iLoop < ITER_MAX)
     end
 
  
-    vSlope = sprintf(formatSlope,distAu0);
+    vSlope = sprintf(formatParAd,distAu0);
     disp(vSlope);
-    vSlope = sprintf(formatSlope,distAu1);
+    vSlope = sprintf(formatParAd,distAu1);
     disp(vSlope);
     vAbsor = sprintf(formatAbsorChange,maximumAbsorChange);
     disp(vAbsor);

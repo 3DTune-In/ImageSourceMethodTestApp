@@ -37,13 +37,14 @@ elseif isequal(name_room,'sJun')
     name_path_room_meas = 'SalaJuntasTeleco';
 end
 %path_load_alpha_OurAdjustment = fullfil     e(path_general, ['2024_07_11_SimulacionPosiciones_' name_path_room_hybrid '_AjusteOMNI']); 
-path_load_alpha_OurAdjustment = fullfile(path_general, ['2024_07_11_SimulacionPosicionesBRIR_' name_path_room_hybrid '_AjusteOMNI']); 
+%path_load_alpha_OurAdjustment = fullfile(path_general, ['2024_07_11_SimulacionPosicionesBRIR_' name_path_room_hybrid '_AjusteOMNI']); 
 %path_load_alpha_OurAdjustment = fullfile(path_general, ['2024_07_24_SimulacionPosicionesOmni_' name_path_room_hybrid '_AjusteOMNI']); 
+path_load_alpha_OurAdjustment = fullfile(path_general, ['2024_07_26_SimulacionPosicionesOmni_' name_path_room_hybrid '_AjusteOMNI_EDT']); 
 
 % Hybrid (ISM+conv) BRIR with TEyring
 %path_TEyring_BRIR = fullfile(path_general, ['2024_07_17_SimulacionPosiciones_' name_path_room_hybrid '_AjusteTeyring']);
-path_TEyring_BRIR = fullfile(path_general, ['2024_07_17_SimulacionPosicionesBRIR_' name_path_room_hybrid '_AjusteTeyring']);
-%path_TEyring_BRIR = fullfile(path_general, ['2024_07_24_SimulacionPosicionesOmni_' name_path_room_hybrid '_AjusteTeyring']);
+%path_TEyring_BRIR = fullfile(path_general, ['2024_07_17_SimulacionPosicionesBRIR_' name_path_room_hybrid '_AjusteTeyring']);
+path_TEyring_BRIR = fullfile(path_general, ['2024_07_24_SimulacionPosicionesOmni_' name_path_room_hybrid '_AjusteTeyring']);
 
 % For absorption coefficient values
 path_load_acoustic_params_omni = fullfile(path_general, '2024_03_04_Medidas_aula108_salaJuntasTeleco\Acoustic_parameters');

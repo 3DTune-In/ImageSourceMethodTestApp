@@ -81,6 +81,7 @@ void ofApp::setup() {
 	//string fullPath = pathResources + "\\" + "D1_44K_16bit_256tap_FIR_SOFA.sofa";
 	//string fullPath = pathResources + "\\" + "3DTI_HRTF_D2_128s_44100Hz.sofa";       //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";             // To test the Filterbank
+	fullPathHRTF = fullPath;
 
 	bool specifiedDelays;
 	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
@@ -2036,7 +2037,7 @@ void ofApp::changeAudioToPlay(bool &_active)
 	//string pathData = ofToDataPath("", true);
 	string pathData = ofToDataPath("", false);
 	
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an WAV file to Play");
+	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select a WAV file to Play");
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
 		ofFile file(openFileResult.getPath());
@@ -2178,7 +2179,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 			openFileResult.bSuccess = false;
 	}
 	else {
-		openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
+		openFileResult = ofSystemLoadDialog("Select a XML file with the new configuration of the room");
 		ofFile file(openFileResult.getPath());
 		fileExtension = ofToUpper(file.getExtension());
 		fullPath = openFileResult.getPath();
@@ -2347,19 +2348,37 @@ void ofApp::changeHRTF(bool& _active)
 		
 	string pathData = ofToDataPath("", false);
 
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new HRTF");
+	ofFileDialogResult openFileResult;
+	string fileExtension, fileName, fullPath;
+	if (changeFileFromOSC) {
+		string pathResources = ofToDataPath("resources");
+		openFileResult.filePath = pathResources;
+		openFileResult.fileName = charFilenameOSC;
+		fullPath = pathResources + "\\" + charFilenameOSC;
+		ofFile file(fullPath);
+		if (file.exists()) {
+			openFileResult.bSuccess = true;
+			fileExtension = ofToUpper(file.getExtension());
+		}
+		else
+			openFileResult.bSuccess = false;
+	}
+	else {
+		openFileResult = ofSystemLoadDialog("Select a SOFA file with the new HRTF");
+		ofFile file(openFileResult.getPath());
+		fileExtension = ofToUpper(file.getExtension());
+		fullPath = openFileResult.getPath();
+		fileName = openFileResult.getName();
+	}
+
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
-		ofFile file(openFileResult.getPath());
 		ofLogVerbose("The file exists - now checking the type via file extension");
-		string fileExtension = ofToUpper(file.getExtension());
 		if (fileExtension == "SOFA")
 		{
-			string pathData = openFileResult.getPath();
-			char* charFilename = new char[pathData.length() + 1];
-			strcpy(charFilename, pathData.c_str());
+			fullPathHRTF = fullPath;
 			bool specifiedDelays;
-			bool sofaLoadResult = HRTF::CreateFromSofa(pathData, listener, specifiedDelays);
+			bool sofaLoadResult = HRTF::CreateFromSofa(fullPathHRTF, listener, specifiedDelays);
 
 			if (!sofaLoadResult) {
 				cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
@@ -2368,14 +2387,14 @@ void ofApp::changeHRTF(bool& _active)
 			}
 			else
 			{
-				cout << "Load new HRTF File " << pathData << endl  << endl;
+				cout << "Load new HRTF File " << fullPathHRTF << endl  << endl;
 			}
 		}
 		else
 		{
 			ofLogError() << "Extension must be SOFA";
 			if (!stopState) systemSoundStream.start();
-			cout << "Load new HRTF File " << pathData << endl << endl;
+			cout << "Load new HRTF File " << fullPathHRTF << endl << endl;
 			return;
 		}
 	}
@@ -2419,7 +2438,7 @@ void ofApp::changeBRIR(bool& _active)
 			openFileResult.bSuccess = false;
 	}
 	else {
-		openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
+		openFileResult = ofSystemLoadDialog("Select a SOFA file with the new BRIR of the room");
 		ofFile file(openFileResult.getPath());
 		fileExtension = ofToUpper(file.getExtension());
 		fullPath = openFileResult.getPath();
@@ -2434,7 +2453,7 @@ void ofApp::changeBRIR(bool& _active)
 			//char* charFilename = new char[fullPath.length() + 1];
 			//strcpy(charFilename, fullPath.c_str());
 			fullPathBRIR = fullPath;
-			bool sofaLoadResult = BRIR::CreateFromSofa(fullPath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+			bool sofaLoadResult = BRIR::CreateFromSofa(fullPathBRIR, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
 			
 			if (!sofaLoadResult) {
 				cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
@@ -2443,7 +2462,7 @@ void ofApp::changeBRIR(bool& _active)
 			}
 			else
 			{
-				cout << "Load new BRIR File " << fullPath << endl << endl;
+				cout << "Load new BRIR File " << fullPathBRIR << endl << endl;
 				int BRIRLength = environment->GetBRIR()->GetBRIRLength();
 				float sampleRate = myCore.GetAudioState().sampleRate;
 				float secToRecordIR = ((float)BRIRLength) / sampleRate;
@@ -2454,7 +2473,7 @@ void ofApp::changeBRIR(bool& _active)
 		{
 			ofLogError() << "Extension must be SOFA";
 			if (!stopState) systemSoundStream.start();
-			cout << "Load new BRIR File " << fullPath << endl << endl;
+			cout << "Load new BRIR File " << fullPathBRIR << endl << endl;
 			return;
 		}
 	}
@@ -2740,6 +2759,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
 	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
 	else if (message.getAddress() == "/changeRoom") OscCallBackChangeRoom (message);
+	else if (message.getAddress() == "/changeHRTF") OscCallBackChangeHRTF(message);
 	else if (message.getAddress() == "/changeBRIR") OscCallBackChangeBRIR (message);
 	else if (message.getAddress() == "/listenerLocation") OscCallBackListenerLocation(message);
 	else if (message.getAddress() == "/listenerOrientation") OscCallBackListenerOrientation(message);
@@ -3043,6 +3063,23 @@ void ofApp::OscCallBackChangeRoom(const ofxOscMessage& message) {
 	SendOSCMessageToMatlab_Ready();
 
 }
+
+void ofApp::OscCallBackChangeHRTF(const ofxOscMessage& message) {
+	changeFileFromOSC = true;
+
+	std::string filemaneOSC = message.getArgAsString(0);
+
+	charFilenameOSC = new char[filemaneOSC.length() + 1];
+	strcpy(charFilenameOSC, filemaneOSC.c_str());
+
+	std::cout << "Received changeHRTF Command" << ",  " << charFilenameOSC << std::endl;
+
+	changeHRTFControl.set(true);
+
+	changeFileFromOSC = false;
+	SendOSCMessageToMatlab_Ready();
+}
+
 void ofApp::OscCallBackChangeBRIR(const ofxOscMessage& message) {
 	changeFileFromOSC = true;
 

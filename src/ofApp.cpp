@@ -11,9 +11,6 @@ Common::CTimeMeasure startOfflineRecord;
 #endif
 #include <filesystem>
 
-#define PARALLEL 0
-#define CASCADE  1
-#define EQUALIZERTYPE CASCADE
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
@@ -187,9 +184,9 @@ void ofApp::setup() {
 
 	numberOfSilencedFrames = floor((numberOfSilencedSamples - windowSlopeWidth/2) / myCore.GetAudioState().bufferSize);
 
-	ISMHandler->setupArbitraryRoom(trapezoidal, EQUALIZERTYPE);
+	ISMHandler->setupArbitraryRoom(trapezoidal);
 	shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
-	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 	
 	//Absortion as vector
 	ISMHandler->setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
@@ -1118,7 +1115,7 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) systemSoundStream.stop();
 
 		shoeboxLength += 0.5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1135,7 +1132,7 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxLength > 3.0)  shoeboxLength -= 0.5;
 
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1152,7 +1149,7 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxWidth > 3.0) shoeboxWidth -= 0.5;
 
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1169,7 +1166,7 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) systemSoundStream.stop();
 		shoeboxWidth += 0.5;
 
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1185,7 +1182,7 @@ void ofApp::keyPressed(int key) {
 	case 'v': //decrease room's height
 		if (!stopState) systemSoundStream.stop();
 		if (shoeboxHeight > 2.5) shoeboxHeight -= 0.5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth,shoeboxHeight);
 
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -1201,7 +1198,7 @@ void ofApp::keyPressed(int key) {
 	case 'n': //increase room's height
 		if (!stopState) systemSoundStream.stop();
 		shoeboxHeight += 0.5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight, EQUALIZERTYPE);
+		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
 
 		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
@@ -2257,7 +2254,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	}
 	////////////////////////////////////////////////
 	
-	ISMHandler->setupArbitraryRoom(newRoom, EQUALIZERTYPE);
+	ISMHandler->setupArbitraryRoom(newRoom);
 	
 	
 	//Absortion as vector

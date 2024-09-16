@@ -30,10 +30,16 @@ posL = [0.0  0.0 0.15;   %1
        -2.0 -2.0 0.15;   %4
        -4.0 -4.0 0.15];  %5
 
-%% Sofa Binaural
-% sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+
+%% Set HRTF Omni
+HRTFFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa')
 %% Sofa Omni
 sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+
+%% HRTF Binaural
+% HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
+%% Sofa Binaural
+% sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
 
 %% Absor Binaural
 % folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
@@ -43,7 +49,7 @@ folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\d
 %folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\sJuntas';
 
 roomFile = 'Juntas_room_Ini.xml';
-dp_Tmix = 20;
+dp_Tmix = 34;
 
 % %% source_2
 % posS = [4.30 0.0 0.15];
@@ -68,6 +74,10 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 positionS = posS(pS,:);
 HybridOscCmds.SendSourceLocationToISM (connectionToISM, positionS);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+%% Set HRTF
+HybridOscCmds.SendChangeHRTFToISM(connectionToISM, HRTFFile);
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+pause(1);
 %% Set BRIR
 HybridOscCmds.SendChangeBRIRToISM(connectionToISM, sofaFile);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);

@@ -23,28 +23,33 @@ posS = [1.55  0.02 -0.68;     %1
         2.68  0.02 -0.68;     %2
         2.68 -2.48 -0.68;     %3
         2.68 -4.89 -0.68;];   %4
-pL=5;                        
+pL=1;                        
 posL = [-0.45  0.02 -0.68;    %1
         -0.45 -2.48 -0.68;    %2
         -0.45 -4.98 -0.68;    %3
         -2.23 -2.48 -0.68;    %4 
         -3.24 -4.98 -0.68;];  %5
 
-%% Sofa Binaural
-% sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+%% HRTF Omni
+HRTFFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
 %% Sofa Omni
 sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+
+%% HRTF Binaural
+% HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
+%% Sofa Binaural
+% sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
 
 %% Absor Binaural
 % folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
 %% Absor Omni
-%folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
-folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\5';
+folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+% folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\5';
 %% Absor Eyring
 %folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\A108';
 
 roomFile = 'A108_room_Ini.xml';
-dp_Tmix = 20;
+dp_Tmix = 30;
 
 % %% source_2
 % posS = [4.30 0.0 0.15];
@@ -58,6 +63,10 @@ connectionToISM = HybridOscCmds.InitConnectionToISM(ISMPort);
 listenPort = 12301;
 receiver = HybridOscCmds.InitOscServer(listenPort);
 [receiver osc_listener] = HybridOscCmds.AddListenerAddress(receiver, '/ready');
+%% Set HRTF
+HybridOscCmds.SendChangeHRTFToISM(connectionToISM, HRTFFile);
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+pause(1);
 %% Listener Location 
 positionL = posL(pL,:);
 HybridOscCmds.SendListenerLocationToISM (connectionToISM, positionL);

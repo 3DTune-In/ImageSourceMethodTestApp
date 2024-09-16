@@ -53,9 +53,9 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa')
 
 %% Set BRIR Binaural
-HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
+% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
 %% Set RIR Omni
-% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
+HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 pause(1);
 %%  Send Play and Stop ToISM
@@ -85,7 +85,7 @@ pause(0.2);
 cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
 load ("FiInfAbsorb.mat");
 %% Send Initial absortions
-absorbData1 = absorbData1/2;
+absorbData1 = absorbData1;
 walls_absor = zeros(1,54);
 absorbDataT = absorbData1';
 walls_absor = absorbDataT(:);

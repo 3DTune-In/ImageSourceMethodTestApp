@@ -14,9 +14,9 @@ close all;
 %folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108-sJun DIFERENTES POSICIONES CASCADE\sin camino directo\A108-L1-S1';
 %folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108-L1-S1';
 %folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\SimulacionPosicionesAjuste TEyring\sJun-L5-S2';
-folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\14';
+%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\14';
 %folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\SimulacionPosicionesAjuste Omni\A108-L1-S1';
-%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 % folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\Omni_Binaural_RIs';
 
 % Get list of .wav files in folder
@@ -73,18 +73,18 @@ for i = 1:NumF
     grid on;
 
 
-    %%  Linear
+%     %%  Linear
 %     figure;
-%     % subplot(2,1,1);
+%     %subplot(2,1,1);
 %     semilogx(f, module);
 %     %semilogx(f, module);
-%     xlim([10 24000]); % ylim([0.5 1]);
+%     xlim([10 24000]); ylim([0.5 1]);
 %     str= ['Spectrum ',files(i).name];
 %     title(str);  xlabel('Frec (Hz)'); ylabel('Magnitude (linear)'); grid on;
 
   
-    % subplot(2,1,2);
-%     figure;
+%     subplot(2,1,2);
+%     %figure;
 %     semilogx(f, phase);
 %     %semilogx(f, module);
 %     xlim([10 24000]);

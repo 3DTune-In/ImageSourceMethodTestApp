@@ -85,8 +85,10 @@ absorbData = repmat (absW, 6, 1);
 % % %% Set Absortions
 % cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m valorMedio 48K\12';
 % % cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 40m20m valorMedio 48K\9';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 30FIT\8';
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 30FIT\8';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp2\bin\data\resources\workFolder\A108 Omni\7';
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp2\bin\data\resources\workFolder\sJuntas Omni\7';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
 %%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\7';
 load ("FiInfAbsorb.mat");
 absorbData =absorbData1;

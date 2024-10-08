@@ -8,14 +8,15 @@
 % Copyright (C) 2023 Universidad de Málaga
 addpath ('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 
+%% Reverb Gain
+RGain_dB = -6;       %Omni
+%RGain_dB = -4.8428;  %Binaural
+RGain = db2mag(RGain_dB);
+
+%% Positions
 posS = [2.0 0.0 0.15];
 posL = [0.0 0.0 0.15];
 [yaw, pitch, roll] = relativePos2Orientation(posL, posS);
-
-% %% source_2
-% posS = [4.30 0.0 0.15];
-% %% listener_4
-% posL = [-2.0 -2.0 0.15]; 
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -49,14 +50,20 @@ HybridOscCmds.SendSourceLocationToISM (connectionToISM, positionS);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
 %% Set HRTF Binaural
-HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa');
+%HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa');
 %% Set HRTF Omni
-% HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa')
+HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa')
 
 %% Set BRIR Binaural
-% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
-%% Set RIR Omni
-HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
+%HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
+%% Set RIR Omni Bidimensional
+% HybridOscCmds.SendReverbOrderToISM(connectionToISM, 1);
+% message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
+%% Set RIR Omni Bidimensional-forAbsorp
+HybridOscCmds.SendReverbOrderToISM(connectionToISM, 1);
+message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
+HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_forAbsorp.sofa');
 
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 pause(1);
@@ -71,7 +78,7 @@ disp(message+" Stop");
 pause(0.5);
 %% Set RGain
 % configureHybrid (connectionToISM, receiver, osc_listener,              W_Slope, DistMax, RefOrd, RGain, SaveIR) 
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,       4,    1,   false);
+HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,       4,   RGain,   false);
 
 pause(0.2);
 disp(message+" RIR");

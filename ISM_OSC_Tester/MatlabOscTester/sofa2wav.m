@@ -16,8 +16,8 @@ cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resourc
 
 
 %% ROOM
-brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
-%brirMeas = SOFAload('Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
+% brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
+brirMeas = SOFAload('Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_adimensional.sofa');
 %brirMeas = SOFAload('Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
 %brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
 %%brirMeas = SOFAload('SalaJuntasTeleco_listener1_sourceQuad_2m_44100Hz_reverb_adjusted.sofa');
@@ -30,9 +30,9 @@ Fs1 = brirMeas.Data.SamplingRate;
 
 dataCrop = data1;
 
-fileName1 = 'sJunBRIR_omni.wav';
+%fileName1 = 'sJunRIR.wav';
 %fileName1 = 'sJunBRIR.wav';
-%fileName1 = 'A108BRIR_omni.wav';
+fileName1 = 'A108RIR.wav';
 %fileName1 = 'LabBRIR.wav';
 audiowrite(fileName1,dataCrop,Fs1);
 

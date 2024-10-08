@@ -25,9 +25,13 @@
 %  'EnergyFactor.mat'     <--  'FactorMeanValue'
 
 %% PRUNING DISTANCES &  Configuration parameters for ISM 
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT';
+% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 DpMinFit45';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\EYY medido';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_06_14 Ajustes CASCADE-PARALLEL\A108 CASCADE 30FIT';
+
 load ("DistanceRange.mat");
 load ("ParamsISM.mat");
 
@@ -40,10 +44,12 @@ L=1; R=2;                        % Channel
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\7';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 DpMinFit45\9';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_06_14 Ajustes CASCADE-PARALLEL\A108 CASCADE 30FIT\0';
 
 load ("FiInfAbsorb.mat");
-load ("FiInfSlopes.mat");
+%load ("FiInfSlopes.mat");
 
 colormap =[0.6350 0.0780 0.1840; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 0 0; 0 0 0; 0.9290 0.6940 0.1250; 0.4660 0.6740 0.1880 ];
 
@@ -67,8 +73,13 @@ AudioFile=BRIRFile.name;
 [t_BRIR,Fs] = audioread(AudioFile);
 
 %% Read file with ISM
-ISMFile=dir(['ISM*.wav']);      %ISM obtained with a pruning max distance 
-AudioFile=ISMFile.name;
+if exist('ISM_DpMax.wav', 'file') == 2
+    ISMFile=dir(['ISM*.wav']);      %ISM obtained with a pruning max distance 
+    AudioFile=ISMFile.name;
+else
+    HYBFile=dir(['IR_Hyb.wav']);
+    AudioFile=HYBFile.name;
+end
 [t_ISM,Fs] = audioread(AudioFile);
 
 %% BRIR Energy
@@ -300,37 +311,37 @@ xlabel('Distance (m)');  ylabel('Factor');
 legend( 'B1i','B1d','B2i','B2d', 'B3i','B3d','B4i','B4d','B5i','B5d','B6i','B6d','B7i', 'B7d','B8i','B8d','B9i','B9d','Location','northeast');
 title('eFactor per Band vs Pruning Distance');
 
-%% Curve Fitting                                   % FIGURE 5 -- Fit for each Band     
-xf=[DpMinFit:1:DpMax]; % from 10 meters to the end
-figure; hold on;                                     
-leg = {'B2', 'a2','B3','a3','B4','a4','B5', 'a5','B6','a6','B7','a7','B8','a8','B9','a9'};
-
-%fitObj= cfit.empty(0,NB); % Create empty array of specified class cfit
-%cfitData = struct(cfit);
-%cfitArray = repmat (cfitData, 1, NB);
-
-gof = struct([]);                                   % Create empty struct
-gofplus = struct('gof', gof , 'p1', 0, 'p2', 0);    % Create struct to load data per band
-gofpArray = repmat (gofplus, 1, NB);                % Array of structures to store information for each band
-
-for j=2:NB
-   Ff=factorBandD(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from 10 meters to the end
-   xft=xf'; Fft= Ff'; % transpose
-      % [fitObj, gof] = fit(xft,Fft,'poly1');
-   [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');
-      % cfitArray(j) = struct(fitObj);
-   gofpArray(j).gof = gofplus.gof;
-   gofpArray(j).p1  = fitObj.p1;
-   gofpArray(j).p2  = fitObj.p2;
-      % disp(fitObj)  % disp(cfitArray(j)); 
-      % fitObj.p1;    % cfitArray(j).coeffValues(1,1);
-
-   p=plot(fitObj, xft, Fft, '--o');
-   RGB= colormap(j,:);
-   p(2,1).Color = RGB; p(1,1).Color = RGB; p(1,1).LineWidth=1.25;
-end   
-ylim([0 vMaxT]);
-xlabel('Distance (m)');  ylabel('Factor'); 
-legend( leg, 'Location','northwest'); grid;
-title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 
-%hold off;
+% %% Curve Fitting                                   % FIGURE 5 -- Fit for each Band     
+% xf=[DpMinFit:1:DpMax]; % from 10 meters to the end
+% figure; hold on;                                     
+% leg = {'B2', 'a2','B3','a3','B4','a4','B5', 'a5','B6','a6','B7','a7','B8','a8','B9','a9'};
+% 
+% %fitObj= cfit.empty(0,NB); % Create empty array of specified class cfit
+% %cfitData = struct(cfit);
+% %cfitArray = repmat (cfitData, 1, NB);
+% 
+% gof = struct([]);                                   % Create empty struct
+% gofplus = struct('gof', gof , 'p1', 0, 'p2', 0);    % Create struct to load data per band
+% gofpArray = repmat (gofplus, 1, NB);                % Array of structures to store information for each band
+% 
+% for j=2:NB
+%    Ff=factorBandD(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from 10 meters to the end
+%    xft=xf'; Fft= Ff'; % transpose
+%       % [fitObj, gof] = fit(xft,Fft,'poly1');
+%    [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');
+%       % cfitArray(j) = struct(fitObj);
+%    gofpArray(j).gof = gofplus.gof;
+%    gofpArray(j).p1  = fitObj.p1;
+%    gofpArray(j).p2  = fitObj.p2;
+%       % disp(fitObj)  % disp(cfitArray(j)); 
+%       % fitObj.p1;    % cfitArray(j).coeffValues(1,1);
+% 
+%    p=plot(fitObj, xft, Fft, '--o');
+%    RGB= colormap(j,:);
+%    p(2,1).Color = RGB; p(1,1).Color = RGB; p(1,1).LineWidth=1.25;
+% end   
+% ylim([0 vMaxT]);
+% xlabel('Distance (m)');  ylabel('Factor'); 
+% legend( leg, 'Location','northwest'); grid;
+% title('CURVE FIT (9B)- Factor per Band vs Pruning Distance'); 
+% %hold off;

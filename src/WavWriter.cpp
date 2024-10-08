@@ -203,6 +203,7 @@ size_t WavWriter::CloseFile()
 	WriteNBytes(filesize - datachunkstart + 8, 4);
 
 	// Close file
+	filestream.flush();
 	filestream.close();
 
 	return filesize; // OK

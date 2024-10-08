@@ -80,11 +80,6 @@ classdef HybridOscCmds
             oscsend(u,'/reflectionOrder','i',vint);
         end
 
-        %% Send ReverbOrder to the OSC server (ISM)
-        function SendReverbOrderToISM(u, vint)
-            oscsend(u,'/reverbOrder','i',vint);
-        end
-
         %% Send ReverbGain to the OSC server (ISM)
         function SendReverbGainToISM(u, gain)
             oscsend(u,'/reverbGain','f',gain);
@@ -145,9 +140,9 @@ classdef HybridOscCmds
             oscsend(u,'/changeRoom','s',str);
         end
 
-        %% Send ChangeHRTF command to the OSC server (ISM)
-        function SendChangeHRTFToISM(u, str)
-            oscsend(u,'/changeHRTF','s',str);
+        %% Send ChangeHRT command to the OSC server (ISM)
+        function SendChangeBRIRToISM(u, str)
+            oscsend(u,'/changeBRIR','s',str);
         end
 
         %% Send ChangeBRIR command to the OSC server (ISM)

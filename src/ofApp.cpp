@@ -87,8 +87,9 @@ void ofApp::setup() {
 
 	/************************/
 	// Environment setup
+	reverberationOrder = BIDIMENSIONAL;
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	environment->SetReverberationOrder(reverberationOrder);		// Setting number of ambisonic channels to use in reverberation processing
 	//fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";                      // LAB_ROOM 
 	fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";             // A108_ROOM 
 	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";  // Juntas_ROOM
@@ -1283,7 +1284,7 @@ void ofApp::keyPressed(int key) {
 		else
 			cout << "DistanceAttenuationAnechoic Disabled" << "\n";
 
-		if (stateDistanceAttenuationReverb)
+		if (stateDistanceAttenuationReverb) 
 			cout << "DistanceAttenuationReverb Enabled" << "\n";
 		else
 			cout << "DistanceAttenuationReverb Disabled" << "\n";
@@ -1292,6 +1293,7 @@ void ofApp::keyPressed(int key) {
 		if (!bDisableReverb)
 		{
 			cout << "Reverb Enabled" << "\n";
+			cout << "Reverberation Order: " << reverberationOrder << "\n";
 			cout << "Number of silenced frames= " << numberOfSilencedFrames << "\n";
 		}
 		else
@@ -2083,7 +2085,7 @@ void ofApp::resetAudio()
 
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::BIDIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	environment->SetReverberationOrder(reverberationOrder);		                // Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
 	BRIR::CreateFromSofa(fullPathBRIR, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
@@ -2769,6 +2771,7 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/sourceLocation") OscCallBackSourceLocation(message);
 	else if (message.getAddress() == "/workFolder") OscCallBackChangeWorkFolder(message);
 	else if (message.getAddress() == "/timeRecordIR") OscCallBackChangeTimeSaveIR(message);
+	else if (message.getAddress() == "/reverbOrder") OscCallBackChangeReverbOrder(message);
 
 
 	else std::cout << "Message OSC not recognised " << message << std::endl;
@@ -3117,6 +3120,29 @@ void ofApp::OscCallBackChangeTimeSaveIR(const ofxOscMessage& message) {
 	std::cout << "Received Change Time to Record IR Command" << ",  " << secondsToRecordIR << std::endl;
 
 	changeSecondsToRecordIR(secondsToRecordIR);
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackChangeReverbOrder(const ofxOscMessage& message) {
+
+	int reverbOrder = message.getArgAsInt(0);  
+	std::cout << "Received Change Reverberation Order Command" << ",  " << reverbOrder << std::endl;
+	
+	if (reverbOrder == 0) {
+		reverberationOrder = ADIMENSIONAL;
+		environment->SetReverberationOrder(reverberationOrder);
+	}
+	else if (reverbOrder == 1) {
+		reverberationOrder = BIDIMENSIONAL;
+		environment->SetReverberationOrder(reverberationOrder);
+	}
+	else if (reverbOrder == 2)	{
+	    reverberationOrder = THREEDIMENSIONAL;
+	    environment->SetReverberationOrder(reverberationOrder);
+	}
+	else
+		std::cout << "Error: Reverberation Order out of range " << ",  " << reverberationOrder << std::endl;
 
 	SendOSCMessageToMatlab_Ready();
 }

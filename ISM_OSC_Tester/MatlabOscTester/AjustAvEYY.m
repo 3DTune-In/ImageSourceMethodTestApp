@@ -59,7 +59,7 @@
 %% Output
 %  'ParamsISM.mat',      <-- 'RefOrd', 'DpMax','W_Slope','RGain_dB'
 %  'DistanceRange.mat'   <-- 'DpMax', 'DpMin','DpMinFit'
-%  'FiInfSlopes.mat'     <-- 'slopes'     slope values for each iteration
+%  'FiInfError.mat'     <-- 'Errors'     slope values for each iteration
 %  'FiInfAbsorb.mat'     <-- 'absorption' absorption values for each iteration
 %  'SnFile_HH_MM_SS.mat' <-- 'Sn'         slope values for all iterations
 %  'AnFile_HH_MM_SS.mat' <-- 'An'         absorption values for all iterations
@@ -68,22 +68,29 @@
 
 clear all;
 
+%% Error Threshold ## Direct Path 
+thError = 0.01;  directPath = true;  
+%% Reverb Gain
+RGain_dB = -6;  
+%RGain_dB = 4.8428 
+
+
 %% Absorption saturation values
 absorMax=0.9999;
 absorMin=0.0001;
 maxChange=0.1;                %0.1
-reductionAbsorChange=0.75;     %0.6
+reductionAbsorChange=0.8;     %0.6
 % maxChange=0.15;
 % reductionAbsorChange=0.75;
 
 %% BRIR used for adjustment: measured ('M') or simulated ('S')
-BRIR_used = 'M';
+BRIR_used = 'S';
 
 %% Room to simulate: A108, sJun, Lab or Sm (Small) 
-Room = 'A108';
+Room = 'sJun';
 
 %% MAX ITERATIONS 
-ITER_MAX = 15;
+ITER_MAX = 80;
 
 %% Channel: Left (L) or Right (R)
 L=1; R=2;         % Channels
@@ -95,7 +102,7 @@ if Room == 'A108'            % Aula 108
    DpMinFit = 40;                %% Smaller distance values will be discarded
 elseif Room == 'sJun'            % Sala Juntas
    DpMax=34; DpMin=2;
-   DpMinFit = 17;                %% Smaller distance values will be discarded
+   DpMinFit = 34;                %% Smaller distance values will be discarded
 elseif Room == 'Lab'         % Lab  
    DpMax=38; DpMin=2;
    DpMinFit = 17;            %% Smaller distance values will be discarded
@@ -128,7 +135,6 @@ delete *.wav;
 %% SAVE Configuration parameters for ISM simulation
 RefOrd=40; 
 W_Slope=2;                       % Value for energy adjustment
-RGain_dB = 0;
 RGain = db2mag(RGain_dB);
 save ('ParamsISM.mat','RefOrd', 'DpMax','W_Slope','RGain_dB','C','BRIR_used','Room');
 
@@ -144,40 +150,41 @@ save ('DistanceRange.mat','DpMax', 'DpMin','DpMinFit');
 x=[DpMin:1:DpMax];               % Initial and final pruning distance
 
 %% ABSORTIONS
+%% ABSORTIONS
 
-if exist('FiInfAbsorb.mat', 'file') == 2
-    load ("FiInfAbsorb.mat");
-    absorbData =absorbData1;
-else
-    absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
-                  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;];
-end
+AEr= [0.10662811917104231	0.09760808047855685	0.11434825701299478	0.16405707697935001	0.1937423691906729	0.19662038143597793	0.22466966230928753	0.27360210338171165	0.3880693854851216];
+absorbData = repmat (AEr, 6, 1); 
+
+% if exist('FiInfAbsorb.mat', 'file') == 2
+%     load ("FiInfAbsorb.mat");
+%     absorbData =absorbData1;
+% else
+%     absorbData = [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;
+%                   0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5;];
+% end
 
 absorbData0 = absorbData;
 absorbData1 = absorbData;
 absorbData2 = absorbData;
 
-slopes0 = zeros(1,9);
-slopes1 = zeros(1,9);
-slopes2 = zeros(1,9);
-
 distAu0 = zeros(1,9);
 distAu1 = zeros(1,9);
 distAu2 = zeros(1,9);
+
+% bandAdjust = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 Sn=zeros(ITER_MAX, 9);
 An=zeros(ITER_MAX, 9);
 
 maximumAbsorChange=[maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange, maxChange];
 
-formatSlope = "DifAu: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
+formatDiff = "DifAu: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsor = "Absor: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
 formatAbsorChange= "AbChg: %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f %.5f ";
-formaTotalMaxSlope= "TotalSlope: %.5f  factorMeanValue: %.5f";
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -226,8 +233,8 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Distance Attenuation Reverb Enable");
 pause(0.2);
 
-%% Disable Direct Path
-HybridOscCmds.SendDirectPathEnableToISM(connectionToISM, false);
+%% Enable - Disable Direct Path: Enable
+HybridOscCmds.SendDirectPathEnableToISM(connectionToISM, directPath);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 disp(message+" Disable Direct Path");
 
@@ -260,9 +267,9 @@ if BRIR_used == 'S'
    movefile 'wIrRO0DP01W02.wav' 'BRIR.wav';    % simulated
 elseif BRIR_used == 'M'
     if     Room == 'A108'
-       copyfile '..\A108BRIR.wav' 'BRIR.wav';      % measured
+       copyfile '..\A108RIR.wav' 'BRIR.wav';      % measured
     elseif Room == 'sJun'
-       copyfile '..\sJunBRIR.wav' 'BRIR.wav';      % measured
+       copyfile '..\sJunRIR.wav' 'BRIR.wav';      % measured
     elseif Room == 'Lab'
        copyfile '..\LabBRIR.wav' 'BRIR.wav';      % measured
     elseif Room == 'Sm'
@@ -295,10 +302,10 @@ disp (msg);
 pause(0.2);
 
 %% Set Time to Record Impulse Response
-HybridOscCmds.SendTimeRecordIRToISM(connectionToISM, 0.2);
+HybridOscCmds.SendTimeRecordIRToISM(connectionToISM, 0.150);
 % Waiting msg from ISM
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-msg = sprintf('%s Time to Record Impulse Response = %d', message, 0.2);
+msg = sprintf('%s Time to Record Impulse Response = %d', message, 0.150);
 disp (msg);
 pause(0.2);
 
@@ -311,13 +318,6 @@ disp(message+ " ISM DpMax ");
 cd (workFolder);
 
 movefile (nameFileISM, "ISM_DpMax.wav");
-
-%%   BANDS
-%    62,5    125     250      500      1000       2000       4000       8000       16000
-% B =[44 88; 89 176; 177 353; 354 707; 708 1414; 1415 2828; 2829 5657; 5658 11314; 11315 22016;];
-% 
-% Blo=[ 1    89      177      354      708       1415       2829       5658        11315       ];
-% Bhi=[  88     176      353      707      1414       2828       5657       11314        22016 ];
 
 %%   9 BANDS
 Nf=48000;
@@ -425,7 +425,6 @@ while ( iLoop < ITER_MAX)
 
         maxDistSL = maxDistSL+1;
     end
-    %% -------figure
     %% BRIR Energy for each band
     E_BandBrir=zeros(NB,2);
     %eSumBands=zeros(1,1); %checksum
@@ -472,13 +471,19 @@ while ( iLoop < ITER_MAX)
     FactorI = sqrt (eA_Ism ./ eA_BRIR_W);
     FactorD = sqrt (eA_Ism ./ eA_Brir);
     FCropI = FactorI(DpMinFit:DpMax-DpMin+1);
-    factorMeanValueI = mean(FCropI);
     FCropD = FactorD(DpMinFit:DpMax-DpMin+1);
-    factorMeanValueD = mean(FCropD);
+    if NumIRs > 1
+       factorMeanValueI = mean(FCropI);
+       factorMeanValueD = mean(FCropD);
+    else 
+       factorMeanValueI = FCropI;
+       factorMeanValueD = FCropD;
+    end
+
     %% -----------------------------
     Factor = FactorD;                    % for adjustment (FactorI: BRIR-Win) 
     factorMeanValue = factorMeanValueD;  % for adjustment (factorMeanValueI)
-    %%                                   % factorBand = factorBandD / factorBandI;             
+    %%                                   % factorBand = factorBandD or factorBandI;             
     %% -----------------------------
     plot (x, FactorI,'b*');
     plot (x, FactorD,'k--.');
@@ -489,23 +494,21 @@ while ( iLoop < ITER_MAX)
     legend('SQRT(eTotalIsm/(eBRIR-eTotalWin))', 'SQRT(eTotalIsm/(eBrir))', 'Location','southwest');
     grid;
     %% -----------------------------                 % FIGURE 3 -- Partial: ISM, Windowed, BRIR-Windowed, BRIR
-    figure; hold on;
+    %% figure; hold on;
     y=zeros(1,length(NumIRs));
     for j=1:NB
-        % eBand=E_BandBrir(j,L);
-        % y = E_BandWin(j,:,L);
-        %% Average of both channels
+       %% Average of both channels
         eBand=E_BandBrir(j,L);
         y =E_BandWin(j,:,L);
         E_BandBrir_Win(j,:,L)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
         eBand=E_BandBrir(j,R);
         y = E_BandWin(j,:,R);
         E_BandBrir_Win(j,:,R)=abs(eBand(1,1)*ones(1, length(NumIRs))-y);
-        plot (x, (E_BandBrir_Win(j,:,L)+E_BandBrir_Win(j,:,R))./2);
-        plot (x, (E_BandBrirDir(j,:,L)+E_BandBrirDir(j,:,R))./2 , '--.');      
+        %% plot (x, (E_BandBrir_Win(j,:,L)+E_BandBrir_Win(j,:,R))./2);
+        %% plot (x, (E_BandBrirDir(j,:,L)+E_BandBrirDir(j,:,R))./2 , '--.');      
     end
-    title('E.BRIR-E.WIN & E-Brir(direct) -vs Pruning Distance');
-    legend('EBRIR-E-win', 'E-Brir',  'Location','northwest');
+    %% title('E.BRIR-E.WIN & E-Brir(direct) -vs Pruning Distance');
+    %% legend('EBRIR-E-win', 'E-Brir',  'Location','northwest');
     %% -----------------------------                  % FIGURE 4 -- eFactor per Band
     figure; hold on;
     factorBandI =zeros(NB, NumIRs,2);      % Indirect
@@ -544,12 +547,8 @@ while ( iLoop < ITER_MAX)
     
     %% Curve Fitting                                   % FIGURE 5 -- Fit for each Band
     xf=[DpMinFit:1:DpMax]; % from DpMinFit meters to the end
-    figure; hold on;
-    leg = {'B1', 'a1','B2', 'a2','B3','a3','B4','a4','B5', 'a5','B6','a6','B7','a7','B8','a8','B9','a9'};
-
-    %fitObj= cfit.empty(0,NB); % Create empty array of specified class cfit
-    %cfitData = struct(cfit);
-    %cfitArray = repmat (cfitData, 1, NB);
+    %% figure; hold on;
+    %% leg = {'B1', 'a1','B2', 'a2','B3','a3','B4','a4','B5', 'a5','B6','a6','B7','a7','B8','a8','B9','a9'};
 
     gof = struct([]);                                   % Create empty struct
     gofplus = struct('gof', gof , 'p1', 0, 'p2', 0);    % Create struct to load data per band
@@ -558,146 +557,101 @@ while ( iLoop < ITER_MAX)
     %% Total Slope
     Ff=Factor(NumIRs-(DpMax-DpMinFit) : NumIRs);  % from DpMinFit meters to the end
     xft=xf'; % transpose
-    [fitObj, gofplus.gof] = fit(xft,Ff,'poly1');
-    % gofpArray(NB+1).gof = gofplus.gof;
-    totalSlope  = fitObj.p1;
-    % gofpArray(NB+1).p2  = fitObj.p2;
+    if length(xft)>1
+        [fitObj, gofplus.gof] = fit(xft,Ff,'poly1');
+        totalSlope  = fitObj.p1;
+    end
+    totalSlope = 0;
 
     %% Partial Slopes
     factorBand=factorBandD;              % for adjustment
     for j=1:NB
         Ff=factorBand(j, NumIRs-(DpMax-DpMinFit) : NumIRs, L);  % from DpMinFit meters to the end
         xft=xf'; Fft= Ff'; % transpose
-        % [fitObj, gof] = fit(xft,Fft,'poly1');
-        [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');
-        % cfitArray(j) = struct(fitObj);
-        gofpArray(j).gof = gofplus.gof;
-        gofpArray(j).p1  = fitObj.p1;
-        gofpArray(j).p2  = fitObj.p2;
-        % disp(fitObj)  % disp(cfitArray(j));
-        % fitObj.p1;    % cfitArray(j).coeffValues(1,1);
-        p=plot(fitObj, xft,Fft, '--o');
-        p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
-
-        FactorMeanBand(1,j) = mean(Ff);
+        if length(xft)>1
+            [fitObj, gofplus.gof] = fit(xft,Fft,'poly1');
+            gofpArray(j).gof = gofplus.gof;
+            gofpArray(j).p1  = fitObj.p1;
+            gofpArray(j).p2  = fitObj.p2;
+            p=plot(fitObj, xft,Fft, '--o');
+            p(2,1).Color = 'b'; p(1,1).LineWidth=1.5;
+            FactorMeanBand(1,j) = mean(Ff);
+        end
+        FactorMeanBand(1,j) = Ff;
     end
-    %ylim([0.0 2.5]);
-    xlabel('Distance (m)');  ylabel('eFactor');
-    legend( leg, 'Location','northwest'); grid;
-    title('CURVE FIT (9B)- eFactor per Band vs Pruning Distance');
-    hold off;
+    %% xlabel('Distance (m)');  ylabel('eFactor');
+    %% legend( leg, 'Location','northwest'); grid;
+    %% title('CURVE FIT (9B)- eFactor per Band vs Pruning Distance');
+    %% hold off;
 
 
     %% -----------------------------------------------------------------
-    %% Extrac slopes and new absortions (only 1ª and 2ª iterations) to send to ISM
-    alfa = 0.01;
-    slopes=zeros(1,NB);
+    %% Extrac distAu and new absortions (only 1ª and 2ª iterations) to send to ISM
     distAu=zeros(1,NB);
-    ordO=zeros(1,NB);
-    slopeMax=0;
     for j=1:NB
-        slopes(1,j) = gofpArray(j).p1;
-        ordO(1,j)   = gofpArray(j).p2;
         distAu(1,j) = FactorMeanBand (1,j) -1;
-        slopeB = slopes (1,j);
-        if (abs(slopeB)>slopeMax)
-            slopeMax=abs(slopeB);
-        end
-        ordOB = ordO (1,j);
         DistAuB = distAu(1,j);
         if (abs (DistAuB)  > 0)
-            % for k=1:4    %excluding ceil and floor
-             for k=1:6
-                newAbsorb = absorbData (k,j) + (FactorMeanBand (1,j)-1)*0.05;
-
+             for k=1:6           %% 6 walls
+                newAbsorb = absorbData (k,j) + (DistAuB )*0.05;
                 if abs (newAbsorb - absorbData(k,j) ) > maximumAbsorChange(j);
-                    if newAbsorb > absorbData(k,j)
-                        newAbsorb = absorbData(k,j) + maximumAbsorChange(j);
-                    else
-                        newAbsorb = absorbData(k,j) - maximumAbsorChange(j);
+                    if newAbsorb > absorbData(k,j)  newAbsorb = absorbData(k,j) + maximumAbsorChange(j);
+                    else                            newAbsorb = absorbData(k,j) - maximumAbsorChange(j);
                     end
                 end
-
-                if newAbsorb > 0.0 && newAbsorb < 1.0
-                    absorbData (k,j) = newAbsorb;
-                elseif newAbsorb <= 0.0
-                    absorbData (k,j) = absorMin;
-                elseif newAbsorb >= 1.0
-                    absorbData (k,j) = absorMax;
+                if newAbsorb > 0.0 && newAbsorb < 1.0  absorbData (k,j) = newAbsorb;
+                elseif newAbsorb <= 0.0                absorbData (k,j) = absorMin;
+                elseif newAbsorb >= 1.0                absorbData (k,j) = absorMax;
                 end
             end 
         end
     end 
-    %% update calculated slopes
-    slopes0=slopes1;
-    slopes1=slopes;
-    %slopes2=slopes;
     %% update absorption values
     absorbData0 = absorbData1;
     absorbData1 = absorbData2;
     %% update calculated differences
     distAu0=distAu1;
     distAu1=distAu;
-
     %% ---------------------------------
-
     changeAbsor = 0;
     if (iLoop < 2 )
         %% first new absortions
        absorbData2 = absorbData; 
-       changeAbsor = changeAbsor + 5;
+       changeAbsor = 9;            %This forces more than two iterations to be done.
     else
         %% calculate new absorptions
-        for j=1:NB
-            newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
-
+        for j=1:NB       
+            newAbsorb = (-distAu1(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
             if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
                 maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;
             end
-
             if abs (newAbsorb - absorbData1(1,j) ) > maximumAbsorChange(j)
-                if newAbsorb > absorbData1(1,j)
-                    newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
-                else
-                    newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
+                if newAbsorb > absorbData1(1,j)      newAbsorb = absorbData1(1,j) + maximumAbsorChange(j);
+                else                                 newAbsorb = absorbData1(1,j) - maximumAbsorChange(j);
                 end
             end
-   
-
-            if (newAbsorb <= 0.0)
-                newAbsorb = absorMin;
-            elseif (newAbsorb >= 1.0)
-                newAbsorb = absorMax;
+            if (newAbsorb <= 0.0)         newAbsorb = absorMin;
+            elseif (newAbsorb >= 1.0)     newAbsorb = absorMax;
             end
 
             for k=1:6
                 absorbData2 (k,j) = newAbsorb;
             end  
-            if (abs(FactorMeanBand (1,j)-1) > 0.05)
+            %if (abs(FactorMeanBand (1,j)-1) > thError) && j>1 && j<9
+             if (abs(distAu(1,j)) >= thError) && j>1 && j<9 
                 changeAbsor = changeAbsor + 1;
-            end
+             end
         end
     end
-
- 
-    vSlope = sprintf(formatSlope,distAu0);
-    disp(vSlope);
-    vSlope = sprintf(formatSlope,distAu1);
-    disp(vSlope);
-    vSlope = sprintf(formaTotalMaxSlope, totalSlope, factorMeanValue);  
-    disp(vSlope);
-    vAbsor = sprintf(formatAbsorChange,maximumAbsorChange);
-    disp(vAbsor);
-    vAbsor = sprintf(formatAbsor,absorbData0(1,:));
-    disp(vAbsor);
-    vAbsor = sprintf(formatAbsor,absorbData1(1,:));
-    disp(vAbsor);
-    vAbsor = sprintf(formatAbsor,absorbData2(1,:));
-    disp(vAbsor);
+    vSlope = sprintf(formatDiff,distAu0);                   disp(vSlope);
+    vSlope = sprintf(formatDiff,distAu1);                   disp(vSlope);
+    vAbsor = sprintf(formatAbsorChange,maximumAbsorChange); disp(vAbsor);
+    vAbsor = sprintf(formatAbsor,absorbData0(1,:));         disp(vAbsor);
+    vAbsor = sprintf(formatAbsor,absorbData1(1,:));         disp(vAbsor);
+    vAbsor = sprintf(formatAbsor,absorbData2(1,:));         disp(vAbsor);
        
-    %% send new abssortion values (if any of the slopes exceeds the threshold)
-    %% if (abs(factorMeanValue-1.0) > 0.01)  %slopeMax > 0.002 || abs(totalSlope)> 0.002 
-    if changeAbsor > 0 || abs(factorMeanValue-1.0) > 0.01
+    %% send new abssortion values (if any of the error exceeds the threshold)
+    if changeAbsor > 0 %|| abs(factorMeanValue-1.0) > 0.01
        absorbDataT = absorbData2';
        walls_absor = absorbDataT(:);
        HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor');
@@ -715,8 +669,6 @@ while ( iLoop < ITER_MAX)
 
        AudioFile=ISMFile.name;
        [t_ISM,Fs] = audioread(AudioFile);
-
-
     else
        fitSlopes=true;
     end
@@ -731,8 +683,8 @@ while ( iLoop < ITER_MAX)
         new_folder = num2str(iLoop);
         mkdir( current_folder, new_folder);
         % save slopes and absortions
-        nameFile= 'FiInfSlopes';
-        save(fullfile( current_folder,   nameFile), 'slopes');
+        nameFile= 'FiInfError';
+        save(fullfile( current_folder,   nameFile), 'distAu');
         nameFile= 'FiInfAbsorb';
         save(fullfile( current_folder,   nameFile), 'absorbData1');
 
@@ -751,7 +703,7 @@ while ( iLoop < ITER_MAX)
     iLoop=iLoop+1;
 
     %% Save slopes in Sn
-    Sn(iLoop, :) = slopes;
+    Sn(iLoop, :) = distAu;
     An(iLoop, :) = absorbData1(1,:);
 
     if (fitSlopes == true)

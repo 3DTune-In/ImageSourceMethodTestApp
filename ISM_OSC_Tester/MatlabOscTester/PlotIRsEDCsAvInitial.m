@@ -1,3 +1,5 @@
+
+
 %% This script shows the intermediate and final graphical results
 %% corresponding to applying the hybrid method (ISM+convolution) 
 
@@ -9,7 +11,7 @@
 % Copyright (C) 2023 Universidad de Málaga
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\4';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_10_01 EYY EDT C80 C50\A108 C80 Eyring 28\5';
 % cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m valorMedio\7';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
@@ -17,11 +19,11 @@ cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resourc
 %% Load info
 load ("ParamsISM.mat");
 load ("FiInfAbsorb.mat");
-load ("FiInfSlopes.mat");
+%load ("FiInfSlopes.mat");
 load ("EnergyFactor.mat");
 
 %% Set working folder
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_10_01 EYY EDT C80 C50\A108 C80 Eyring 28';
 %cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas 34m17m valorMedio';
 load ("ParamsHYB.mat");
 
@@ -32,22 +34,24 @@ nameFileISM = sprintf(formatFileISM, RefOrd, Dp_Tmix, W_Slope)+'.wav';
 formatFileWin= "wIrRO0DP%02iW%02i";
 nameFileWin = sprintf(formatFileWin, Dp_Tmix, W_Slope)+'.wav';
 
-formatFileHyb= "tIrRO%iDP%02iW%02i";
-nameFileHyb = sprintf(formatFileHyb, RefOrd, Dp_Tmix, W_Slope)+'HYB.wav';
+% formatFileHyb= "tIrRO%iDP%02iW%02i";
+% nameFileHyb = sprintf(formatFileHyb, RefOrd, Dp_Tmix, W_Slope)+'HYB.wav';
+formatFileHyb= "IR_Hyb";
+nameFileHyb= sprintf(formatFileHyb)+'.wav';
 
 %formatFileBRIR= "wIrRO0DP01W02";
 formatFileBRIR= "BRIR";
 nameFileBRIR = sprintf(formatFileBRIR)+'.wav';
 [yBRIR,Fs] = audioread(nameFileBRIR);
-[Ism,Fs] = audioread(nameFileISM);
+%[Ism,Fs] = audioread(nameFileISM);
 [Hybrid,Fs] = audioread(nameFileHyb);
 
 peak1 = find(Hybrid(:,1).^2==max(Hybrid(:,1).^2));
 peak2 = find(Hybrid(:,2).^2==max(Hybrid(:,2).^2));
 
 %rt =zeros (1,3);edt =zeros (1,3);
-[rt,drr,cte,cfs,edt] = iosr.acoustics.irStats(nameFileBRIR, 'graph', true);
-[rt,drr,cte,cfs,edt] = iosr.acoustics.irStats(nameFileHyb,  'graph', true);
+[ArtR,AdrrR,ActeR,AcfsR,AedtR] = iosr.acoustics.irStats(nameFileBRIR, 'graph', true);
+[ArtH,AdrrH,ActeH,AcfsH,AedtH] = iosr.acoustics.irStats(nameFileHyb,  'graph', true);
 % [rt,drr,cte,cfs,edt] = iosr.acoustics.irStats(nameFileISM,  'graph', true);
 
 % vMaxB = max(abs(yBRIR(:,1))); 
@@ -82,12 +86,12 @@ y= yBRIR(:,2);
 temp = cumtrapz(y(end:-1:1).^2); % decay curve
 EDCyBRIR(:,2) = temp(end:-1:1);
 
-y= Ism(:,1);
-temp = cumtrapz(y(end:-1:1).^2); % decay curve
-EDCIsm(:,1) = temp(end:-1:1);
-y= Ism(:,2);
-temp = cumtrapz(y(end:-1:1).^2); % decay curve
-EDCIsm(:,2) = temp(end:-1:1);
+% y= Ism(:,1);
+% temp = cumtrapz(y(end:-1:1).^2); % decay curve
+% EDCIsm(:,1) = temp(end:-1:1);
+% y= Ism(:,2);
+% temp = cumtrapz(y(end:-1:1).^2); % decay curve
+% EDCIsm(:,2) = temp(end:-1:1);
 
 y= Hybrid(:,1);
 temp = cumtrapz(y(end:-1:1).^2); % decay curve

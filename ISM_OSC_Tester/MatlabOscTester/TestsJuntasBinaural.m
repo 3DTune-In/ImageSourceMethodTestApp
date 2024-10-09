@@ -1,6 +1,5 @@
-%% This script Contains the OSC command set to simulate the room 
-%% corresponding to the "Sala de Juntas" by placing the listener and the source 
-%% in locations specified in the physical measurements carried out
+%% This script Contains the OSC command to generate the impulse responses 
+%% corresponding to the four measurement points in room 'Sala de Juntas' (sJun)
 
 % Authors: Fabian Arrebola (17/09/2024) 
 % contact: areyesa@uma.es

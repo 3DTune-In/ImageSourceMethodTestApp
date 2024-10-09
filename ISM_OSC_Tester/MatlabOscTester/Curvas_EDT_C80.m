@@ -66,9 +66,9 @@ if Room == 'A108'            % Aula 108
    DpMax=40; DpMin=2;   DpMinFit = 40;  
 elseif Room == 'sJun'        % Sala Juntas
    DpMax=34; DpMin=2;   DpMinFit = 34;
-elseif Room == 'Labo'         % Lab  
+elseif Room == 'Lab'         % Lab  
    DpMax=38; DpMin=2;   DpMinFit = 17; 
-elseif Room == 'Smal'          % Small
+elseif Room == 'Sm'          % Small
    DpMax=17; DpMin=2;   DpMinFit = 8;
 else
    error('Error: Room not specified');

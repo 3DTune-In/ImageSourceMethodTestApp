@@ -6,8 +6,15 @@
 % Project: SONICOM
 % 
 % Copyright (C) 2023 Universidad de Málaga
-addpath ('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 
+%% OpenFramework version
+[resourcesFolder, pathSc]= verOpenF();
+%% Path
+addpath(pathSc); 
+
+%% Folder with absorptions
+nameFolder='workFolder\sJuntas Omni';
+workFolder = strcat(resourcesFolder,nameFolder);
 %% Reverb Gain
 %RGain_dB = 0;
 RGain_dB = -6;       %Omni
@@ -95,7 +102,9 @@ pause(0.2);
 %% Set Absortions Binaural
 % cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
 %% Set Absortions Omni
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+cd (workFolder);
+
 load ("FiInfAbsorb.mat");
 %% Send Initial absortions
 absorbData1 = absorbData1;

@@ -74,14 +74,14 @@ else
    error('Error: Room not specified');
 end
 
+%% OpenFramework version
+[resourcesFolder, pathSc]= verOpenF();
 %% Path
-addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'); 
+addpath(pathSc); 
 
 %% Folder with impulse responses
-nameFolder='\workFolder';
-resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+nameFolder='workFolder';
 workFolder = strcat(resourcesFolder,nameFolder);
-% workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
 if exist(workFolder, 'dir') == 7
     disp('folder exist');
 else

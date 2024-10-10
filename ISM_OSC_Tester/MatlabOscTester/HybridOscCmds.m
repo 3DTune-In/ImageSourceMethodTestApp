@@ -198,7 +198,7 @@ classdef HybridOscCmds
 
         %% InitOscServer
         function receiver = InitOscServer(port)
-            cd('C:/Repos/of_v0.11.2_vs2017_release/ImageSourceMethodTestApp/ISM_OSC_Tester/MatlabOscTester')
+            cd('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester')
             %version -java
             disp('Waiting OSC message');
             javaaddpath('javaosctomatlab.jar');

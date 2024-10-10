@@ -6,7 +6,15 @@
 % Project: SONICOM
 % 
 % Copyright (C) 2023 Universidad de Málaga
-addpath ('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
+
+%% OpenFramework version
+[resourcesFolder, pathSc]= verOpenF();
+%% Path
+addpath(pathSc); 
+
+%% Folder with absorptions
+nameFolder='workFolder\sJuntas Omni';
+workFolder = strcat(resourcesFolder,nameFolder);
 
 %% Reverb Gain
 RGain_dB = -6;       %Omni
@@ -90,9 +98,10 @@ disp(message+" Distance Attenuation Reverb Enable");
 pause(0.2);
 
 %% Set Absortions Binaural
-%cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
+%cd 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
 %% Set Absortions Omni
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
+%cd 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
+cd (workFolder);
 
 load ("FiInfAbsorb.mat");
 %% Send Initial absortions
@@ -102,9 +111,9 @@ walls_absor = absorbDataT(:);
 HybridOscCmds.SendAbsortionsToISM(connectionToISM, walls_absor'); 
 pause(0.1);
 
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources';
+% cd 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources';
 % [yM,Fs] = audioread('LabBRIR.wav');
-% cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+% cd 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
 % [yS,Fs] = audioread('wIrRO0DP01W02.wav');
 % figure;
 % plot(yM,'DisplayName','yM');

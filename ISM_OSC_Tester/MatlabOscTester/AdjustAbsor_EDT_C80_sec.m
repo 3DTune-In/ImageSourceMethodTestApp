@@ -33,7 +33,7 @@ clear all;
 %% BRIR used for adjustment: measured ('M') or simulated ('S') and ROOM
 BRIR_used = 'S'; Room = 'sJun'; %sJun
 %% MAX ITERATIONS 
-ITER_MAX = 80;
+ITER_MAX = 60;
 %% Direct Path ###  Threshold Average ##
 directPath = true; CX0Threshold = 1;  % CX0Threshold = 0.01 for Average
 %% Reverb Gain
@@ -77,14 +77,14 @@ else
    exit;
 end
 
+%% OpenFramework version
+[resourcesFolder, pathSc]= verOpenF();
 %% Path
-addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'); 
+addpath(pathSc); 
 
 %% Folder with impulse responses
-nameFolder='\workFolder';
-resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+nameFolder='workFolder';
 workFolder = strcat(resourcesFolder,nameFolder);
-% workFolder = "C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\"+ nameFolder;
 if exist(workFolder, 'dir') == 7
     disp('folder exist');
 else
@@ -119,7 +119,8 @@ elseif Room == 'sJun'
     %AEr= [0,119983158	0,122043634	0,161949595	0,26033622	0,28662282	0,247208725	0,240230767	0,327752062	0,405951831];
 else
     error('Error: Room not specified');
-endabsorbData = repmat (AEr, 6, 1); 
+end
+absorbData = repmat (AEr, 6, 1); 
 
 % if exist('FiInfAbsorb.mat', 'file') == 2
 %     load ("FiInfAbsorb.mat");

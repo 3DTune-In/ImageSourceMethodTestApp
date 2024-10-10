@@ -11,13 +11,13 @@
 %close all;
 
 % Path of the folder containing the .wav files (Impulse responses)
-%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108-sJun DIFERENTES POSICIONES CASCADE\sin camino directo\A108-L1-S1';
-%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108-L1-S1';
-%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\SimulacionPosicionesAjuste TEyring\sJun-L5-S2';
+%folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108-sJun DIFERENTES POSICIONES CASCADE\sin camino directo\A108-L1-S1';
+%folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108-L1-S1';
+%folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\SimulacionPosicionesAjuste TEyring\sJun-L5-S2';
 % folder = 'C:\Users\FABIAN\OneDrive - Universidad de Málaga\3DIANA\Temas de Investigación\Metodo Imagenes HYBRID\2024_09_19_SimulacionPos_L1_S1_ColaOnmiAmbasSalas\sJun-L1-S1';
-%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\SimulacionPosicionesOmni_Ajuste OMNI DpMax\sJun-L2-S2';
-%folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
-folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_09_26 RIRs_BRIRs';
+%folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\SimulacionPosicionesOmni_Ajuste OMNI DpMax\sJun-L2-S2';
+%folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
+folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_09_26 RIRs_BRIRs';
 
 % Get list of .wav files in folder
 files = dir(fullfile(folder, '*.wav'));

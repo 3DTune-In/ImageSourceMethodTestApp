@@ -10,11 +10,11 @@
 
 %% Folder with impulse responses
 nameFolder='\workFolder';
-resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+resourcesFolder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\';
 workFolder = strcat(resourcesFolder,nameFolder);
 cd(resourcesFolder);
 
-addpath ('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
+addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 %% ------------------
 DirectPath=false;
 %% ------------------
@@ -37,11 +37,11 @@ HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
 sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
 
 %% Absor Binaural
-% folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
+% folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
 %% Absor Omni
-%folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
+%folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
 %% Absor Eyring
-folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\sJuntas';
+folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\sJuntas';
 
 roomFile = 'Juntas_room_Ini.xml';
 dp_Tmix = 1;

@@ -16,7 +16,7 @@
 %  'ParamsHYB.mat'   <--  'RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','factorMeanValue'
 
 %% Set folder with IRs and Params
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_10_01 EYY EDT C80 C50\A108 C80 Eyring 28\5';
+cd 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_10_01 EYY EDT C80 C50\A108 C80 Eyring 28\5';
 %% cd 'C:\Repos\HIBRIDO PRUEBAS\New LAB 40 2 24\16'
 
 %% Load info
@@ -37,7 +37,7 @@ Dp_Tmix = 20;
 W_Slope = 2;            %  It may be a different value than the one used for energy adjustment
 
 %% Set working folder
-cd 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_10_01 EYY EDT C80 C50\A108 C80 Eyring 28';
+cd 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\2024_10_01 EYY EDT C80 C50\A108 C80 Eyring 28';
 % delete *.wav;
 save ('ParamsHYB.mat','RefOrd', 'DpMax','W_Slope','RGain_dB', 'Dp_Tmix','factorMeanValue');
 absorbData= absorbData1;

@@ -1,18 +1,23 @@
 
 
-%% Path
-addpath('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester'); 
-
 %% Info to show: Error or Absorption
-info = 'Error';     % 'Error' --'Absor'
+info = 'Absor';     % 'Error' --'Absor'
 %numValAbsor = 10;   %  Num samples
 
+%% OpenFramework version
+[resourcesFolder, pathSc]= verOpenF();
+%% Path
+addpath(pathSc); 
+
+%% Folder with impulse responses
+nameFolder='\workFolder';
+workFolder = strcat(resourcesFolder,nameFolder);
 
 %% Folder with data
 %nameFolder='\Adj sJun-C80-DirPath';
 %nameFolder='\Adj sJun-EEY-DirPath';
-%nameFolder='\2024_10_01 EYY EDT C80 C50\sJun C80 0-5PP  28 Average';
-nameFolder='\Adj sJun-EDT-DirPath';
+%nameFolder='\Adj sJun-C80-DirPath';
+nameFolder='\Adj sJun-C80-DirPath';
 
 lastCharacter = nameFolder(end);
 if isstrprop(lastCharacter, 'digit')
@@ -28,11 +33,10 @@ else
 
 end
 
-resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder';
-workFolder = strcat(resourcesFolder,nameFolder);
-cd (workFolder);
+dataFolder = strcat(workFolder,nameFolder);
+cd (dataFolder);
 
-files = dir(workFolder);
+files = dir(dataFolder);
 fileErr = false;
 fileSn = false;
 fileDau = false;

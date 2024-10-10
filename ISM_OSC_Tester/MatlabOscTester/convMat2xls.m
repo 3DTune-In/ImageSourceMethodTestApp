@@ -9,7 +9,7 @@
 % Copyright (C) 2024 Universidad de Málaga
 
 
-folder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\A108';
+folder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\A108';
 
 % Get list of .mat files in folder
 files = dir(fullfile(folder, '*.mat'));

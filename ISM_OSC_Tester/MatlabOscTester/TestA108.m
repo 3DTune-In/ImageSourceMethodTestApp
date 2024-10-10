@@ -17,11 +17,11 @@ RGain = db2mag(RGain_dB);
 
 %% Folder with impulse responses
 nameFolder='\workFolder';
-resourcesFolder = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\';
+resourcesFolder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\';
 workFolder = strcat(resourcesFolder,nameFolder);
 cd (resourcesFolder);
 
-addpath ('C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
+addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 %% ------------------
 DirectPath=false;
 %% ------------------
@@ -50,11 +50,11 @@ HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
 sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
 
 %% Absor Binaural
-% folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
+% folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
 %% Absor Omni
-folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
+folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
 %% Absor Eyring
-%folderAbsor = 'C:\Repos\of_v0.11.2_vs2017_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\A108';
+%folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\A108';
 
 roomFile = 'A108_room_Ini.xml';
 dp_Tmix = 1;

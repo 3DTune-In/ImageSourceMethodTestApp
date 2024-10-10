@@ -22,3 +22,6 @@ bin/netcdf.dll
 # Installer
 Installer/ISM Simulator Installer/Release/
 !Installer/redist/*
+
+#WorkFolder
+bin/data/resources/workFolder/

@@ -1,7 +1,7 @@
 
 
 %% Info to show: Error or Absorption
-info = 'Absor';     % 'Error' --'Absor'
+info = 'Error';     % 'Error' --'Absor'
 %numValAbsor = 10;   %  Num samples
 
 %% OpenFramework version
@@ -17,7 +17,7 @@ workFolder = strcat(resourcesFolder,nameFolder);
 %nameFolder='\Adj sJun-C80-DirPath';
 %nameFolder='\Adj sJun-EEY-DirPath';
 %nameFolder='\Adj sJun-C80-DirPath';
-nameFolder='\Adj sJun-C80-DirPath';
+nameFolder='\A108-EEY-2'; 
 
 lastCharacter = nameFolder(end);
 if isstrprop(lastCharacter, 'digit')
@@ -34,6 +34,13 @@ else
 end
 
 dataFolder = strcat(workFolder,nameFolder);
+
+if isfolder(dataFolder)
+    disp('folder exist');
+else
+    error('Error: the folder does not exist');
+end
+
 cd (dataFolder);
 
 files = dir(dataFolder);
@@ -53,7 +60,12 @@ for i = 1:length(files)
 end 
 
 if info == 'Absor'
-    ErrPerBand=dir(['AnFile*.mat'])
+    if trueBand
+        ErrPerBand=dir(['pAbsFil*.mat']);
+    else
+        ErrPerBand=dir(['AnFile*.mat']);
+    end
+    
     fileName=ErrPerBand.name;
 elseif info == 'Error'
     if fileSn
@@ -87,6 +99,17 @@ if ( isstrprop(lastCharacter, 'alpha'))
 else
     x=[1:1:length(ErrVsAbs(:,1))];
 end
+
+for i=1:length(ErrVsAbs(:,1))
+    sumVal = 0;
+    sumVal = sum (ErrVsAbs (i,:));
+    if sumVal == 0 
+        x=[1:1:i];   %remove rows with zeros
+        aux = ErrVsAbs(1:i,:);
+        ErrVsAbs=aux;
+        break;
+    end    
+end    
 
 for i=1:9
     if isstrprop(lastCharacter, 'digit')

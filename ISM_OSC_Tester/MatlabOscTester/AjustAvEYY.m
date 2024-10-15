@@ -86,7 +86,7 @@ end
 addpath(pathSc); 
 
 %% Folder with impulse responses
-nameFolder='workFolder';
+nameFolder='\workFolder';
 workFolder = strcat(resourcesFolder,nameFolder);
 if exist(workFolder, 'dir') == 7
     disp('folder exist');
@@ -559,7 +559,7 @@ while ( iLoop < ITER_MAX)
     %% -----------------------------------------------------------------
     %% Extrac distAu and new absortions (only 1ª and 2ª iterations) to send to ISM
     distAu=zeros(1,NB);
-    for j=1:NB
+    for j=2:NB-1                 %First and last bands are not taken into account 
         distAu(1,j) = FactorMeanBand (1,j) -1;
         DistAuB = distAu(1,j);
         if (abs (DistAuB)  > 0)
@@ -591,7 +591,7 @@ while ( iLoop < ITER_MAX)
        changeAbsor = 9;            %This forces more than two iterations to be done.
     else
         %% calculate new absorptions
-        for j=1:NB       
+        for j=2:NB-1               %First and last bands are not taken into account      
             newAbsorb = (-distAu1(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
             if sign(distAu1(1,j)) ~= sign(distAu0(1,j))
                 maximumAbsorChange(j)= maximumAbsorChange(j)*reductionAbsorChange;

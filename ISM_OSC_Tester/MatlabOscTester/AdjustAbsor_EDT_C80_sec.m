@@ -31,7 +31,7 @@
 clear all;
 
 %% BRIR used for adjustment: measured ('M') or simulated ('S') and ROOM
-BRIR_used = 'S'; Room = 'sJun'; %sJun
+BRIR_used = 'S'; Room = 'A108'; %sJun
 %% MAX ITERATIONS 
 ITER_MAX = 60;
 %% Direct Path ###  Threshold Average ##
@@ -41,9 +41,9 @@ RGain_dB = -6;
 %RGain_dB = 4.8428 
 
 %% parameter used for adjustment
-paramAdj =  'EDT'; % 'EDT', 'C50','C80', 'D50', 'C50'
+paramAdj =  'C80'; % 'EDT', 'C50','C80', 'D50', 'C50'
 if paramAdj == 'EDT'
-   thError = 0.01;    DpTmix = 28;  % 81 ms
+   thError = 0.05;    DpTmix = 28;  % 81 ms
 elseif paramAdj == 'C80'
    thError = 0.01;    DpTmix = 28;  % 81 ms
 elseif paramAdj == 'C50'
@@ -83,7 +83,7 @@ end
 addpath(pathSc); 
 
 %% Folder with impulse responses
-nameFolder='workFolder';
+nameFolder='\workFolder';
 workFolder = strcat(resourcesFolder,nameFolder);
 if exist(workFolder, 'dir') == 7
     disp('folder exist');
@@ -339,7 +339,7 @@ while ( iLoop < ITER_MAX)
     aC80r = zeros(1,NB); bC80h = zeros(1,NB); cC80 = zeros(1,NB);
     aEDTr = zeros(1,NB); bEDTh = zeros(1,NB); cEDT = zeros(1,NB);
     aLinear = zeros(1,NB); bLinear = zeros(1,NB);
-    for j=1:NB
+    for j=2:NB-1
         if paramAdj == 'C50'
            aC50r (1,j) = (raResults_reference.C50.freqData(j,1) + raResults_reference.C50.freqData(j,2)) / 2;
            bC50h (1,j) = (raResults_hybrid.C50.freqData(j,1) + raResults_hybrid.C50.freqData(j,1) ) / 2; 
@@ -409,7 +409,7 @@ while ( iLoop < ITER_MAX)
        changeAbsor = 9;            %This forces more than two iterations to be done.
     else
         %% calculate new absorptions
-        for j=1:NB
+        for j=2:NB-1
             %% newAbsorb = (-distAu0(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData0(1,j); 
             newAbsorb = (-distAu1(1,j)) * (absorbData1(1,j)-absorbData0(1,j))/(distAu1(1,j)-distAu0(1,j))+absorbData1(1,j); 
 

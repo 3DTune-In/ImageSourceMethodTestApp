@@ -9,9 +9,18 @@
 % 
 % Copyright (C) 2024 Universidad de Málaga
 
-%% Reverb Gain
-%RGain_dB = -6;       %Omni
-RGain_dB = -4.8428;  %Binaural
+OpeMode = 'Bina'; % 'Bina'; 'Omni'
+adjustRoomParam = '\Adj sJun-EEY-1pp-7Bands'; %'\Adj sJun-C80-1pp-7Bands';'\AbsorEyring\sJun';'\Adj sJun-EEY-1pp-7Bands';
+dp_Tmix = 34;     % 20-34
+
+%% Reverb Gain 
+if OpeMode == 'Omni'
+    RGain_dB = -6;       %Omni
+elseif OpeMode == 'Bina'
+    RGain_dB = -4.8428;  %Binaural
+else
+    RGain_dB = 0;
+end
 RGain = db2mag(RGain_dB);
 
 %% Folder with impulse responses
@@ -19,6 +28,8 @@ nameFolder='\workFolder';
 resourcesFolder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\';
 workFolder = strcat(resourcesFolder,nameFolder);
 cd(resourcesFolder);
+
+folderAbsor = strcat(workFolder,adjustRoomParam);
 
 addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 %% ------------------
@@ -36,39 +47,39 @@ posL = [0.0  0.0 0.15;   %1
        -2.0 -2.0 0.15;   %4
        -4.0 -4.0 0.15];  %5
 
-% % Set HRTF Omni
-% HRTFFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
-% % Sofa Omni
-% sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
-
-%% HRTF Binaural
-HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
-%% Sofa Binaural
-sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+if OpeMode == 'Omni'
+    %% Set HRTF Omni
+    HRTFFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
+    %% Sofa Omni
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+elseif OpeMode == 'Bina'
+    %% HRTF Binaural
+    HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
+    %% Sofa Binaural
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+else
+    % Sofa Omni Bidimensional
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_forAbsorp.sofa';
+end
 
 %% Absor Binaural
 % folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
 %% Absor Omni
 %folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
-folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\Ab_sJun\Eyy';
-% %% Absor Eyring
+%sfolderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\Ab_sJun\Eyy';
+%% Absor Eyring
 % folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\sJuntas';
 
 roomFile = 'Juntas_room_Ini.xml';
-dp_Tmix = 20;
 RefOrd = 40;
 
+%% Num Bytes BRIR 
 brirInfo = SOFAload(sofaFile);
 dataBRIRtotal = brirInfo.Data.IR;
 dataBRIRsimple = squeeze(dataBRIRtotal(3,:,:));
 dataBRIRsimple = dataBRIRsimple';
 Fs = brirInfo.Data.SamplingRate; 
 NumBytesBRIR = length (dataBRIRsimple) * 4;
-
-% %% source_2
-% posS = [4.30 0.0 0.15];
-% %% listener_4
-% posL = [-2.0 -2.0 0.15]; 
 
 %% Open connection to send messages to ISM
 ISMPort = 12300;
@@ -211,7 +222,8 @@ for pL=1:5
         nameNewFolder  = sprintf(formatNameNewFolder,Room, pL, pS );
         mkdir(current_folder, nameNewFolder);
         % save data simulations
-        save ('DataSimulation.mat','Room','roomFile' , 'pL', 'pS', 'positionS', 'positionL','sofaFile', 'folderAbsor', 'dp_Tmix', 'DirectPath');
+        RGain_dB = mag2db(RGain);
+        save ('DataSimulation.mat','Room','roomFile' , 'pL', 'pS', 'positionS', 'positionL','sofaFile', 'folderAbsor', 'dp_Tmix', 'DirectPath', 'HRTFFile', 'RGain_dB');
         % copy files
         movefile(newNameFileHyb, nameNewFolder);
         % movefile(newNameFileISM, nameNewFolder);
@@ -224,8 +236,6 @@ for pL=1:5
     end 
     
 end
-
-
 
 % Close, doesn't work properly
 HybridOscCmds.CloseOscServer(receiver, osc_listener);

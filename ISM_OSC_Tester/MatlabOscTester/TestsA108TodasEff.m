@@ -9,9 +9,18 @@
 % 
 % Copyright (C) 2024 Universidad de Málaga
 
-%% Reverb Gain
-%RGain_dB = -6;       %Omni
-RGain_dB = -4.8428;  %Binaural
+OpeMode = 'Bina'; % 'Bina'; Omni
+adjustRoomParam = '\AbsorEyring\A108'; %'\Adj A108-EEY-1pp-7Bands'; %'\Adj A108-C80-1pp-7Bands'; %'\AbsorEyring\A108';
+dp_Tmix = 20;
+
+%% Reverb Gain 
+if OpeMode == 'Omni'
+    RGain_dB = -6;       %Omni
+elseif OpeMode == 'Bina'
+    RGain_dB = -4.8428;  %Binaural
+else
+    RGain_dB = 0;
+end
 RGain = db2mag(RGain_dB);
 
 %% Folder with impulse responses
@@ -19,6 +28,8 @@ nameFolder='\workFolder';
 resourcesFolder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\';
 workFolder = strcat(resourcesFolder,nameFolder);
 cd(resourcesFolder);
+
+folderAbsor = strcat(workFolder,adjustRoomParam);
 
 addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 %% ------------------
@@ -35,26 +46,31 @@ posL = [-0.45  0.02 -0.68;    %1
         -0.45 -4.98 -0.68;    %3
         -2.23 -2.48 -0.68;    %4 
         -3.24 -4.98 -0.68;];  %5
-% % HRTF Omni
-% HRTFFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
-% % Sofa Omni
-% sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
 
-%% HRTF Binaural
-HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
-%% Sofa Binaural
-sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+if OpeMode == 'Omni'
+    % HRTF Omni
+    HRTFFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
+    % Sofa Omni Bidimensional
+    sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+elseif OpeMode == 'Bina'
+    % HRTF Binaural
+    HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
+    % Sofa Binaural
+    sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+else
+    % Sofa Omni Bidimensional
+    sofaFile = 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_forAbsorp.sofa';
+end
 
 %% Absor Binaural
 % folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 CASCADE 20FIT\9';
 %% Absor Omni
 %folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\A108 Omni\7';
-folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\Ab_A108\Eyy';
+%folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\Ab_A108\Eyy';
 %% Absor Eyring
 %folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\A108';
 
 roomFile = 'A108_room_Ini.xml';
-dp_Tmix = 20;
 RefOrd = 40;
 
 %% Num Bytes BRIR 
@@ -206,7 +222,8 @@ for pL=1:5
         nameNewFolder  = sprintf(formatNameNewFolder,Room, pL, pS );
         mkdir(current_folder, nameNewFolder);
         % save data simulations
-        save ('DataSimulation.mat','Room','roomFile' , 'pL', 'pS', 'positionS', 'positionL','sofaFile', 'folderAbsor', 'dp_Tmix', 'DirectPath');
+        RGain_dB = mag2db(RGain);
+        save ('DataSimulation.mat','Room','roomFile' , 'pL', 'pS', 'positionS', 'positionL','sofaFile', 'folderAbsor', 'dp_Tmix', 'DirectPath', 'HRTFFile', 'RGain_dB');
         % copy files
         movefile(newNameFileHyb, nameNewFolder);
         % movefile(newNameFileISM, nameNewFolder);

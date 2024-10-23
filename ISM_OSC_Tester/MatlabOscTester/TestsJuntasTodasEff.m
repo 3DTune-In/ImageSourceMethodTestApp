@@ -51,7 +51,8 @@ if OpeMode == 'Omni'
     %% Set HRTF Omni
     HRTFFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
     %% Sofa Omni
-    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+    %sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_forAbsorp.sofa';
 elseif OpeMode == 'Bina'
     %% HRTF Binaural
     HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';

@@ -1,4 +1,4 @@
-%% This script contains the OSC script to initialize the A108 ROOM
+clc%% This script contains the OSC script to initialize the A108 ROOM
 
 % Authors: Fabian Arrebola (13/12/2023) 
 % contact: areyesa@uma.es
@@ -13,13 +13,16 @@
 addpath(pathSc); 
 
 %% Folder with absorptions
-nameFolder='workFolder\sJuntas Omni';
+nameFolder='\workFolder\A108 Omni';
 workFolder = strcat(resourcesFolder,nameFolder);
 %% Reverb Gain
 %RGain_dB = 0;
 RGain_dB = -6;       %Omni
 %RGain_dB = -4.8428;  %Binaural
 RGain = db2mag(RGain_dB);
+
+%% Reflection Order
+RefOrd =40;
 
 %% Positions
 posS =[1.55 0.02 -0.68];
@@ -60,14 +63,14 @@ positionS = posS;
 HybridOscCmds.SendSourceLocationToISM (connectionToISM, positionS);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 
-% %% Set HRTF Binaural
-% HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa');
+%% Set HRTF Binaural
+%HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa');
 %% Set HRTF Omni
 HybridOscCmds.SendChangeHRTFToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa')
 
-% %% Set BRIR Binaural
-% HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
-%% Set RIR Omni Bidimensional
+%% Set BRIR Binaural
+%HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa');
+% %% Set RIR Omni Bidimensional
 % HybridOscCmds.SendReverbOrderToISM(connectionToISM, 1);
 % message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
 % HybridOscCmds.SendChangeBRIRToISM(connectionToISM, 'Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa');
@@ -89,7 +92,7 @@ disp(message+" Stop");
 pause(0.5);
 %% Set RGain
 % configureHybrid (connectionToISM, receiver, osc_listener,              W_Slope, DistMax, RefOrd, RGain, SaveIR) 
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    1,       4,   RGain,   false);
+HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,   RefOrd,   RGain,   false);
 pause(0.2);
 disp(message+" RIR");
 

@@ -9,10 +9,17 @@
 % 
 % Copyright (C) 2024 Universidad de Málaga
 
-%% Reverb Gain
-RGain_dB = 0;
-% RGain_dB = -6;       %Omni
-% RGain_dB = -4.8428;  %Binaural
+OpeMode = 'Omni'; % Bina;
+adjustRoomParam = '\sJun Omni'; %'\Adj sJun-C80-1pp-7Bands'; %Adj sJun-EEY-1pp-7Bands; '\AbsorEyring\sJun'; '\sJun Omni'
+
+%% Reverb Gain 
+if OpeMode == 'Omni'
+    RGain_dB = -6;       %Omni
+elseif OpeMode == 'Bina'
+    RGain_dB = -4.8428;  %Binaural
+else
+    RGain_dB = 0;
+end
 RGain = db2mag(RGain_dB);
 
 %% Folder with impulse responses
@@ -20,6 +27,8 @@ nameFolder='\workFolder';
 resourcesFolder = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\';
 workFolder = strcat(resourcesFolder,nameFolder);
 cd(resourcesFolder);
+
+folderAbsor = strcat(workFolder,adjustRoomParam);
 
 addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 %% ------------------
@@ -38,22 +47,25 @@ posL = [0.0  0.0 0.15;   %1
        -4.0 -4.0 0.15];  %5
 
 
-%% Set HRTF Omni
-% HRTFFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
-%% Sofa Omni Bidimensional
-% sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
-%% Sofa Omni Bidimensional
-%sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_forAbsorp.sofa';
-
-% HRTF Binaural
-HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
-% Sofa Binaural
-sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+if OpeMode == 'Omni'
+    %% Set HRTF Omni
+    HRTFFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa';
+    %% Sofa Omni
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa';
+elseif OpeMode == 'Bina'
+    %% HRTF Binaural
+    HRTFFile = 'HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa';
+    %% Sofa Binaural
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa';
+else
+    % Sofa Omni Bidimensional
+    sofaFile = 'SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb_forAbsorp.sofa';
+end
 
 %% Absor Binaural
 % folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJUNTAS CASCADE 20FIT\10';
 %% Absor Omni
-folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
+%folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\sJuntas Omni\7';
 %% Absor Eyring
 %folderAbsor = 'C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\bin\data\resources\workFolder\AbsorEyring\sJuntas';
 

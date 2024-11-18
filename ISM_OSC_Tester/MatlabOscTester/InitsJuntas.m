@@ -13,13 +13,16 @@
 addpath(pathSc); 
 
 %% Folder with absorptions
-nameFolder='workFolder\sJuntas Omni';
+nameFolder='\workFolder\sJun Omni';
 workFolder = strcat(resourcesFolder,nameFolder);
 
 %% Reverb Gain
 RGain_dB = -6;       %Omni
 %RGain_dB = -4.8428;  %Binaural
 RGain = db2mag(RGain_dB);
+
+%% Reflection Order
+RefOrd =40;
 
 %% Positions
 posS = [2.0 0.0 0.15];
@@ -86,7 +89,7 @@ disp(message+" Stop");
 pause(0.5);
 %% Set RGain
 % configureHybrid (connectionToISM, receiver, osc_listener,              W_Slope, DistMax, RefOrd, RGain, SaveIR) 
-HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,       4,   RGain,   false);
+HybridOscCmds.configureHybrid (connectionToISM, receiver, osc_listener,         2,    20,  RefOrd,   RGain,   false);
 
 pause(0.2);
 disp(message+" RIR");

@@ -32,9 +32,9 @@ folderAbsor = strcat(workFolder,adjustRoomParam);
 
 addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
 %% ------------------
-DirectPath=false;
+DirectPath=true;
 roomFile = 'A108_room_Ini.xml';
-dp_Tmix = 1; %20, 28, 40,  8.2
+dp_Tmix = 8.2; %1, 20, 28, 40,  
 RefOrdEff = 0;
 %% ------------------
 pS=2;

@@ -6,7 +6,10 @@
 #include "Common/Profiler.h"
 //CProfilerDataSet dsAudioLoop;
 Common::CProfilerDataSet dsProcessFrameTime;
-//Common::CProfilerDataSet dsProcessReverb;
+Common::CProfilerDataSet dsProcessAnechoicTime;
+Common::CProfilerDataSet dsProcessReverbTime;
+Common::CProfilerDataSet dsProcessISMTime;
+
 Common::CTimeMeasure startOfflineRecord;
 #endif
 #include <filesystem>
@@ -35,8 +38,15 @@ void ofApp::setup() {
 	// SETUP PROFILER
 #ifdef USE_PROFILER
 	Common::PROFILER3DTI.InitProfiler();
-	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessFrameTime, "PROF_APP_ProcessAllSourcesTIME.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessFrameTime, "PROFILLING_APP_ProcessAll.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessAnechoicTime, "PROFILLING_APP_ProcessAnechoic.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessReverbTime, "PROFILLING_APP_ProcessReverb.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessISMTime, "PROFILLING_APP_ProcessISM.txt");
+
 	Common::PROFILER3DTI.StartRelativeSampling(dsProcessFrameTime);
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessAnechoicTime);
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessReverbTime);
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessISMTime);
 	//PROFILER3DTI.SetAutomaticWrite(dsProcessReverb, "PROF_APP_PROCESSREVERB.txt");
 	//PROFILER3DTI.StartRelativeSampling(dsProcessReverb);
 #endif
@@ -1513,23 +1523,44 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	source1Wav.FillBuffer(source1);
 		
 #ifdef USE_PROFILER
-	if (profilling) { Common::PROFILER3DTI.RelativeSampleStart(dsProcessFrameTime); }	
+	if (profilling) {
+		Common::PROFILER3DTI.RelativeSampleStart(dsProcessFrameTime);
+		Common::PROFILER3DTI.RelativeSampleStart(dsProcessAnechoicTime);
+	}
 #endif
 
+	// Anechoic processing
 	processAnechoic(source1, bufferOutput);
+
+#ifdef USE_PROFILER
+	if (profilling) Common::PROFILER3DTI.RelativeSampleEnd(dsProcessAnechoicTime);
+#endif
 
 	if (!bDisableReverb)
 	{
+#ifdef USE_PROFILER
+		if (profilling) Common::PROFILER3DTI.RelativeSampleStart(dsProcessReverbTime);
+#endif
+		// Reverberation processing
 		processReverb(source1, bufferOutput);
+#ifdef USE_PROFILER
+		if (profilling) Common::PROFILER3DTI.RelativeSampleEnd(dsProcessReverbTime);
+#endif
 	}
 
-	//Common::CTransform lisenerTransform = listener->GetListenerTransform();
-	//Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
-
+#ifdef USE_PROFILER
+	if (profilling) Common::PROFILER3DTI.RelativeSampleStart(dsProcessISMTime);
+#endif
+	// Image source processing
 	processImages(source1, bufferOutput);
 
 #ifdef USE_PROFILER
-	if (profilling) { Common::PROFILER3DTI.RelativeSampleEnd(dsProcessFrameTime); }
+	if (profilling) Common::PROFILER3DTI.RelativeSampleEnd(dsProcessISMTime);
+#endif
+
+
+#ifdef USE_PROFILER
+	if (profilling) { Common::PROFILER3DTI.RelativeSampleEnd(dsProcessFrameTime);	}
 #endif	
 }
 #endif

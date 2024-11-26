@@ -20,7 +20,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_REFLECTION_ORDER 40
 #define MAX_DIST_SILENCED_FRAMES 100          //meters
 #define MIN_DIST_SILENCED_FRAMES 1           //meters
-#define INITIAL_DIST_SILENCED_FRAMES 9       //meters
+#define INITIAL_DIST_SILENCED_FRAMES 6.86     //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
@@ -835,11 +835,11 @@ void ofApp::keyPressed(int key) {
 
 	case OF_KEY_HOME: // OF_KEY_PAGE_UP:
 	{
-		if (maxDistanceImageSourcesToListenerControl.get() < MAX_DIST_SILENCED_FRAMES)
+		if (maxDistanceImageSourcesToListenerControl.get() < MAX_DIST_SILENCED_FRAMES-3.43)
 		{
 			if (!stopState) systemSoundStream.stop();
 
-			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
+			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 3.43;
 
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 			maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
@@ -852,11 +852,11 @@ void ofApp::keyPressed(int key) {
 	}
 	case OF_KEY_END: //OF_KEY_PAGE_DOWN:
 	{
-		if (maxDistanceImageSourcesToListenerControl.get() > MIN_DIST_SILENCED_FRAMES)
+		if (maxDistanceImageSourcesToListenerControl.get() > MIN_DIST_SILENCED_FRAMES+3.43)
 		{
 			if (!stopState) systemSoundStream.stop();
 
-			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
+			float maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 3.43;
 
 			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
 			maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
@@ -1235,6 +1235,9 @@ void ofApp::keyPressed(int key) {
 		}
 		cout << "Total images = " << images.size();
 		cout << " -- " << numberOfVisibleImages << " visible" << "\n";
+
+		float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+		cout << "Sound Speed = " << soundSpeed << "\n";
 
 		break;
 	}
@@ -1781,9 +1784,9 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 
 	float maxDistanceSourcesToListener = _maxDistanceSourcesToListener;
 
-	int numSamplesThreshold = meters2samples(maxDistanceSourcesToListener);
-	int numsamplesWindowSlope = millisec2samples(windowSlopeWidth);
-	int numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope/2;
+	float numSamplesThreshold = meters2samples(maxDistanceSourcesToListener);
+	float numsamplesWindowSlope = millisec2samples(windowSlopeWidth);
+	float numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope/2;
 
 	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
 
@@ -1842,7 +1845,7 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 	if (!stopState) systemSoundStream.start();
 }
 
-void ofApp::changeWinThreshold(int& _windowThreshold)
+void ofApp::changeWinThreshold(float& _windowThreshold)
 {
 	if (setupDone == false) return;
 	
@@ -1865,7 +1868,7 @@ void ofApp::changeWinThreshold(int& _windowThreshold)
 	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
 	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
 		
-	maxDistanceImageSourcesToListenerControl.set((int)maxDistanceSourcesToListener);
+	maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
 
 	if (!stopState) systemSoundStream.start();
 }
@@ -1955,10 +1958,10 @@ void ofApp::changeReverbGain(float &_reverbGain)
 }
 
 
-int ofApp::millisec2samples(float _millisec)
+float ofApp::millisec2samples(float _millisec)
 {
 	float sampleRate = myCore.GetAudioState().sampleRate;
-	int samples = floor((_millisec * sampleRate ) / 1000.0);
+	float samples = ((_millisec * sampleRate ) / 1000.0);
 
 	return samples;
 }
@@ -1971,11 +1974,11 @@ float ofApp::samples2millisec(float _samples)
 	return millisec;
 }
 
-int ofApp::meters2samples(float _meters)
+float ofApp::meters2samples(float _meters)
 {
 	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
 	float sampleRate = myCore.GetAudioState().sampleRate;
-	int samples = floor((_meters * sampleRate) / soundSpeed);
+	float samples = ((_meters * sampleRate) / soundSpeed);
 	
 	return samples;
 }

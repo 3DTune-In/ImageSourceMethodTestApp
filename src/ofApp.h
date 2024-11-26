@@ -101,7 +101,7 @@ private:
 		ofParameter<bool> binauralSpatialisationEnableControl;
 		ofParameter<float> maxDistanceImageSourcesToListenerControl;
 		ofParameter<float> reverbGainControl;
-		ofParameter<int> winThresholdControl;
+		ofParameter<float> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<bool> recordOfflineIRScanControl;
@@ -215,7 +215,7 @@ private:
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
 		void changeMaxDistanceImageSources(float &maxDistanceSourcesToListener);
-		void changeWinThreshold(int& windowThreshold);
+		void changeWinThreshold(float& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
 		void changeReverbGain(float &reverbGain);
 		void toggleWall(bool &active);
@@ -258,9 +258,9 @@ private:
 		void resetAudio();
 
 		// functions for conversion into samples
-		int millisec2samples(float _millisec);
+		float millisec2samples(float _millisec);
 		float samples2millisec(float _samples);
-		int meters2samples(float meters);
+		float meters2samples(float meters);
 		float samples2meters(float _samples);
 		float millisec2meters(float _millesec);
 		float meters2millisec(float _meters);

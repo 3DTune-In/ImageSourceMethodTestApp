@@ -20,7 +20,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define MAX_REFLECTION_ORDER 40
 #define MAX_DIST_SILENCED_FRAMES 100          //meters
 #define MIN_DIST_SILENCED_FRAMES 1           //meters
-#define INITIAL_DIST_SILENCED_FRAMES 6.86     //meters
+#define INITIAL_DIST_SILENCED_FRAMES 3.43     //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
@@ -217,8 +217,10 @@ void ofApp::setup() {
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
 	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
 	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic        
+	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
+	//stateAnechoicProcess = false;                  //Is changed in the method in toggleAnechoic   
+	anechoicSourceDSP->EnableAnechoicProcess();										// Disable anechoic processing for this source
+	stateAnechoicProcess = true;                  //Is changed in the method in toggleAnechoic 
 
 	// DistanceAttenuation
 	stateDistanceAttenuationAnechoic = true;
@@ -264,7 +266,7 @@ void ofApp::setup() {
 	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, MIN_DIST_SILENCED_FRAMES, MAX_DIST_SILENCED_FRAMES));
 				
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
-	leftPanel.add(anechoicEnableControl.set("Direct Path", false));
+	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
 
 	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
 	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
@@ -2363,11 +2365,13 @@ void ofApp::toggleAnechoic(bool &_active)
 	{
 		anechoicSourceDSP->DisableAnechoicProcess();
 		stateAnechoicProcess = false;
+		anechoicEnableControl.set(false);
 	}
 	else
 	{
 		anechoicSourceDSP->EnableAnechoicProcess();
 		stateAnechoicProcess = true;
+		anechoicEnableControl.set(true);
 	}
 }
 

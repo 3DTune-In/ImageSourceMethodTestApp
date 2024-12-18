@@ -11,6 +11,13 @@
 
 OpeMode = 'Bina'; % Bina; 'Omni';
 adjustRoomParam = '\A108 Omni'; %'\Adj A108-C80-1pp-7Bands'; %Adj A108-EEY-1pp-7Bands; '\AbsorEyring\A108'; '\A108 Omni'
+%% ------------------
+DirectPath=true;
+AttenuationReverb =true;
+roomFile = 'A108_room_Ini.xml';
+dp_Tmix = 8.2; %1, 20, 28, 40,  8.2;
+RefOrdEff = 1;
+%% -------------------
 
 %% Reverb Gain 
 if OpeMode == 'Omni'
@@ -31,11 +38,6 @@ cd (resourcesFolder);
 folderAbsor = strcat(workFolder,adjustRoomParam);
 
 addpath ('C:\Repos\of_v0.12.0_vs_release\ImageSourceMethodTestApp\ISM_OSC_Tester\MatlabOscTester');
-%% ------------------
-DirectPath=true;
-roomFile = 'A108_room_Ini.xml';
-dp_Tmix = 8.2; %1, 20, 28, 40,  
-RefOrdEff = 0;
 %% ------------------
 pS=2;
 posS = [1.55  0.02 -0.68;     %1
@@ -145,9 +147,9 @@ message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener)
 disp(message+" Enable Reverb");
 pause(0.2);
 %%  Enable/Disable Distance Attenuation Reverb 
-HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, false);
+HybridOscCmds.SendDistanceAttenuationReverbEnableToISM (connectionToISM, AttenuationReverb);
 message = HybridOscCmds.WaitingOneOscMessageStringVector(receiver, osc_listener);
-disp(message+" Distance Attenuation Reverb Disable");
+disp(message+" Distance Attenuation Reverb");
 pause(0.1);
 %%  Set Ro=4
 HybridOscCmds.SendReflecionOrderToISM(connectionToISM, 4);

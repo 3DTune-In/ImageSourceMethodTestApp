@@ -35,12 +35,13 @@
 #include <BRIR/BRIRCereal.h>
 #include "SoundSource.h"
 #include "ISM/ISM.h"
+#include "ISM/ISM2.hpp"
 #include "ofxGui\src\ofxGui.h"
 #include "WavWriter.h"
 #include "OscManager.hpp"
 #include "ofxOsc.h"
 #include "ofFileUtils.h"
-
+#include "AudioInterfaceController.hpp"
 
 #define SAMPLERATE 48000
 #define BUFFERSIZE 512
@@ -54,15 +55,31 @@
 #define OSC_DEFAULT_TARGET_PORT 12301
 #define OSC_DEFAULT_LISTEN_PORT 12300
 
+#define AUDIO_FILE_FEMALE_44100 "MusArch_Sample_44.1kHz_Anechoic_FemaleSpeech.wav"
+#define AUDIO_FILE_FEMALE_48000 "MusArch_Sample_48kHz_Anechoic_FemaleSpeech.wav"
+#define AUDIO_FILE_MALE_44100 "MusArch_Sample_44.1kHz_Anechoic_MaleSpeech.wav"
+#define AUDIO_FILE_MALE_48000 "MusArch_Sample_48kHz_Anechoic_MaleSpeech.wav"
+
+static const std::string APP_VERSION = "v2.0.0";
 
 class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
+		bool SetupAudioFile(const std::string& pathResources, const int & sampleRate);
+		void SetEnvironmentFadeInWindow(float& maxDistanceSourcesToListener);
+		void GuiSetup(const std::string& pathResources, float& secToRecordIR);
+		bool LoadHRTFSofa(const std::string& pathResources);
+		bool LoadBRIRSofa(const std::string& pathResources);
+		void SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& trapezoidal*/);
 		void update();
 		void draw();
 
+		void DrawRecordingOffline();
+
 		void keyPressed(int key);
+		void ShowImagesSourceSummaryData(float maxDistanceImagesToListener, std::vector<ISM::ImageSourceData>& images);
+		void ShowImageSourceData(std::vector<ISM::ImageSourceData>& data, const Common::CVector3& listenerLocation);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
 		void mouseDragged(int x, int y, int button);
@@ -99,6 +116,7 @@ private:
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
+		ofParameter<bool> ismEnableControl;
 		ofParameter<float> maxDistanceImageSourcesToListenerControl;
 		ofParameter<float> reverbGainControl;
 		ofParameter<float> winThresholdControl;
@@ -113,16 +131,19 @@ private:
 		ofParameter<bool> changeBRIRControl;
 		ofParameter<bool> playToStopControl;
 		ofParameter<bool> stopToPlayControl;
-
 		ofParameter<bool> helpDisplayControl;
-		ofParameter<bool> aboutDisplayControl;
+		ofParameter<bool> aboutDisplayControl;	
+		ofParameter<void> audioInterfaceControl;
+		ofParameter<void> sectionLabel1;
+		ofParameter<void> sectionLabel2;
+		ofParameter<void> sectionLabel3;
+		ofParameter<void> sectionLabel4;
+		ofParameter<void> sectionLabel5;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
 		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
-		
-		
-
+				
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
 		float shoeboxLength;
@@ -132,6 +153,7 @@ private:
 
 		//ISM::ISM ISMHandler;
 		shared_ptr<ISM::CISM> ISMHandler;
+		shared_ptr<ISM::CISM2> ISMHandler2;
 		
 		ISM::Room mainRoom;		
 		////////////////////
@@ -144,26 +166,33 @@ private:
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
-		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
-		bool bDisableReverb;                                                                         // true;
+		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface		                                                                   
 		int numberOfSilencedFrames = 0;
-		int numberOfSilencedSamples = 0;
+		int numberOfSilencedSamplesInBRIR = 0;
 		float secondsToRecordIR;
 		int numberIRScan = 0;
 
-		float windowSlopeWidth;  //millisec
-		float reverbGainLinear;  //linear gain for reverb tail 
+		int	  currentReflectionOrder;
+		float currentMaxDistanceSourcesToListener;	// meters
+		float currentWindowThreshold;				// milliseconds
+		float currentWindowSlopeWidth;				// milliseconds
+		float reverbGainLinear;						// linear gain for reverb tail 
 
 		std::vector<ofSoundDevice> deviceList;
-		ofSoundStream systemSoundStream;
+		//ofSoundStream systemSoundStream;
 		
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
-		bool stateAnechoicProcess;                                                          // Enabled o Disabled
-		bool stateBinauralSpatialisation;                                                   // Enabled o Disabled
-		bool stateDistanceAttenuationAnechoic;                                             // Enabled o Disabled
-		bool stateDistanceAttenuationReverb;                                                // Enabled o Disabled
+		bool stateAnechoicProcess;				// Enabled o Disabled
+		bool stateBinauralSpatialisation;		// Enabled o Disabled
+		bool stateISMProcess;					// Enabled o Disabled
+		//bool bDisableReverb;                  // Enabled o Disabled
+		bool stateBRIRReverbProcess;            // Enabled o Disabled
+
+		bool stateDistanceAttenuationAnechoic;	// Enabled o Disabled
+		bool stateDistanceAttenuationReverb; 	// Enabled o Disabled   
+		
 		TReverberationOrder reverberationOrder;
 
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
@@ -183,18 +212,18 @@ private:
 		bool changeFileFromOSC;                 // initial value: false
 		char* charFilenameOSC;                  // file name with the HRTF or geometry or BRIR of the room
 		char* charFolderOSC= "workFolder";                    // working folder name
-		string fullPathHRTF;
-		string fullPathBRIR;
+		std::string fullPathHRTF;
+		std::string fullPathBRIR;
 
+		std::shared_ptr< CAudioInterfaceController> audioInterfaceController;
 
-		/// Methods to handle Audio
-		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
-		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);
-		void audioOut(float * output, int bufferSize, int nChannels);
-		//void audioOut(ofSoundBuffer &outBuffer); //ofSoundBuffer
-
+		//////////////////////////////
+		//////////////////////////////
+		/// Methods to handle Audio		
+		void ChangeAudioDevice();
+		void audioOut(float * output, int bufferSize, int nChannels);		
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
-		void LoadWavFile(SoundSource & source, const char* filePath);
+		bool LoadWavFile(SoundSource & source, const char* filePath);
 
 		/// Methods to render audio
 		void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
@@ -221,6 +250,7 @@ private:
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
 		void toggleAnechoic(bool& active);
+		void toggleISM(bool& active);
 		void toggleBinauralSpatialisation(bool& active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
@@ -231,8 +261,7 @@ private:
 		void changeHRTF(bool& active);
 		void changeBRIR(bool& active);
 		void playToStop(bool &active);
-		void stopToPlay(bool &active);
-		
+		void stopToPlay(bool &active);		
 		void toogleHelpDisplay(bool &_active);
 		void toogleAboutDisplay(bool& _active);
 
@@ -264,8 +293,12 @@ private:
 		float samples2meters(float _samples);
 		float millisec2meters(float _millesec);
 		float meters2millisec(float _meters);
+		float meters2secs(float _meters);		
+		bool is_equal(float a, float b);
 
-		
+		void UpdateISM2();
+		void ShowMessage(std::string message);
+
 		// OSC CallBack
 		void OscCallback(const ofxOscMessage& message);		
 		void OscCallBackPlay();

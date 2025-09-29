@@ -224,6 +224,9 @@
     <ClInclude Include="..\src\OscManager.hpp">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\AudioInterfaceController.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

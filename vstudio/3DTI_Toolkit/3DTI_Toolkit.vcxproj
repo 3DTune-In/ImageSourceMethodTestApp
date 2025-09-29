@@ -58,8 +58,11 @@
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Vector3.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Waveguide.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISM.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISM2.hpp" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISMParameters.hpp" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Room.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\SourceImages.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\SourceImages2.hpp" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Wall.h" />
   </ItemGroup>
   <ItemGroup>

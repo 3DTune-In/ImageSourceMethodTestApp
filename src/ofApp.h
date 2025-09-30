@@ -161,7 +161,7 @@ private:
 		std::vector<Common::CVector3> corners;
 		ofXml currentWall;
 		std::vector<std::vector<int>> walls;		
-		std::vector<std::vector<float>> absortionsWalls;
+		//std::vector<std::vector<float>> absortionsWalls;
 		/////////////////////
 
 		Binaural::CCore							myCore;												 // Core interface
@@ -231,14 +231,16 @@ private:
 		void processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms. 
-		void drawRoom(ISM::Room room, int reflectionOrder, int transparency); //Draws recursively rooms
-		void drawWall(ISM::Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
-		void drawWallNormal(ISM::Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		void drawRoom(ISM::Room& room, int reflectionOrder, int transparency); //Draws recursively rooms
+		void drawWall(ISM::Wall& wall); //Draws the wall with lines between each pair of consecutive vertices.
+		void drawWallNormal(ISM::Wall& wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
-		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
-		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP();
+		//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
+		//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP();
+		void createImageSourceDSP();
+		void reCreateImageSourceDSP();
 
 		/// Methods to manage GUI
 		void changeZoom(int &zoom);

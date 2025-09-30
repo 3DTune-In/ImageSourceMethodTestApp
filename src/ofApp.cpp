@@ -146,13 +146,12 @@ void ofApp::setup() {
 	ISMHandler->setReflectionOrder(0);
 	ISMHandler->enableStaticDistanceCriterion();	// enable static distance criterion in order to reduce the number of potential sources			
 	ISMHandler->setSourceLocation(initialLocation);	// Source to be rendered
-	ISMHandler->setMaxDistanceImageSources(currentMaxDistanceSourcesToListener, millisec2meters((float)INITIAL_WIN_SLOPE));	
-	//ISMHandler->setupArbitraryRoom(trapezoidal);	
+	ISMHandler->setMaxDistanceImageSources(currentMaxDistanceSourcesToListener, millisec2meters((float)INITIAL_WIN_SLOPE));		
 	ISMHandler->SetupRoom(mainRoom);
-	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	//ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	//shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
 	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);		
-	mainRoom = ISMHandler->getRoom();		
+	//mainRoom = ISMHandler->getRoom();		
 	
 	
 									   
@@ -203,11 +202,12 @@ void ofApp::setup() {
 	ISMHandler2 = std::make_shared<ISM::CISM2>(&myCore);		// Initialize ISM
 	ISMHandler2->enableStaticDistanceCriterion();
 	ISMHandler2->setSourceLocation(initialLocation);	
+	//mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	ISMHandler2->Setup(currentReflectionOrder, currentMaxDistanceSourcesToListener, millisec2meters(currentWindowSlopeWidth), mainRoom);
-	ISMHandler2->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	
 	
 	// setup of the image sources
-	imageSourceDSPList = createImageSourceDSP();
+	createImageSourceDSP();
 	//imageSourceDSPList = reCreateImageSourceDSP();
 	
 	// OSC
@@ -433,6 +433,7 @@ void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& tra
 	}
 	// select all walls and iterate through them
 	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+	std::vector<std::vector<float>> absortionsWalls;
 	for (auto& currentWall : wallsXml) {
 		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
@@ -448,6 +449,7 @@ void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& tra
 	}
 
 	mainRoom.setupRoomGeometry(trapezoidal);
+	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 }
 
 
@@ -945,7 +947,7 @@ void ofApp::keyPressed(int key) {
 			maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
 			ISMHandler->setMaxDistanceImageSources(maxDistanceISM, millisec2meters(currentWindowSlopeWidth));
 
-			imageSourceDSPList = reCreateImageSourceDSP();
+			reCreateImageSourceDSP();
 			if (!stopState) audioInterfaceController->StartAudioInterface();/*audioInterfaceController->StartAudioInterface();*/
 		}
 		break;
@@ -962,7 +964,7 @@ void ofApp::keyPressed(int key) {
 			maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
 			ISMHandler->setMaxDistanceImageSources(maxDistanceISM, millisec2meters(currentWindowSlopeWidth));
 
-			imageSourceDSPList = reCreateImageSourceDSP();
+			reCreateImageSourceDSP();
 			if (!stopState) audioInterfaceController->StartAudioInterface();
 		}
 		break;
@@ -1192,14 +1194,16 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) audioInterfaceController->StopAudioInterface();
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
+		std::vector<std::vector<float>> absortionsWalls;
 		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+			absortionsWalls.push_back({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
 		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		mainRoom.setWallAbsortion(absortionsWalls);
+		//ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		UpdateISM2();
+		reCreateImageSourceDSP();
 
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
+		//mainRoom = ISMHandler->getRoom();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	}
@@ -1208,14 +1212,15 @@ void ofApp::keyPressed(int key) {
 		if (!stopState) audioInterfaceController->StopAudioInterface();
 
 		int numWalls = ISMHandler->getRoom().getWalls().size();
+		std::vector<std::vector<float>> absortionsWalls;
 		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 };
+			absortionsWalls.push_back({ 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 });
 		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		UpdateISM2();
+		reCreateImageSourceDSP();
 
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
+		//mainRoom = ISMHandler->getRoom();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	}
@@ -1238,7 +1243,7 @@ void ofApp::keyPressed(int key) {
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
+		reCreateImageSourceDSP();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	case 'b': //decrease room's length
@@ -1256,7 +1261,7 @@ void ofApp::keyPressed(int key) {
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
+		reCreateImageSourceDSP();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	case 'g': //decrease room's width
@@ -1275,7 +1280,7 @@ void ofApp::keyPressed(int key) {
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
+		reCreateImageSourceDSP();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	case 'h': //increase room's width
@@ -1294,7 +1299,7 @@ void ofApp::keyPressed(int key) {
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
+		reCreateImageSourceDSP();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	case 'v': //decrease room's height
@@ -1312,7 +1317,7 @@ void ofApp::keyPressed(int key) {
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
+		reCreateImageSourceDSP();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 	case 'n': //increase room's height
@@ -1330,7 +1335,7 @@ void ofApp::keyPressed(int key) {
 								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
 
 		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
+		reCreateImageSourceDSP();
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		break;
 
@@ -1713,7 +1718,7 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 ////////////////////////////////////////////////////////////////////////////////////////
 //Methods for drawing 
 ////////////////////////////////////////////////////////////////////////////////////////
-void ofApp::drawRoom(ISM::Room room, int reflectionOrder,int transparency)
+void ofApp::drawRoom(ISM::Room& room, int reflectionOrder,int transparency)
 {
 	if (reflectionOrder > 0)
 	{
@@ -1739,7 +1744,7 @@ void ofApp::drawRoom(ISM::Room room, int reflectionOrder,int transparency)
 	
 }
 
-void ofApp::drawWall(ISM::Wall wall)
+void ofApp::drawWall(ISM::Wall& wall)
 {
 	std::vector<Common::CVector3> polygon = wall.getCorners();
 	int numberVertex = polygon.size();
@@ -1752,7 +1757,7 @@ void ofApp::drawWall(ISM::Wall wall)
 		polygon[numberVertex - 1].x, polygon[numberVertex - 1].y, polygon[numberVertex - 1].z);
 }
 
-void ofApp::drawWallNormal(ISM::Wall wall, float length)
+void ofApp::drawWallNormal(ISM::Wall& wall, float length)
 {
 	Common::CVector3 center;
 	Common::CVector3 normalEnd;
@@ -1786,9 +1791,11 @@ void ofApp::moveSource(Common::CVector3 movement)
 	anechoicSourceDSP->SetSourceTransform(sourcePosition);	
 }
 
-std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
+//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
+void ofApp::createImageSourceDSP()
 {
-	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
+	if (imageSourceDSPList.size() > 0) return; // Already created	
+	//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
 	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler->getImageSourceLocations();		
 
 	for (int i = 0; i < imageSourceLocationList.size(); i++)
@@ -1814,19 +1821,20 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 		   tempSourceDSP->DisableDistanceAttenuationAnechoic();
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
-		tempImageSourceDSPList.push_back(tempSourceDSP);
+		imageSourceDSPList.push_back(tempSourceDSP);
 	}
-	return tempImageSourceDSPList;
+	//return tempImageSourceDSPList;
 }
 
-std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP()
+//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP()
+void ofApp::reCreateImageSourceDSP()
 {
 	for (int i = 0; i < imageSourceDSPList.size(); i++)					//Revome old sourcesDSP
 		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
 
 	imageSourceDSPList.clear();
-	imageSourceDSPList = createImageSourceDSP();						//Create new sourceDSP
-	return imageSourceDSPList;
+	createImageSourceDSP();						//Create new sourceDSP
+	//return imageSourceDSPList;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1847,7 +1855,7 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 	currentReflectionOrder = _reflectionOrder;
 	ISMHandler->setReflectionOrder(_reflectionOrder);
 	UpdateISM2();
-    imageSourceDSPList = reCreateImageSourceDSP();
+    reCreateImageSourceDSP();
 	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
 
@@ -1927,7 +1935,7 @@ void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 
 	SetEnvironmentFadeInWindow(currentMaxDistanceSourcesToListener); 	
 	ISMHandler->setMaxDistanceImageSources(currentMaxDistanceSourcesToListener, millisec2meters(currentWindowSlopeWidth));
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 	
 	currentWindowThreshold = meters2millisec(currentMaxDistanceSourcesToListener);
 	//winThresholdControl.setWithoutEventNotifications(windowThreshold);	
@@ -2038,7 +2046,7 @@ void ofApp::changeWindowSlope(int& _windowSlopeWidth)
 	//float windowSlopeInMeters = millisec2meters(currentWindowSlopeWidth);
 
 	ISMHandler->setMaxDistanceImageSources(currentMaxDistanceSourcesToListener, millisec2meters(currentWindowSlopeWidth));
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 	UpdateISM2();
 
 	if (!stopState) audioInterfaceController->StartAudioInterface();
@@ -2239,7 +2247,7 @@ void ofApp::resetAudio()
 	BRIR::CreateFromSofa(fullPathBRIR, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 }
 
 void ofApp::playToStop(bool &_active)
@@ -2388,12 +2396,12 @@ void ofApp::changeRoomGeometry(bool &_active)
 	}
 
 	/***********************/
-	absortionsWalls.clear();
+	//absortionsWalls.clear();
 	/***********************/
 
 	// select all walls and iterate through them
 	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
-	
+	std::vector<std::vector<float>> absortionsWalls;
 	for (auto & currentWall : wallsXml) {
 		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
@@ -2418,7 +2426,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	ISMHandler->setReflectionOrder(0);
 
 	mainRoom = ISMHandler->getRoom();
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
 	
 	//listener located in the center of the room
@@ -2434,7 +2442,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
 	mainRoom = ISMHandler->getRoom();
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 		
 	int numWalls = ISMHandler->getRoom().getWalls().size();
 	guiActiveWalls.resize(numWalls);
@@ -2659,7 +2667,7 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		stateBinauralSpatialisation = true;
 	}
 	
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
 	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
@@ -2714,7 +2722,7 @@ void ofApp::refreshActiveWalls()
 	int order = (int)reflectionOrderControl.get();
 	ISMHandler2->Setup(order, maxDistanceImageSources, windowSlopeInMeters, mainRoom);
 
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
 	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
@@ -2966,12 +2974,13 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 		v.push_back(message.getArgAsFloat(i));
 	}
 	int numWalls = ISMHandler->getRoom().getWalls().size();
+	std::vector<std::vector<float>> absortionsWalls;
 	for (int i = 0; i < numWalls; i++) {
 		//absortionsWalls.at(i) = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 };
 		for (int k = 0; k < 9; k++){
 			absorWall[k] = v[i*9 + k];
 	     }
-		absortionsWalls.at(i) = absorWall;
+		absortionsWalls.push_back(absorWall);
 	}
 	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	// DO whatever
@@ -3003,7 +3012,7 @@ void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
 	float windowThreshold = winThresholdControl.get();
 	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * currentWindowSlopeWidth), reverbGainLinear);
 
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 	if (!stopState) audioInterfaceController->StartAudioInterface();
 	SendOSCMessageToMatlab_Ready();
 }
@@ -3018,7 +3027,7 @@ void ofApp::OscCallBackDistMaxImgs(const ofxOscMessage& message) {
 	if (!stopState) audioInterfaceController->StopAudioInterface();
 		
 	changeMaxDistanceImageSources(maxDistImagesToListener);	
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 	SendOSCMessageToMatlab_Ready();
 }
 
@@ -3032,7 +3041,7 @@ void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message) {
 	
 	changeWindowSlope(newWindowSlope);
 	windowSlopeControl.set(newWindowSlope);
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 	SendOSCMessageToMatlab_Ready();
 }
 
@@ -3047,7 +3056,7 @@ void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
 	
 	reflectionOrderControl.set(reflectionOrder);
 	changeReflectionOrder(reflectionOrder);
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 	SendOSCMessageToMatlab_Ready();
 }
 
@@ -3119,7 +3128,7 @@ void ofApp::OscCallBackSpatialisationEnable(const ofxOscMessage& message) {
 		}
 	}
 
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
 	if (!stopState) audioInterfaceController->StartAudioInterface();
 
@@ -3191,11 +3200,12 @@ void ofApp::OscCallBackAbsortions(const ofxOscMessage& message) {
 		v.push_back(message.getArgAsFloat(i));
 	}
 	int numWalls = ISMHandler->getRoom().getWalls().size();
+	std::vector<std::vector<float>> absortionsWalls;
 	for (int i = 0; i < numWalls; i++) {
 		for (int k = 0; k < 9; k++) {
 			absorWall[k] = v[i * 9 + k];
 		}
-		absortionsWalls.at(i) = absorWall;
+		absortionsWalls.push_back(absorWall);
 	}
 	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 	for (int j = 0; j < 9; j++) {
@@ -3329,7 +3339,7 @@ void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
 	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
 	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
 	mainRoom = ISMHandler->getRoom();
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
 	SendOSCMessageToMatlab_Ready();
 }
@@ -3407,80 +3417,81 @@ void ofApp::ShowImageSourceData(std::vector<ISM::ImageSourceData>& data, const C
 	auto w5 = std::setw(5);
 	auto w6 = std::setw(6);
 	auto w7 = std::setw(7);
-	cout << "------------------------------------------------List of Source Images ---------------------------------------------\n";
-	cout << "  Visibility | Refl. |                Reflection coeficients                 |        Location       | Dist. (Room)\n";
-	cout << "             | order | ";
+	std::cout << "------------------------------------------------List of Source Images ---------------------------------------------\n";
+	std::cout << "  Visibility | Refl. |                Reflection coeficients                 |        Location       | Dist. (Room)\n";
+	std::cout << "             | order | ";
 	float freq = 62.5;
 	for (int i = 0; i < NUM_BAND_ABSORTION; i++)
 	{
-		if (freq < 100) { cout << ' '; }
-		if (freq < 1000) { cout << ((int)freq) << "Hz "; }
-		else { cout << w2 << ((int)(freq / 1000)) << "kHz "; }
+		if (freq < 100) { std::cout << ' '; }
+		if (freq < 1000) { std::cout << ((int)freq) << "Hz "; }
+		else { std::cout << w2 << ((int)(freq / 1000)) << "kHz "; }
 		freq *= 2;
 	}
-	cout << "|    X       Y       Z  |  \n";
-	cout << "-------------+-------+-------------------------------------------------------+-----------------------+--------\n";
+	std::cout << "|    X       Y       Z  |  \n";
+	std::cout << "-------------+-------+-------------------------------------------------------+-----------------------+--------\n";
 	for (int i = 0; i < data.size(); i++)
 	{
-		if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
-		cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;							//print source visibility 
-		cout << "|   " << data.at(i).reflectionWalls.size();												//print number of reflection needed for this source
-		cout << "   | ";
+		if (data.at(i).visible) std::cout << "VISIBLE "; else std::cout << "        ";
+		std::cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;							//print source visibility 
+		std::cout << "|   " << data.at(i).reflectionWalls.size();												//print number of reflection needed for this source
+		std::cout << "   | ";
 		for (int j = 0; j < NUM_BAND_ABSORTION; j++)
 		{
-			cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";	//print abortion coefficientes for a source
+			std::cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";	//print abortion coefficientes for a source
 		}
-		cout << "| " << w6 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";			//print source location
-		cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
-		cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.z << "|";
+		std::cout << "| " << w6 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";			//print source location
+		std::cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
+		std::cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.z << "|";
 
-		cout << w6 << (data.at(i).location - listenerLocation).GetDistance();								//print distance to listener and distance between first and last reflection walls
-		cout << " (" << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << ")" << "\n";
+		std::cout << w6 << (data.at(i).location - listenerLocation).GetDistance();								//print distance to listener and distance between first and last reflection walls
+		std::cout << " (" << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << ")" << "\n";
 	}
-	//cout << "Shoebox \n";
-	//cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
+	//std::cout << "Shoebox \n";
+	//std::cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
 
 	if (stateAnechoicProcess)
-		cout << "AnechoicProcess Enabled" << "\n";
+		std::cout << "AnechoicProcess Enabled" << "\n";
 	else
-		cout << "AnechoicProcess Disabled" << "\n";
+		std::cout << "AnechoicProcess Disabled" << "\n";
 
 	if (stateBinauralSpatialisation)
-		cout << "BinauralSpatialisation Enabled" << "\n";
+		std::cout << "BinauralSpatialisation Enabled" << "\n";
 	else
-		cout << "BinauralSpatialisation Disabled" << "\n";
+		std::cout << "BinauralSpatialisation Disabled" << "\n";
 
 	if (stateDistanceAttenuationAnechoic)
-		cout << "DistanceAttenuationAnechoic Enabled" << "\n";
+		std::cout << "DistanceAttenuationAnechoic Enabled" << "\n";
 	else
-		cout << "DistanceAttenuationAnechoic Disabled" << "\n";
+		std::cout << "DistanceAttenuationAnechoic Disabled" << "\n";
 
 	if (stateDistanceAttenuationReverb)
-		cout << "DistanceAttenuationReverb Enabled" << "\n";
+		std::cout << "DistanceAttenuationReverb Enabled" << "\n";
 	else
-		cout << "DistanceAttenuationReverb Disabled" << "\n";
+		std::cout << "DistanceAttenuationReverb Disabled" << "\n";
 
 	//#if 0
 	if (stateBRIRReverbProcess)
 	{
-		cout << "Reverb Enabled" << "\n";
-		cout << "Reverberation Order: " << reverberationOrder << "\n";
-		cout << "Number of silenced frames= " << numberOfSilencedFrames << "\n";
+		std::cout << "Reverb Enabled" << "\n";
+		std::cout << "Reverberation Order: " << reverberationOrder << "\n";
+		std::cout << "Number of silenced frames= " << numberOfSilencedFrames << "\n";
 	}
 	else
-		cout << "Reverb Disabled" << "\n";
+		std::cout << "Reverb Disabled" << "\n";
 	//#endif
 
-	cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
+	std::cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
 
 	Common::CTransform lT = listener->GetListenerTransform();
 	Common::CVector3 lLocation = lT.GetPosition();
 	Common::CQuaternion lO = lT.GetOrientation();
 	float yaw, pitch, roll;
 	lO.ToYawPitchRoll(yaw, pitch, roll);
-	cout << "Yaw = " << (yaw * 180 / PI) << " Pitch = " << (pitch * 180 / PI) << " Roll = " << (roll * 180 / PI) << "\n";
+	std::cout << "Yaw = " << (yaw * 180 / PI) << " Pitch = " << (pitch * 180 / PI) << " Roll = " << (roll * 180 / PI) << "\n";
 
-	cout << "Absortions = ";
+	std::cout << "Absortions = ";
+	std::vector<std::vector<float>> absortionsWalls = mainRoom.GetWallAbsortion();	
 	for (int j = 0; j < NUM_BAND_ABSORTION; j++) {
 		std::cout << absortionsWalls.at(0).at(j) << ", ";
 	}
@@ -3518,10 +3529,10 @@ bool ofApp::is_equal(float a, float b) {
     return std::fabs(a - b) < epsilon;
 }
 
-void ofApp::UpdateISM2() {
-	//float maxDistanceImageSources = maxDistanceImageSourcesToListenerControl.get();
+void ofApp::UpdateISM2() {	
 	float windowSlopeInMeters = millisec2meters(currentWindowSlopeWidth);	
 	ISMHandler2->Setup(currentReflectionOrder, currentMaxDistanceSourcesToListener, windowSlopeInMeters, mainRoom);
+	reCreateImageSourceDSP();
 }
 
 void ofApp::ShowMessage(std::string message) {

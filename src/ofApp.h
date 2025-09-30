@@ -152,7 +152,7 @@ private:
 
 
 		//ISM::ISM ISMHandler;
-		shared_ptr<ISM::CISM> ISMHandler;
+		//shared_ptr<ISM::CISM> ISMHandler;
 		shared_ptr<ISM::CISM2> ISMHandler2;
 		
 		ISM::Room mainRoom;		
@@ -298,7 +298,7 @@ private:
 		float meters2secs(float _meters);		
 		bool is_equal(float a, float b);
 
-		void UpdateISM2();
+		void ReconfigureISM();
 		void ShowMessage(std::string message);
 
 		// OSC CallBack

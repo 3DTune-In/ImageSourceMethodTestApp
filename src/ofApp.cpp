@@ -977,117 +977,33 @@ void ofApp::keyPressed(int key) {
 		break;
 	case 's': //Moves the listener left (-X)
 	{
-		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		//mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}		
-		//Common::CVector3 Location = ISMHandler->getSourceLocation();
-		//ISMHandler->setSourceLocation(Location);  //FIXME: when the listener is moved images should be updated				
-		ISMHandler2->SetListenerPosition();
+		MoveListener(Common::CVector3(-LISTENER_STEP, 0, 0));
 		break;
 	}
 	case 'w': //Moves the listener right (X)
 	{
-		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		//mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		//Common::CVector3 Location = ISMHandler->getSourceLocation();
-		//ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		ISMHandler2->SetListenerPosition();
+		MoveListener(Common::CVector3(LISTENER_STEP, 0, 0));		
 		break;
 	}
 	case 'a': //Moves the listener up (Y)
 	{
-		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		//mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		//Common::CVector3 Location = ISMHandler->getSourceLocation();
-		//ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		ISMHandler2->SetListenerPosition();
+		MoveListener(Common::CVector3(0, LISTENER_STEP, 0));
 		break;
 	}
 	case 'd': //Moves the listener down (-Y)
 	{
-		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		//mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		//Common::CVector3 Location = ISMHandler->getSourceLocation();
-		//ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		ISMHandler2->SetListenerPosition();
+		MoveListener(Common::CVector3(0, -LISTENER_STEP, 0));		
 		break;
 	}
 	case 'e': //Moves the listener up (Z)
 	{
-		listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		//mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		//Common::CVector3 Location = ISMHandler->getSourceLocation();
-		//ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		ISMHandler2->SetListenerPosition();
+		MoveListener(Common::CVector3(0, 0, LISTENER_STEP));		
 		break;
 	}
 
 	case 'x': //Moves the listener up (-Z)
 	{
-		listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		//mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		//Common::CVector3 Location = ISMHandler->getSourceLocation();
-		//ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		ISMHandler2->SetListenerPosition();
+		MoveListener(Common::CVector3(0, 0, -LISTENER_STEP));		
 		break;
 	}
 	case 'A': //Rotate Left
@@ -1391,6 +1307,21 @@ void ofApp::keyPressed(int key) {
 		break;
 	}
 	}
+}
+
+void ofApp::MoveListener(Common::CVector3 _movement)
+{
+	Common::CTransform newListenerTransform = listener->GetListenerTransform();	
+	newListenerTransform.Translate(_movement);
+	Common::CVector3 newListenerLocation = newListenerTransform.GetPosition();
+		
+	float distanceNearestWall;
+	bool result = mainRoom.checkPointInsideRoom(newListenerLocation, distanceNearestWall);
+	if (result)
+	{				
+		listener->SetListenerTransform(newListenerTransform);
+		ISMHandler2->SetListenerPosition();
+	}		
 }
 
 //--------------------------------------------------------------

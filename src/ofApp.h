@@ -78,6 +78,7 @@ class ofApp : public ofBaseApp{
 		void DrawRecordingOffline();
 
 		void keyPressed(int key);
+		void MoveListener(Common::CVector3 _movement);
 		void ShowImagesSourceSummaryData(float maxDistanceImagesToListener, std::vector<ISM::ImageSourceData>& images);
 		void ShowImageSourceData(std::vector<ISM::ImageSourceData>& data, const Common::CVector3& listenerLocation);
 		void keyReleased(int key);

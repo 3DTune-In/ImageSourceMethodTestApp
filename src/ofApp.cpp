@@ -91,8 +91,7 @@ void ofApp::setup() {
 	float secToRecordIR = ((float)BRIRLength) / sampleRate;
 	changeSecondsToRecordIR(secToRecordIR);			
 	
-	// Room setup
-	//ISM::RoomGeometry trapezoidal;		// TODO delete this variable
+	// Room setup	
 	SetupRoom(pathResources);
 		
 	// Load wav file
@@ -395,7 +394,7 @@ void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& tra
 	std::string fullPath;
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////	 	
 	//fullPath = pathResources + "\\" + "Juntas_room_Ini.xml";            // Juntas_ROOM
-	fullPath = pathResources + "\\" + "A108_room_Ini.xml";            // A108_ROOM
+	fullPath = pathResources + "\\Room\\" + "A108_room_Ini.xml";            // A108_ROOM
 	//fullPath = pathResources + "\\" + "lab_room_Ini_Izq.xml";       // LAB_ROOM
 	//fullPath = pathResources + "\\" + "lab_room_Ini_Rot.xml";       // LAB_ROOM_ROT
 
@@ -404,7 +403,7 @@ void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& tra
 		ofLogError() << "Couldn't load file";
 		return;
 	}
-
+	std::cout << "Room geometry file loaded correctly - " << fullPath << endl << endl;
 	// select all corners and iterate through them
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	for (auto& currentCorner : cornersXml) {

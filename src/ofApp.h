@@ -59,6 +59,7 @@
 #define AUDIO_FILE_FEMALE_48000 "MusArch_Sample_48kHz_Anechoic_FemaleSpeech.wav"
 #define AUDIO_FILE_MALE_44100 "MusArch_Sample_44.1kHz_Anechoic_MaleSpeech.wav"
 #define AUDIO_FILE_MALE_48000 "MusArch_Sample_48kHz_Anechoic_MaleSpeech.wav"
+#define RECORD_FOLDER "Recordings"
 
 static const std::string APP_VERSION = "v2.0.0";
 
@@ -102,7 +103,7 @@ private:
 	    int offlineRecordIteration = 0;
 	    int offlineRecordBuffers = 0;
 		bool systemSoundStream_Started;
-		mutex audioMutex;
+		std::mutex audioMutex;
 	    float frameRate;
 		/////////////////////////
 
@@ -212,7 +213,8 @@ private:
 		COscManager oscManager;					// OSC Manager
 		bool changeFileFromOSC;                 // initial value: false
 		char* charFilenameOSC;                  // file name with the HRTF or geometry or BRIR of the room
-		char* charFolderOSC= "workFolder";                    // working folder name
+		char* charFolderOSC= "workFolder";      // working folder name
+		std::string recordingFolder;				// folder to save the recorded WAV files
 		std::string fullPathHRTF;
 		std::string fullPathBRIR;
 

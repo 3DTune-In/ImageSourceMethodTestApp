@@ -41,6 +41,8 @@ void ofApp::setup() {
 	stateDistanceAttenuationAnechoic = true;
 	stateDistanceAttenuationReverb = false;	
 	stateBRIRReverbProcess = false;
+
+	recordingFolder = RECORD_FOLDER;
 	
 	// SETUP PROFILER
 #ifdef USE_PROFILER
@@ -743,19 +745,12 @@ void ofApp::DrawRecordingOffline()
 	uint64_t frameStart = ofGetElapsedTimeMillis();
 	int bufferSize = myCore.GetAudioState().bufferSize;
 
-	if (offlineRecordBuffers == 0) {
-
-		//			string pathData = ofToDataPath("", true);
-		string fileNameUsr;
+	if (offlineRecordBuffers == 0) {		
+		std::string fileNameUsr;
 		if (boolRecordingIR)
-		{
-			//ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
-			//fileNameUsr = saveFileResult.getPath();
-			/// TODO just for testing delete and replace with the previous code that is as comments
-			string pathData = ofToDataPath("");
-			string pathResources = ofToDataPath("resources");
-			//fileNameUsr = pathResources + "\\workFolder\\";
-			fileNameUsr = pathResources + "\\" + charFolderOSC + "\\";
+		{		
+			std::string pathResources = ofToDataPath("resources");						
+			fileNameUsr = pathResources + "\\" + recordingFolder+"\\ImpulseResponse";
 		}
 		else
 		{
@@ -763,27 +758,27 @@ void ofApp::DrawRecordingOffline()
 			fileNameUsr = saveFileResult.getPath();
 		}
 		if (fileNameUsr.size() > 0) {
-			if (reverbEnableControl && reflectionOrderControl.get() == 0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
-			else if (reverbEnableControl && reflectionOrderControl.get() > 0) fileNameUsr = fileNameUsr + "t"; // Hybrid
-			else fileNameUsr = fileNameUsr + "i";                                                              // ISM
+			//if (reverbEnableControl && reflectionOrderControl.get() == 0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
+			//else if (reverbEnableControl && reflectionOrderControl.get() > 0) fileNameUsr = fileNameUsr + "t"; // Hybrid
+			//else fileNameUsr = fileNameUsr + "i";                                                              // ISM
 
-			//reflection order
-			fileNameUsr = fileNameUsr + "IrRO" + std::to_string(reflectionOrderControl);
+			////reflection order
+			//fileNameUsr = fileNameUsr + "IrRO" + std::to_string(reflectionOrderControl);
 
-			//pruning distance
-			if (maxDistanceImageSourcesToListenerControl<10)
-				fileNameUsr = fileNameUsr + "DP0" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
-			else
-				fileNameUsr = fileNameUsr + "DP" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
+			////pruning distance
+			//if (maxDistanceImageSourcesToListenerControl<10)
+			//	fileNameUsr = fileNameUsr + "DP0" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
+			//else
+			//	fileNameUsr = fileNameUsr + "DP" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
 
-			//window width
-			if (windowSlopeControl < 10)
-				fileNameUsr = fileNameUsr + "W0" + std::to_string(windowSlopeControl);
-			else
-				fileNameUsr = fileNameUsr + "W" + std::to_string(windowSlopeControl);
+			////window width
+			//if (windowSlopeControl < 10)
+			//	fileNameUsr = fileNameUsr + "W0" + std::to_string(windowSlopeControl);
+			//else
+			//	fileNameUsr = fileNameUsr + "W" + std::to_string(windowSlopeControl);
 
-			if (reverbEnableControl && reflectionOrderControl.get() > 0)
-				fileNameUsr = fileNameUsr + "HYB";
+			//if (reverbEnableControl && reflectionOrderControl.get() > 0)
+			//	fileNameUsr = fileNameUsr + "HYB";
 
 			StartWavRecord(fileNameUsr + ".wav", 16);                        // Open wav file
 			startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
@@ -797,18 +792,18 @@ void ofApp::DrawRecordingOffline()
 
 		if (boolRecordingIR)
 		{
-			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
-			//cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);			
 		}
 		else
-		{                                                           //Calculates the number of buffers associated with the size of the wav file
+		{   
+			//Calculates the number of buffers associated with the size of the wav file
 			unsigned long long samplesVectorSize = source1Wav.getSizeSamplesVector();
 			offlineRecordBuffers = ceil(samplesVectorSize / myCore.GetAudioState().bufferSize);
-			//cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
+			
 		}
 
-		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
-		if (!stopState) /*audioInterfaceController->StopAudioInterface();*/ audioInterfaceController->StopAudioInterface();
+		std::lock_guard <std::mutex> lock(audioMutex); // Avoids race conditions with audio thread when cleaning buffers					
+		if (!stopState) audioInterfaceController->StopAudioInterface();
 		environment->ResetReverbBuffers();
 		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
 		anechoicSourceDSP->DisableDistanceAttenuationSmoothingAnechoic();

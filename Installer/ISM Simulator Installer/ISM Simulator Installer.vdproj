@@ -309,6 +309,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4862E283932843A29E8A012A82559999"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4ABD3BCF7C859E703A16900EDE6670EE"
         "OwnerKey" = "8:_2D05DC65BA644B388DE54D6A6CFCA661"
         "MsmSig" = "8:_UNDEFINED"
@@ -2200,6 +2206,26 @@
             "TargetName" = "8:fmodex64.dll"
             "Tag" = "8:"
             "Folder" = "8:_AAD4380A2F094A7695C5C261DF881E3F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4862E283932843A29E8A012A82559999"
+            {
+            "SourcePath" = "8:..\\..\\bin\\data\\recordings\\readme.txt"
+            "TargetName" = "8:readme.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_CF357D9FF1884BDA9EE21026A2A49667"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -5058,6 +5084,17 @@
                                     }
                                 }
                             }
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_CF357D9FF1884BDA9EE21026A2A49667"
+                            {
+                            "Name" = "8:recordings"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_22D2626D1D98417E9F643695FD728CDC"
+                                "Folders"
+                                {
+                                }
+                            }
                         }
                     }
                 }
@@ -5089,15 +5126,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ISM Simulator"
-        "ProductCode" = "8:{B09A4068-CA64-45F3-8AC2-AFD1988C5BE2}"
-        "PackageCode" = "8:{1C4B648C-03F1-4EC9-B14A-2B8E82EFEE72}"
+        "ProductCode" = "8:{2CE7C565-F38E-4DEB-8C78-C42067E3CA98}"
+        "PackageCode" = "8:{A8795795-73AA-4171-8E28-F0E46BBDEE58}"
         "UpgradeCode" = "8:{E4CA943E-1875-4E17-BE4F-2F0583226E9F}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:2.0.0"
+        "ProductVersion" = "8:2.0.1"
         "Manufacturer" = "8:University of Malaga"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

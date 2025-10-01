@@ -59,9 +59,9 @@
 #define AUDIO_FILE_FEMALE_48000 "MusArch_Sample_48kHz_Anechoic_FemaleSpeech.wav"
 #define AUDIO_FILE_MALE_44100 "MusArch_Sample_44.1kHz_Anechoic_MaleSpeech.wav"
 #define AUDIO_FILE_MALE_48000 "MusArch_Sample_48kHz_Anechoic_MaleSpeech.wav"
-#define RECORD_FOLDER "Recordings"
+#define RECORD_FOLDER "recordings"
 
-static const std::string APP_VERSION = "v2.0.0";
+static const std::string APP_VERSION = "v2.0.1";
 
 class ofApp : public ofBaseApp{
 
@@ -77,6 +77,7 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		void DrawRecordingOffline();
+		
 
 		void keyPressed(int key);
 		void MoveListener(Common::CVector3 _movement);
@@ -144,7 +145,7 @@ private:
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
-		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
+		std::vector<std::string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
 				
 		float azimuth;		//Camera azimuth
 		float elevation;	//Camera elevation
@@ -277,13 +278,15 @@ private:
 		std::vector<int> parserStToVectInt(const std::string & st);
 
 		/// Record to WAV functions
-		void StartWavRecord(string filename, int bitspersample);
+		void StartWavRecord(std::string& filename, int bitspersample);
 		void EndWavRecord();
 		int OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds);
 		void OfflineWavRecordOneLoopIteration(int _bufferSize);
 		void OfflineWavRecordEndLoop();
 		void ShowRecordingMessage();
 		void StopWavRecord();
+		std::string GetFileIncrementalName(const std::string& _fileName);
+		bool ofApp::FileExist(const std::string& _filePath);
 
 		//
 		void StopSystemSoundStream();

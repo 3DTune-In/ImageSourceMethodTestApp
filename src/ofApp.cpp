@@ -742,20 +742,22 @@ void ofApp::draw() {
 
 void ofApp::DrawRecordingOffline()
 {
-	uint64_t frameStart = ofGetElapsedTimeMillis();
-	int bufferSize = myCore.GetAudioState().bufferSize;
+	uint64_t frameStart = ofGetElapsedTimeMillis();	
 
 	if (offlineRecordBuffers == 0) {		
 		std::string fileNameUsr;
+		std::string pathData = ofToDataPath("");
 		if (boolRecordingIR)
-		{		
-			std::string pathResources = ofToDataPath("resources");						
-			fileNameUsr = pathResources + "\\" + recordingFolder+"\\ImpulseResponse";
+		{					
+			fileNameUsr = pathData + recordingFolder+ "\\ImpulseResponse.wav";
+			fileNameUsr = GetFileIncrementalName(fileNameUsr);
 		}
 		else
 		{
-			ofFileDialogResult saveFileResult = ofSystemSaveDialog("sample.wav", "Save output audio");
+			std::string defaultPath = pathData + recordingFolder+ "\\sample.wav";
+			ofFileDialogResult saveFileResult = ofSystemSaveDialog(defaultPath, "Save output audio");
 			fileNameUsr = saveFileResult.getPath();
+			//fileNameUsr += ".wav";
 		}
 		if (fileNameUsr.size() > 0) {
 			//if (reverbEnableControl && reflectionOrderControl.get() == 0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
@@ -780,7 +782,9 @@ void ofApp::DrawRecordingOffline()
 			//if (reverbEnableControl && reflectionOrderControl.get() > 0)
 			//	fileNameUsr = fileNameUsr + "HYB";
 
-			StartWavRecord(fileNameUsr + ".wav", 16);                        // Open wav file
+		
+
+			StartWavRecord(fileNameUsr, 16);                        // Open wav file
 			startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
 		}
 		else
@@ -829,7 +833,7 @@ void ofApp::DrawRecordingOffline()
 
 	float aux;
 	while ((aux = ofGetElapsedTimeMillis() - frameStart) < frameDurationInMilliseconds) {
-		OfflineWavRecordOneLoopIteration(bufferSize);  //audioProcess + wavWriter_AppendToFile + offlineRecordBuffers++
+		OfflineWavRecordOneLoopIteration(myCore.GetAudioState().bufferSize);  //audioProcess + wavWriter_AppendToFile + offlineRecordBuffers++
 		offlineRecordIteration++;
 		if (offlineRecordIteration == offlineRecordBuffers)
 			break;
@@ -2764,7 +2768,7 @@ void ofApp::OfflineWavRecordEndLoop()
 	recordingOffline = false;
 }
 
-void ofApp::StartWavRecord(string filename, int bitspersample)
+void ofApp::StartWavRecord(std::string& filename, int bitspersample)
 {
 	int sampleRate = myCore.GetAudioState().sampleRate;
 	wavWriter.Setup(2, sampleRate, bitspersample);
@@ -3463,5 +3467,24 @@ void ofApp::ReconfigureISM() {
 void ofApp::ShowMessage(std::string message) {
 	//guiManager.showMessage(message, _messageType);			
 	std::cout << message << std::endl;	
+}
+
+std::string ofApp::GetFileIncrementalName(const std::string& _fileName) {
+	std::string newFileNamePath = _fileName;
+	std::string extension = ofFilePath().getFileExt(newFileNamePath);
+	std::string folderPath = ofFilePath().getEnclosingDirectory(newFileNamePath, false);
+	std::string fileName = ofFilePath().getBaseName(newFileNamePath);
+
+	int i = 0;
+	while (FileExist(newFileNamePath)) {
+		i++;
+		std::string fileNameTemp = fileName + "_" + std::to_string(i) + "." + extension;
+		newFileNamePath = ofFilePath().join(ofFilePath().addTrailingSlash(folderPath), fileNameTemp);
+	}
+	return newFileNamePath;
+}
+
+bool ofApp::FileExist(const std::string& _filePath) {
+	return ofFile(_filePath, ofFile::Reference).exists();
 }
 

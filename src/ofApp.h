@@ -61,18 +61,14 @@
 #define AUDIO_FILE_MALE_48000 "MusArch_Sample_48kHz_Anechoic_MaleSpeech.wav"
 #define RECORD_FOLDER "recordings"
 
-static const std::string APP_VERSION = "v2.0.1";
+#define MAX_ORDER_TO_DRAW_ROOMS 5
+
+static const std::string APP_VERSION = "v2.0.2";
 
 class ofApp : public ofBaseApp{
 
 	public:
-		void setup();
-		bool SetupAudioFile(const std::string& pathResources, const int & sampleRate);
-		void SetEnvironmentFadeInWindow(float& maxDistanceSourcesToListener);
-		void GuiSetup(const std::string& pathResources, float& secToRecordIR);
-		bool LoadHRTFSofa(const std::string& pathResources);
-		bool LoadBRIRSofa(const std::string& pathResources);
-		void SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& trapezoidal*/);
+		void setup();				
 		void update();
 		void draw();
 
@@ -158,7 +154,21 @@ private:
 		//shared_ptr<ISM::CISM> ISMHandler;
 		shared_ptr<ISM::CISM2> ISMHandler2;
 		
-		ISM::Room mainRoom;		
+		ISM::Room mainRoom;
+
+		struct TImageRoomData{
+			ISM::Room room;
+			int reflectionOrder;
+
+			TImageRoomData(const ISM::Room& _room, int _reflectionOrder)
+				: room{ _room }
+				, reflectionOrder{ _reflectionOrder }
+			{
+			}
+		};
+		std::vector<TImageRoomData> mainRoomImages;
+		int limitOrderToDrawImageRooms;
+
 		////////////////////
 		ofXml xml;
 		std::vector<Common::CVector3> corners;
@@ -220,9 +230,21 @@ private:
 		std::string fullPathBRIR;
 
 		std::shared_ptr< CAudioInterfaceController> audioInterfaceController;
-
+		
 		//////////////////////////////
-		//////////////////////////////
+		// METHODS
+		////////////////////////////
+		
+		/// Methods to setup the application
+		bool SetupAudioFile(const std::string& pathResources, const int& sampleRate);
+		void SetEnvironmentFadeInWindow(float& maxDistanceSourcesToListener);
+		void SetupGUI(const std::string& pathResources, float& secToRecordIR);
+		bool LoadHRTFSofa(const std::string& pathResources);
+		bool LoadBRIRSofa(const std::string& pathResources);
+		void SetupRoom(const std::string& pathResources);
+		void SetupImageRooms();
+		void CalculateImageRooms(const ISM::Room& room, int reflectionOrder);
+		
 		/// Methods to handle Audio		
 		void ChangeAudioDevice();
 		void audioOut(float * output, int bufferSize, int nChannels);		
@@ -235,9 +257,11 @@ private:
 		void processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms. 
-		void drawRoom(ISM::Room& room, int reflectionOrder, int transparency); //Draws recursively rooms
-		void drawWall(ISM::Wall& wall); //Draws the wall with lines between each pair of consecutive vertices.
-		void drawWallNormal(ISM::Wall& wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		//void drawRoom(const ISM::Room& room, int reflectionOrder, int transparency); //Draws recursively rooms
+		void drawRoom();
+		int calculateOpacity(int currentOrder, int maxOrder, unsigned char minOpacity);
+		void drawWall(const ISM::Wall& wall); //Draws the wall with lines between each pair of consecutive vertices.
+		void drawWallNormal(const ISM::Wall& wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);

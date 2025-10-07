@@ -44,6 +44,8 @@ void ofApp::setup() {
 
 	recordingFolder = RECORD_FOLDER;
 	
+	limitOrderToDrawImageRooms = 0;
+
 	// SETUP PROFILER
 #ifdef USE_PROFILER
 	Common::PROFILER3DTI.InitProfiler();
@@ -164,7 +166,7 @@ void ofApp::setup() {
 
 	//audioInterfaceController->StopAudioInterface();
 	// GUI setup
-	GuiSetup(pathResources, secToRecordIR);
+	SetupGUI(pathResources, secToRecordIR);
 	
 	// Setup active walls in GUI
 	int numWalls = mainRoom.getWalls().size();
@@ -200,6 +202,8 @@ void ofApp::setup() {
 	// setup of the image sources
 	createImageSourceDSP();
 	
+	// Setup Image Rooms
+	SetupImageRooms();
 	
 	// OSC
 	oscManager.Setup(OSC_DEFAULT_TARGET_PORT, OSC_DEFAULT_TARGET_IP, OSC_DEFAULT_LISTEN_PORT, std::bind(&ofApp::OscCallback, this, std::placeholders::_1));	
@@ -240,7 +244,7 @@ void ofApp::SetEnvironmentFadeInWindow(float & _maxDistanceSourcesToListener)
 	numberOfSilencedFrames = floor((numberOfSilencedSamplesInBRIR - currentWindowSlopeWidth / 2) / myCore.GetAudioState().bufferSize);
 }
 
-void ofApp::GuiSetup(const std::string& pathResources, float& secToRecordIR)
+void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 {
 	//GUI setup
 	logoUMA.loadImage(pathResources + "\\" + "UMA.png");
@@ -392,6 +396,8 @@ bool ofApp::LoadBRIRSofa(const std::string& pathResources)
 
 void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& trapezoidal*/)
 {
+	mainRoom = ISM::Room();		// Initialize room		
+
 	ISM::RoomGeometry trapezoidal;
 	std::string fullPath;
 	/////////////Read the XML file with the geometry of the room and absorption of the walls////////	 	
@@ -440,7 +446,29 @@ void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& tra
 	}
 
 	mainRoom.setupRoomGeometry(trapezoidal);
-	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);	
+}
+
+void ofApp::SetupImageRooms() {
+	mainRoomImages.clear();
+	limitOrderToDrawImageRooms = std::max(0, currentReflectionOrder - MAX_ORDER_TO_DRAW_ROOMS);
+	CalculateImageRooms(mainRoom, currentReflectionOrder);
+}
+
+void ofApp::CalculateImageRooms(const ISM::Room& room, int reflectionOrder)
+{	
+	if (reflectionOrder <= limitOrderToDrawImageRooms) return;
+	
+	TImageRoomData roomData(room, reflectionOrder);
+	mainRoomImages.push_back(roomData);
+	
+	reflectionOrder--;
+	std::vector<ISM::Room> roomImages;
+	room.getImageRooms(roomImages);
+	for (int i = 0; i < roomImages.size(); i++)
+	{
+		CalculateImageRooms(roomImages.at(i), reflectionOrder);
+	}	
 }
 
 
@@ -478,8 +506,10 @@ void ofApp::draw() {
 	ofPopStyle();
 
 
-	int ordReflectDraw = reflectionOrderControl;
-	drawRoom(mainRoom, std::min(ordReflectDraw, 3), 255);
+	//int ordReflectDraw = reflectionOrderControl;
+	//drawRoom(mainRoom, std::min(ordReflectDraw, 3), 255);	
+	//drawRoom(mainRoom, currentReflectionOrder, 255);
+	drawRoom();
 
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
@@ -747,18 +777,23 @@ void ofApp::DrawRecordingOffline()
 	if (offlineRecordBuffers == 0) {		
 		std::string fileNameUsr;
 		std::string pathData = ofToDataPath("");
-		if (boolRecordingIR)
-		{					
-			fileNameUsr = pathData + recordingFolder+ "\\ImpulseResponse.wav";
-			fileNameUsr = GetFileIncrementalName(fileNameUsr);
-		}
-		else
-		{
-			std::string defaultPath = pathData + recordingFolder+ "\\sample.wav";
-			ofFileDialogResult saveFileResult = ofSystemSaveDialog(defaultPath, "Save output audio");
-			fileNameUsr = saveFileResult.getPath();
-			//fileNameUsr += ".wav";
-		}
+		
+		std::string defaultPath = pathData + recordingFolder + "\\sample.wav";
+		ofFileDialogResult saveFileResult = ofSystemSaveDialog(defaultPath, "Save output audio");
+		fileNameUsr = saveFileResult.getPath();
+		fileNameUsr += ".wav";
+		//if (boolRecordingIR)
+		//{					
+		//	fileNameUsr = pathData + recordingFolder+ "\\ImpulseResponse.wav";
+		//	fileNameUsr = GetFileIncrementalName(fileNameUsr);
+		//}
+		//else
+		//{
+		//	std::string defaultPath = pathData + recordingFolder+ "\\sample.wav";
+		//	ofFileDialogResult saveFileResult = ofSystemSaveDialog(defaultPath, "Save output audio");
+		//	fileNameUsr = saveFileResult.getPath();
+		//	//fileNameUsr += ".wav";
+		//}
 		if (fileNameUsr.size() > 0) {
 			//if (reverbEnableControl && reflectionOrderControl.get() == 0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
 			//else if (reverbEnableControl && reflectionOrderControl.get() > 0) fileNameUsr = fileNameUsr + "t"; // Hybrid
@@ -1645,33 +1680,110 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 ////////////////////////////////////////////////////////////////////////////////////////
 //Methods for drawing 
 ////////////////////////////////////////////////////////////////////////////////////////
-void ofApp::drawRoom(ISM::Room& room, int reflectionOrder,int transparency)
-{
-	if (reflectionOrder > 0)
-	{
-		ofPushStyle();
-		ofSetColor(200, transparency);
-		reflectionOrder--;
-		std::vector<ISM::Wall> walls = room.getWalls();
-		for (int i = 0; i < walls.size(); i++)
-		{
-			if (walls.at(i).isActive())
-			{
-				drawWall(walls[i]);
-				drawWallNormal(walls[i]);
+//void ofApp::drawRoom(const ISM::Room& room, int reflectionOrder,int transparency)
+//{
+//	if (reflectionOrder > 0)
+//	{
+//		ofPushStyle();
+//		ofSetColor(200, transparency);
+//		reflectionOrder--;		
+//		std::vector<ISM::Wall> walls = room.getWalls();
+//		for (int i = 0; i < walls.size(); i++)
+//		{
+//			if (walls.at(i).isActive())
+//			{
+//				drawWall(walls[i]);
+//				drawWallNormal(walls[i]);
+//			}
+//		}
+//		std::vector<ISM::Room> roomImages;
+//		room.getImageRooms(roomImages);
+//		for (int i = 0; i < roomImages.size(); i++)
+//		{
+//			drawRoom(roomImages.at(i), reflectionOrder, transparency/2);
+//		}
+//		ofPopStyle();
+//	}	
+//}
+
+void ofApp::drawRoom()
+{	
+	ofPushStyle();
+		
+	for (auto& roomData : mainRoomImages) {
+		
+		int opacity = calculateOpacity(roomData.reflectionOrder, currentReflectionOrder, 24);
+
+		if (roomData.reflectionOrder == currentReflectionOrder) {
+			ofSetColor(ofColor::hotPink, opacity);
+		}
+		else {
+			ofSetColor(ofColor(200), opacity);
+		}
+				
+		std::vector<ISM::Wall> walls = roomData.room.getWalls();		
+		for (auto& wall : walls){
+			if (wall.isActive()) {
+				drawWall(wall);
+				drawWallNormal(wall);
 			}
-		}
-		std::vector<ISM::Room> roomImages = room.getImageRooms();
-		for (int i = 0; i < roomImages.size(); i++)
-		{
-			drawRoom(roomImages.at(i), reflectionOrder, transparency/2);
-		}
-		ofPopStyle();
-	}
-	
+		}		
+	}	
+	ofPopStyle();
 }
 
-void ofApp::drawWall(ISM::Wall& wall)
+/**
+ * @brief Calculates the opacity (alpha value) for a mirrored room, decreasing
+ * linearly from max opacity (255) at maxOrder to minOpacity at order 1.
+ * * @param currentOrder The current recursion level (n). Must be >= 1.
+ * @param maxOrder The initial, maximum recursion level (N). Must be >= 1.
+ * @param minOpacity The minimum opacity value for order 1. [0-255].
+ * @return unsigned char The opacity (alpha) value [0-255].
+ */
+int ofApp::calculateOpacity(int currentOrder, int maxOrder, unsigned char minOpacity) {
+
+	// --- Edge Cases and Clamping ---
+
+	// If maxOrder is 1 or less, return full opacity or minOpacity (whichever is higher/more sensible).
+	if (maxOrder <= 1) {
+		return std::max((unsigned char)255, minOpacity);
+	}
+
+	// Clamp the currentOrder to the valid range [1, maxOrder]
+	currentOrder = std::max(1, currentOrder);
+	currentOrder = std::min(maxOrder, currentOrder);
+
+	// If it's the maximum order (N), return full opacity (255).
+	if (currentOrder == maxOrder) {
+		return 255;
+	}
+
+	// If it's the minimum order (1), return the minimum configurable opacity.
+	if (currentOrder == 1) {
+		return minOpacity;
+	}
+
+	// --- Linear Interpolation ---
+
+	// Total range of opacity difference: (255 - minOpacity)
+	const double opacityRange = 255.0 - minOpacity;
+
+	// Total range of orders: (N - 1)
+	const double orderRange = (double)(maxOrder - 1);
+
+	// Progress factor: How far is 'currentOrder' along the [1, N] range, scaled to [0.0, 1.0].
+	// factor = (n - 1) / (N - 1)
+	const double progressFactor = (currentOrder - 1) / orderRange;
+
+	// Calculate final opacity using linear interpolation (Lerp):
+	// alpha = minOpacity + (opacityRange * progressFactor)
+	double calculatedOpacity = minOpacity + (opacityRange * progressFactor);
+
+	// Convert the result to unsigned char, ensuring proper rounding.
+	return (int)std::round(calculatedOpacity);
+}
+
+void ofApp::drawWall(const ISM::Wall& wall)
 {
 	std::vector<Common::CVector3> polygon = wall.getCorners();
 	int numberVertex = polygon.size();
@@ -1684,7 +1796,7 @@ void ofApp::drawWall(ISM::Wall& wall)
 		polygon[numberVertex - 1].x, polygon[numberVertex - 1].y, polygon[numberVertex - 1].z);
 }
 
-void ofApp::drawWallNormal(ISM::Wall& wall, float length)
+void ofApp::drawWallNormal(const ISM::Wall& wall, float length)
 {
 	Common::CVector3 center;
 	Common::CVector3 normalEnd;
@@ -1786,7 +1898,9 @@ void ofApp::changeReflectionOrder(int &_reflectionOrder)
 	if (!stopState) audioInterfaceController->StopAudioInterface();
 	currentReflectionOrder = _reflectionOrder;
 	//ISMHandler->setReflectionOrder(_reflectionOrder);
-	ReconfigureISM();
+	ReconfigureISM();	
+	SetupImageRooms();
+
     //reCreateImageSourceDSP();
 	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
@@ -3461,7 +3575,7 @@ bool ofApp::is_equal(float a, float b) {
 void ofApp::ReconfigureISM() {
 	float windowSlopeInMeters = millisec2meters(currentWindowSlopeWidth);	
 	ISMHandler2->Setup(currentReflectionOrder, currentMaxDistanceSourcesToListener, windowSlopeInMeters, mainRoom);
-	reCreateImageSourceDSP();
+	reCreateImageSourceDSP();	
 }
 
 void ofApp::ShowMessage(std::string message) {

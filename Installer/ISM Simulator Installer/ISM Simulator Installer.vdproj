@@ -1241,7 +1241,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "FrameworkVersion" = "8:v4.5.1 "
+                "FrameworkVersion" = "8:v4.5.1  "
                 "AllowLaterVersions" = "11:FALSE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=863262"
                 }
@@ -5126,15 +5126,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ISM Simulator"
-        "ProductCode" = "8:{2CE7C565-F38E-4DEB-8C78-C42067E3CA98}"
-        "PackageCode" = "8:{A8795795-73AA-4171-8E28-F0E46BBDEE58}"
+        "ProductCode" = "8:{3B647F90-471E-4FCA-B1F4-242E2A144B2D}"
+        "PackageCode" = "8:{DB88E46C-BD3F-4456-8F7D-EEC8CA5CC3AB}"
         "UpgradeCode" = "8:{E4CA943E-1875-4E17-BE4F-2F0583226E9F}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:2.0.1"
+        "ProductVersion" = "8:2.0.2"
         "Manufacturer" = "8:University of Malaga"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

@@ -86,6 +86,7 @@ class ofApp : public ofBaseApp{
 		void mouseReleased(int x, int y, int button);
 		void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
+		void mouseScrolled(int x, int y, float scrollX, float scrollY);
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
@@ -143,11 +144,13 @@ private:
 
 		std::vector<std::string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
 				
-		float azimuth;		//Camera azimuth
-		float elevation;	//Camera elevation
+		float cameraAzimuth;		//Camera azimuth
+		float cameraElevation;	//Camera elevation
 		float shoeboxLength;
 		float shoeboxWidth;
 		float shoeboxHeight;
+		int lastMouseX;
+		int lastMouseY;
 
 
 		//ISM::ISM ISMHandler;

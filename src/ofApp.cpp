@@ -49,6 +49,9 @@ void ofApp::setup() {
 	recordingFolder = RECORD_FOLDER;
 	
 	limitOrderToDrawImageRooms = 0;
+	lastMouseX = -1;
+	lastMouseY = -1;
+
 
 	// SETUP PROFILER
 #ifdef USE_PROFILER
@@ -464,8 +467,8 @@ void ofApp::draw() {
 	ofScale(1, -1, 1);
 	ofTranslate(ofGetWidth() / (scale * 2), -ofGetHeight() / (scale * 2), 0);
 	ofRotateZ(90);
-	ofRotateY(elevation);
-	ofRotateZ(azimuth);
+	ofRotateY(cameraElevation);
+	ofRotateZ(cameraAzimuth);
 
 	//draw reference axis
 	ofPushStyle();
@@ -891,16 +894,16 @@ void ofApp::keyPressed(int key) {
 	switch (key)
 	{
 	case OF_KEY_LEFT:
-		azimuth++;
+		cameraAzimuth++;
 		break;
 	case OF_KEY_RIGHT:
-		azimuth--;
+		cameraAzimuth--;
 		break;
 	case OF_KEY_UP:
-		elevation++;
+		cameraElevation++;
 		break;
 	case OF_KEY_DOWN:
-		elevation--;
+		cameraElevation--;
 		break;
 	case OF_KEY_PAGE_UP:
 		scale *= 0.9;
@@ -1331,11 +1334,11 @@ void ofApp::MoveListener(Common::CVector3 _movement)
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-	if (key == 32 /*space*/) {
-		std::cout << "Starting profilling" << std::endl;
-		std::this_thread::sleep_for(10ms);		// In case "cout" will create some kind of interference with the profile measurement.
-		profilling = true;
-	}
+	//if (key == 32 /*space*/) {
+	//	std::cout << "Starting profilling" << std::endl;
+	//	std::this_thread::sleep_for(10ms);		// In case "cout" will create some kind of interference with the profile measurement.
+	//	profilling = true;
+	//}
 }
 
 //--------------------------------------------------------------
@@ -1345,12 +1348,34 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
+	// Rotation is only applied if it is the main (left) button.
+	if (button == 0) {		
+		// 1. Calculate the displacement (delta) from the last position
+		float deltaX = x - lastMouseX;
+		float deltaY = y - lastMouseY;
 
+		// 2. Update azimuth and elevation based on movement
+		// Horizontal Movement (X) -> Controls Azimuth (Left/Right)		
+		cameraAzimuth += deltaX * 0.25;
+		// Vertical Movement (Y) -> Controls Elevation (Up/Down)		
+		cameraElevation -= deltaY * 0.25; 
+
+		// 3. Limit (optional)
+		// elevation = ofClamp(elevation, -90, 90);
+
+		// 4. Update last mouse position for next frame
+		lastMouseX = x;
+		lastMouseY = y;
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-														
+	// We are only interested in the left button (typically button == 0).
+	if (button == 0) {
+		lastMouseX = x;
+		lastMouseY = y;
+	}
 }
 
 //--------------------------------------------------------------
@@ -1366,6 +1391,20 @@ void ofApp::mouseEntered(int x, int y){
 //--------------------------------------------------------------
 void ofApp::mouseExited(int x, int y){
 
+}
+
+void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
+	// scrollY is the vertical scroll value of the wheel.
+	// Positive for "up" (zooming out), Negative for "down" (zooming in).
+
+	// If the wheel scrolls upwards (scroll forward)
+	if (scrollY > 0) {		
+		scale *= 1.1;
+	}
+	// If the wheel scrolls downwards (scroll backwards)
+	else if (scrollY < 0) {		
+		scale *= 0.9;
+	}	
 }
 
 //--------------------------------------------------------------

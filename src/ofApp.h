@@ -241,7 +241,8 @@ private:
 		void SetupGUI(const std::string& pathResources, float& secToRecordIR);
 		bool LoadHRTFSofa(const std::string& pathResources);
 		bool LoadBRIRSofa(const std::string& pathResources);
-		void SetupRoom(const std::string& pathResources);
+		void SetupRoomFromGeomtryFile(const std::string& fullPath);
+		void SetupShoeboxRoom(float length, float width, float height, const std::vector<std::vector<float>>& absortionsWalls);
 		void SetupImageRooms();
 		void CalculateImageRooms(const ISM::Room& room, int reflectionOrder);
 		
@@ -288,6 +289,7 @@ private:
 		void changeSecondsToRecordIR(float &secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);
+		bool LoadGeometryFile(const std::string& fullPath, ISM::RoomGeometry& newRoom, std::vector<std::vector<float>>& absortionsWalls);
 		void changeHRTF(bool& active);
 		void changeBRIR(bool& active);
 		void playToStop(bool &active);

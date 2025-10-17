@@ -28,6 +28,10 @@ Common::CTimeMeasure startOfflineRecord;
 #define INITIAL_WIN_SLOPE 2                   //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
+#define DEFAULT_ROOM "\\Room\\A108_room_Ini.xml"
+//#define DEFAULT_ROOM "\\Room\\Juntas_room_Ini.xml"
+//#define DEFAULT_ROOM "\\Room\\lab_room_Ini_Izq.xml"
+//#define DEFAULT_ROOM "\\Room\\lab_room_Ini_Rot.xml"
 
 //--------------------------------------------------------------
 // TODO Separate all the code within this setup method into several methods
@@ -96,7 +100,8 @@ void ofApp::setup() {
 	changeSecondsToRecordIR(secToRecordIR);			
 	
 	// Room setup	
-	SetupRoom(pathResources);
+	//SetupRoomFromGeomtryFile(pathResources+DEFAULT_ROOM);
+	SetupShoeboxRoom(9, 13, 4.5, std::vector<std::vector<float>>(6, std::vector<float>(9, 0.5f)));
 		
 	// Load wav file
 	result =SetupAudioFile(pathResources, audioState.sampleRate);           // Loading .wav file
@@ -195,7 +200,8 @@ void ofApp::setup() {
 	//ISMHandler->setReflectionOrder(currentReflectionOrder);
 					
 	ISMHandler2 = std::make_shared<ISM::CISM2>(&myCore);		// Initialize ISM
-	ISMHandler2->enableStaticDistanceCriterion();
+	//ISMHandler2->enableStaticDistanceCriterion();
+	ISMHandler2->disableStaticDistanceCriterion();
 	ISMHandler2->setSourceLocation(initialLocation);		
 	ISMHandler2->Setup(currentReflectionOrder, currentMaxDistanceSourcesToListener, millisec2meters(currentWindowSlopeWidth), mainRoom);
 		
@@ -394,59 +400,25 @@ bool ofApp::LoadBRIRSofa(const std::string& pathResources)
 	return result;
 }
 
-void ofApp::SetupRoom(const std::string& pathResources/*, ISM::RoomGeometry& trapezoidal*/)
+void ofApp::SetupRoomFromGeomtryFile(const std::string& fullPath)
 {
 	mainRoom = ISM::Room();		// Initialize room		
-
-	ISM::RoomGeometry trapezoidal;
-	std::string fullPath;
-	/////////////Read the XML file with the geometry of the room and absorption of the walls////////	 	
-	//fullPath = pathResources + "\\" + "Juntas_room_Ini.xml";            // Juntas_ROOM
-	fullPath = pathResources + "\\Room\\" + "A108_room_Ini.xml";            // A108_ROOM
-	//fullPath = pathResources + "\\" + "lab_room_Ini_Izq.xml";       // LAB_ROOM
-	//fullPath = pathResources + "\\" + "lab_room_Ini_Rot.xml";       // LAB_ROOM_ROT
-
-	if (!xml.load(fullPath))
-	{
-		ofLogError() << "Couldn't load file";
-		return;
-	}
-	std::cout << "Room geometry file loaded correctly - " << fullPath << endl << endl;
-	// select all corners and iterate through them
-	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
-	for (auto& currentCorner : cornersXml) {
-		// for each corner in the room insert its coordinates
-		auto cornersInFile = currentCorner.getChildren("CORNER");
-
-		for (auto aux : cornersInFile) {
-			std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
-			std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
-			Common::CVector3 tempP3d;
-			tempP3d.x = p3Dfloat[0];
-			tempP3d.y = p3Dfloat[1];
-			tempP3d.z = p3Dfloat[2];
-			trapezoidal.corners.push_back(tempP3d);
-		}
-	}
-	// select all walls and iterate through them
-	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+		
+	ISM::RoomGeometry newRoomGeometry;
 	std::vector<std::vector<float>> absortionsWalls;
-	for (auto& currentWall : wallsXml) {
-		// for each wall in the room insert corners its and absortions
-		auto wallsInFile = currentWall.getChildren("WALL");
-		for (auto aux : wallsInFile) {
-			std::string strVectInt = aux.getAttribute("corner").getValue();
-			std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
-			trapezoidal.walls.push_back(tempCornersWall);
-
-			std::string strVectFloat = aux.getAttribute("absor").getValue();
-			std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
-			absortionsWalls.push_back(tempAbsorsWall);
-		}
+	bool result = LoadGeometryFile(fullPath, newRoomGeometry, absortionsWalls);
+	
+	if (result) {
+		mainRoom.setupRoomGeometry(newRoomGeometry);
+		mainRoom.setWallAbsortion(absortionsWalls);				
+		std::cout << "New Room loaded " << fullPath << endl << endl;
 	}
+}
 
-	mainRoom.setupRoomGeometry(trapezoidal);
-	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);	
+void ofApp::SetupShoeboxRoom(float length, float width, float height, const std::vector<std::vector<float>>& absortionsWalls) {
+	mainRoom = ISM::Room();		// Initialize room	
+	mainRoom.setupShoeBox(length, width, height);
+	mainRoom.setWallAbsortion(absortionsWalls);
 }
 
 void ofApp::SetupImageRooms() {
@@ -2348,9 +2320,8 @@ void ofApp::stopToPlay(bool &_active)
 
 void ofApp::changeRoomGeometry(bool &_active)
 {
-	string fileNameUsr;
+	//string fileNameUsr;
 	changeRoomGeometryControl = false;
-
 	if (setupDone == false) return;
 	
 	lock_guard < mutex > lock(audioMutex);
@@ -2361,14 +2332,12 @@ void ofApp::changeRoomGeometry(bool &_active)
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
-
-	ISM::RoomGeometry newRoom;
-		
-	string pathData = ofToDataPath("", false);
+			
+	//string pathData = ofToDataPath("", false);
 	ofFileDialogResult openFileResult;
-	string fileExtension, fileName, fullPath;
+	std::string fileExtension, fileName, fullPath;
 	if (changeFileFromOSC) {
-		string pathResources = ofToDataPath("resources");
+		std::string pathResources = ofToDataPath("resources");
 		openFileResult.filePath = pathResources;
 		openFileResult.fileName = charFilenameOSC;
 		fullPath = pathResources + "\\" + charFilenameOSC;
@@ -2387,46 +2356,179 @@ void ofApp::changeRoomGeometry(bool &_active)
 		fullPath = openFileResult.getPath();
 		fileName = openFileResult.getName();
 	}
-	//Check if the user opened a file
-	if (openFileResult.bSuccess) {
-		ofLogVerbose("The file exists - now checking the type via file extension");
-		if (fileExtension == "XML")
-		{
-			if (!xml.load(fullPath))
-			{
-				ofLogError() << "Couldn't load file";
-				cout << "ERROR: Load new ROOM - Couldn't load file " << endl << endl;
-				if (!stopState) audioInterfaceController->StartAudioInterface();
-				return;
-			}
-		}
-		else
-		{
-			ofLogError() << "Extension must be XML";
-			cout << "ERROR: Load new ROOM - Extension must be XML " << endl << endl;
-			if (!stopState) audioInterfaceController->StartAudioInterface();
-			return;
-		}
-	}
-	else {
-		ofLogError() << "Couldn't load file";
-		cout << "ERROR: Load new ROOM - Couldn't load file " << endl << endl;
+
+	// Check if the user opened a file
+	if (!openFileResult.bSuccess) {
+		//ofLogError() << "Couldn't load file";
+		std::cout << "ERROR: Couldn't load ROOM file -  " << fullPath << endl << endl;
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		return;
 	}
 
+	
+	//if (openFileResult.bSuccess) {		
+	//	/*if (fileExtension == "XML")
+	//	{
+	//		if (!xml.load(fullPath))
+	//		{
+	//			ofLogError() << "Couldn't load file";
+	//			std::cout << "ERROR: Load new ROOM - Couldn't load file " << fullPath << endl << endl;
+	//			if (!stopState) audioInterfaceController->StartAudioInterface();
+	//			return;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		ofLogError() << "Extension must be XML";
+	//		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
+	//		if (!stopState) audioInterfaceController->StartAudioInterface();
+	//		return;
+	//	}*/
+	//	if (fileExtension != "XML") {
+	//		//ofLogError() << "Extension must be XML";
+	//		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
+	//		if (!stopState) audioInterfaceController->StartAudioInterface();
+	//		return;
+	//	}
+	//}
+	if (fileExtension != "XML") {
+		//ofLogError() << "Extension must be XML";
+		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return;
+	}
 
-		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
+	ISM::RoomGeometry newRoomGeometry;
+	std::vector<std::vector<float>> absortionsWalls;
+	bool result = LoadGeometryFile(fullPath, newRoomGeometry, absortionsWalls);
 
-		// select all corners and iterate through them
+	///////////////Read the XML file with the geometry of the room and absorption of the walls////////
+
+	//// select all corners and iterate through them
+	//auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
+	//if (cornersXml.empty()) {
+	//	std::cout << "ERROR: The file is not a room configuration" << endl;
+	//	if (!stopState) audioInterfaceController->StartAudioInterface();
+	//	return;
+	//}
+
+	//for (auto & currentCorner : cornersXml) {
+	//	// for each corner in the room insert its coordinates
+	//	auto cornersInFile = currentCorner.getChildren("CORNER");
+
+	//	for (auto aux : cornersInFile) {
+	//		std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
+	//		std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
+	//		Common::CVector3 tempP3d;
+	//		tempP3d.x = p3Dfloat[0];
+	//		tempP3d.y = p3Dfloat[1];
+	//		tempP3d.z = p3Dfloat[2];
+	//		newRoom.corners.push_back(tempP3d);
+	//	}
+	//}
+
+	///***********************/
+	////absortionsWalls.clear();
+	///***********************/
+
+	//// select all walls and iterate through them
+	//auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+	//std::vector<std::vector<float>> absortionsWalls;
+	//for (auto & currentWall : wallsXml) {
+	//	// for each wall in the room insert corners its and absortions
+	//	auto wallsInFile = currentWall.getChildren("WALL");
+	//	for (auto aux : wallsInFile) {
+	//		std::string strVectInt = aux.getAttribute("corner").getValue();
+	//		std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
+	//		newRoom.walls.push_back(tempCornersWall);
+	//		std::string strVectFloat = aux.getAttribute("absor").getValue();
+	//		std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
+	//		absortionsWalls.push_back(tempAbsorsWall);
+	//	}
+	//}
+	////////////////////////////////////////////////
+	if (result) {
+		mainRoom.setupRoomGeometry(newRoomGeometry);
+		mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ReconfigureISM();
+		SetupImageRooms();
+		std::cout << "New Room loaded " << fullPath << endl << endl;
+	}
+		
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+	//ISMHandler->setupArbitraryRoom(newRoom);
+	
+	//ISMHandler->SetupRoom(mainRoom);	
+	//Absortion as vector	
+	//ISMHandler->setReflectionOrder(0);
+	//mainRoom = ISMHandler->getRoom();
+	//reCreateImageSourceDSP();
+	
+	//listener located in the center of the room
+	//Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
+	//Common::CVector3 listenerLocation(roomCenter);
+	//Common::CTransform listenerPosition = Common::CTransform();
+	//listenerPosition.SetPosition(listenerLocation);
+	//listener->SetListenerTransform(listenerPosition);
+
+	//moveSource(Common::CVector3(0, 0, 0));
+	
+	
+	//ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	//reflectionOrderControl.set(INITIAL_REFLECTION_ORDER);
+	//mainRoom = ISMHandler->getRoom();
+	//reCreateImageSourceDSP();
+		
+	/*int numWalls = mainRoom.getWalls().size();
+	guiActiveWalls.resize(numWalls);
+
+	for (int i = 0; i < numWalls; i++)
+	{
+		if (guiActiveWalls.at(i) == false) 	guiActiveWalls.at(i) = true;
+	}*/
+
+	//mainRoom = ISMHandler->getRoom();
+	//if (!stopState) audioInterfaceController->StartAudioInterface();
+
+	
+
+//#if 0
+////lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
+//	stopState = false;
+//	playState = true;
+//	source1Wav.setInitialPosition();
+//	audioInterfaceController->StartAudioInterface();
+//	playToStopControl.set("Stop", false);
+//	stopToPlayControl.set("Play", true);
+//#endif
+	
+}
+
+/**
+ * @brief Read the XML file with the geometry of the room and absorption of the walls
+ * @param fullPath full path of the XML file
+ * @return 
+ */
+bool ofApp::LoadGeometryFile(const std::string& fullPath, ISM::RoomGeometry& newRoom, std::vector<std::vector<float>>& absortionsWalls) {
+	
+	bool result = xml.load(fullPath);
+	if (!result)
+	{		
+		std::cout << "ERROR: Couldn't load ROOM file " << fullPath << endl << endl;
+		//if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	
+
+	// select all corners and iterate through them
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	if (cornersXml.empty()) {
-		ofLogError() << "The file is not a room configuration";
-		if (!stopState) audioInterfaceController->StartAudioInterface();
-		return;
+		std::cout << "ERROR: The file is not a room configuration" << endl;
+		//if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
 	}
 
-	for (auto & currentCorner : cornersXml) {
+	for (auto& currentCorner : cornersXml) {
 		// for each corner in the room insert its coordinates
 		auto cornersInFile = currentCorner.getChildren("CORNER");
 
@@ -2447,8 +2549,12 @@ void ofApp::changeRoomGeometry(bool &_active)
 
 	// select all walls and iterate through them
 	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
-	std::vector<std::vector<float>> absortionsWalls;
-	for (auto & currentWall : wallsXml) {
+	if (wallsXml.empty()) {
+		std::cout << "ERROR: The file is not a room configuration" << endl;		
+		return false;
+	}
+	
+	for (auto& currentWall : wallsXml) {
 		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
 		for (auto aux : wallsInFile) {
@@ -2460,58 +2566,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 			absortionsWalls.push_back(tempAbsorsWall);
 		}
 	}
-	////////////////////////////////////////////////
-	
-	//ISMHandler->setupArbitraryRoom(newRoom);
-	mainRoom.setupRoomGeometry(newRoom);
-	//ISMHandler->SetupRoom(mainRoom);	
-	//Absortion as vector
-	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-	//ISMHandler->setReflectionOrder(0);
-
-	//mainRoom = ISMHandler->getRoom();
-	//reCreateImageSourceDSP();
-
-	
-	//listener located in the center of the room
-	//Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-	//Common::CVector3 listenerLocation(roomCenter);
-	//Common::CTransform listenerPosition = Common::CTransform();
-	//listenerPosition.SetPosition(listenerLocation);
-	//listener->SetListenerTransform(listenerPosition);
-
-	//moveSource(Common::CVector3(0, 0, 0));
-	
-	
-	//ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
-	reflectionOrderControl.set(INITIAL_REFLECTION_ORDER);
-	//mainRoom = ISMHandler->getRoom();
-	//reCreateImageSourceDSP();
-		
-	int numWalls = mainRoom.getWalls().size();
-	guiActiveWalls.resize(numWalls);
-
-	for (int i = 0; i < numWalls; i++)
-	{
-		if (guiActiveWalls.at(i) == false) 	guiActiveWalls.at(i) = true;
-	}
-
-	//mainRoom = ISMHandler->getRoom();
-	//if (!stopState) audioInterfaceController->StartAudioInterface();
-
-	cout << "Load new ROOM" << endl << endl;
-
-#if 0
-//lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
-	stopState = false;
-	playState = true;
-	source1Wav.setInitialPosition();
-	audioInterfaceController->StartAudioInterface();
-	playToStopControl.set("Stop", false);
-	stopToPlayControl.set("Play", true);
-#endif
-	
+	return true;
 }
 
 void ofApp::toggleWall(bool &_active)

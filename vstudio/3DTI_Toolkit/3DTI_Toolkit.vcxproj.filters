@@ -147,6 +147,9 @@
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\ISMParameters.hpp">
       <Filter>ISM</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\CascadeGraphicEq9OctaveBands.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\BinauralSpatializer\BRIR.cpp">
@@ -253,6 +256,9 @@
     </ClCompile>
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\ISM\Wall.cpp">
       <Filter>ISM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\CascadeGraphicEq9OctaveBands.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

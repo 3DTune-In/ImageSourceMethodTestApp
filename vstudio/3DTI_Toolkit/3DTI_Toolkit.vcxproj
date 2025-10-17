@@ -32,6 +32,7 @@
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\AudioState.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\BiquadFilter.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Buffer.h" />
+    <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\CascadeGraphicEq9OctaveBands.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\CommonDefinitions.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Conventions.h" />
     <ClInclude Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Delay.h" />
@@ -75,6 +76,7 @@
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\BinauralSpatializer\SingleSourceDSP.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\BinauralSpatializer\UPCAnechoic.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\BiquadFilter.cpp" />
+    <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\CascadeGraphicEq9OctaveBands.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\Delay.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\DistanceAttenuator.cpp" />
     <ClCompile Include="..\..\3dti_AudioToolkit\3dti_Toolkit\Common\DynamicCompressorMono.cpp" />

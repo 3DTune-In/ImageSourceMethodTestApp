@@ -28,7 +28,7 @@ Common::CTimeMeasure startOfflineRecord;
 #define INITIAL_WIN_SLOPE 2                   //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
 
-#define DEFAULT_ROOM "\\Room\\A108_room_Ini.xml"
+//#define DEFAULT_ROOM "\\Room\\A108_room_Ini.xml"
 //#define DEFAULT_ROOM "\\Room\\Juntas_room_Ini.xml"
 //#define DEFAULT_ROOM "\\Room\\lab_room_Ini_Izq.xml"
 //#define DEFAULT_ROOM "\\Room\\lab_room_Ini_Rot.xml"
@@ -90,21 +90,28 @@ void ofApp::setup() {
 	std::string pathData = ofToDataPath("");
 	std::string pathResources = ofToDataPath("resources");	
 	
-	// HRTF setup
-	bool result = LoadHRTFSofa(pathResources); //TODO check samplerate
-	if (!result) return;
+	///
+	caseARoomGeometryFilePath = pathResources + "\\Room\\A108_room_Ini_EE100.xml";	
+	caseAHRTFFilePath = pathResources + "\\HRTF\\HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	caseABRIRFilePath = pathResources + "\\BRIR\\Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
+
+	caseBRoomGeometryFilePath = pathResources + "\\Room\\Juntas_room_Ini_EE100.xml";
+	caseBHRTFFilePath = pathResources + "\\HRTF\\HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	caseBBRIRFilePath = pathResources + "\\BRIR\\SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
+
+	//
+	bool result = SetupCaseStudy(caseARoomGeometryFilePath, caseAHRTFFilePath, caseABRIRFilePath);
+	if (!result) {
+		std::cout << "Error setting up case study A" << std::endl;
+		return;
+	} else {
+		std::cout << "Case study A setup correctly" << std::endl;		
+	}
+
 	
-	// Environment setup
-	result = LoadBRIRSofa(pathResources); //TODO check samplerate
-	if (!result) return;
-	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
-	float sampleRate = myCore.GetAudioState().sampleRate;
-	float secToRecordIR = ((float)BRIRLength) / sampleRate;
-	changeSecondsToRecordIR(secToRecordIR);			
+	SetDefaultSecondsToRecordIR();
 	
-	// Room setup	
-	//SetupRoomFromGeomtryFile(pathResources+DEFAULT_ROOM);
-	SetupShoeboxRoom(9, 13, 4.5, std::vector<std::vector<float>>(6, std::vector<float>(9, 0.5f)));
+	
 		
 	// Load wav file
 	result =SetupAudioFile(pathResources, audioState.sampleRate);           // Loading .wav file
@@ -136,7 +143,7 @@ void ofApp::setup() {
 	// Setup windowThreshold and windowSlope	   
 	currentWindowSlopeWidth = INITIAL_WIN_SLOPE;
 	
-		
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
 	if (numberOfSilencedSamplesInBRIR + millisec2samples(currentWindowSlopeWidth) /2 > BRIRLength)
 	{
 		numberOfSilencedSamplesInBRIR = BRIRLength - millisec2samples(currentWindowSlopeWidth) /2;
@@ -150,21 +157,8 @@ void ofApp::setup() {
 	//float windowThreshold = meters2secs(maxDistanceSourcesToListener); 
 	reverbGainLinear = 1.0;
 	SetEnvironmentFadeInWindow(currentMaxDistanceSourcesToListener);
-	
-
-	// ISM setup
-	//ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM	
-	//ISMHandler->setReflectionOrder(0);
-	//ISMHandler->enableStaticDistanceCriterion();	// enable static distance criterion in order to reduce the number of potential sources			
-	//ISMHandler->setSourceLocation(initialLocation);	// Source to be rendered
-	//ISMHandler->setMaxDistanceImageSources(currentMaxDistanceSourcesToListener, millisec2meters((float)INITIAL_WIN_SLOPE));		
-	//ISMHandler->SetupRoom(mainRoom);			
-									   
-	//AudioDevice Setup
-	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
-	//// the app crashes when audioInterfaceController->StartAudioInterface(); or stop() are called.
-	//systemSoundStream.close();
-	//SetDeviceAndAudio(audioState);
+										   
+	//AudioDevice Setup	
 	audioInterfaceController = std::make_shared<CAudioInterfaceController>(std::bind(&ofApp::ShowMessage, this, std::placeholders::_1));
 	audioInterfaceController->Setup(this, audioState.sampleRate, audioState.bufferSize, 4);
 	
@@ -174,7 +168,7 @@ void ofApp::setup() {
 
 	//audioInterfaceController->StopAudioInterface();
 	// GUI setup
-	SetupGUI(pathResources, secToRecordIR);
+	SetupGUI(pathResources);
 	
 	// Setup active walls in GUI
 	int numWalls = mainRoom.getWalls().size();
@@ -253,7 +247,7 @@ void ofApp::SetEnvironmentFadeInWindow(float & _maxDistanceSourcesToListener)
 	numberOfSilencedFrames = floor((numberOfSilencedSamplesInBRIR - currentWindowSlopeWidth / 2) / myCore.GetAudioState().bufferSize);
 }
 
-void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
+void ofApp::SetupGUI(const std::string& pathResources)
 {
 	//GUI setup
 	logoUMA.loadImage(pathResources + "\\" + "UMA.png");
@@ -267,8 +261,8 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 	leftPanel.disableHeader();
 	leftPanel.setup(pathResources + "\\", "config.xml", 20, 150);
 	leftPanel.setWidthElements(220);
-	
-	leftPanel.add(sectionLabel1.set("- GENERAL CONFIG -"));
+				
+	leftPanel.add(sectionLabel1.set("=== GENERAL CONFIG ==="));	
 
 	zoom.addListener(this, &ofApp::changeZoom);
 	leftPanel.add(zoom.setup("Zoom (Pg. up/down)", 0, -20, 20, 50, 15));
@@ -276,14 +270,15 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 	audioInterfaceControl.addListener(this, &ofApp::ChangeAudioDevice);
 	leftPanel.add(audioInterfaceControl.set("Change Audio Device"));
 			
-	leftPanel.add(sectionLabel2.set("- RENDERING PARAMETERS -"));
-
+	//leftPanel.add(sectionLabelSeparator.set(" "));	
+	leftPanel.add(sectionLabel2.set("=== RENDERING PARAM ==="));
+	
 	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
 	leftPanel.add(anechoicEnableControl.set("Direct Path", stateAnechoicProcess));
 
 	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
 	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", stateBinauralSpatialisation));
-
+	
 	ismEnableControl.addListener(this, &ofApp::toggleISM);
 	leftPanel.add(ismEnableControl.set("ISM", stateISMProcess));
 
@@ -293,7 +288,8 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
 	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -40, 40));
 	
-	leftPanel.add(sectionLabel3.set("- ISM PARAMETERS -"));
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel3.set("=== ISM PARAMETERS ==="));
 
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Relection Order (+/-)", INITIAL_REFLECTION_ORDER, 0, MAX_REFLECTION_ORDER));
@@ -310,7 +306,8 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 	windowSlopeControl.addListener(this, &ofApp::changeWindowSlope);
 	leftPanel.add(windowSlopeControl.set("WinSlople (ms)", INITIAL_WIN_SLOPE, MIN_WIN_SLOPE, MAX_WIN_SLOPE));		
 
-	leftPanel.add(sectionLabel4.set("- PLAYBACK CONTROLS -"));
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel4.set("=== PLAYBACK CONTROLS ==="));
 
 	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
 	leftPanel.add(stopToPlayControl.set("Play", false));
@@ -318,16 +315,26 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("Stop", true));
 
-	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("IR record lenght (s)", secToRecordIR, 0.2, MAX_SECONDS_TO_RECORD));
+	numberOfSecondsToRecordControl.addListener(this, &ofApp::SetSecondsToRecordIR);
+	leftPanel.add(numberOfSecondsToRecordControl.set("IR record lenght (s)", secondsToRecordIR, 0.2, MAX_SECONDS_TO_RECORD));
 
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("Save IR", false));
 
 	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
 	leftPanel.add(recordOfflineWAVControl.set("Record (offline)", false));
+	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel5.set("=== PREDEFINED SETUPS ==="));
 
-	leftPanel.add(sectionLabel5.set("- OTHERS -"));
+	changeToCaseStudyAControl.addListener(this, &ofApp::changeToCaseStudyA);
+	leftPanel.add(changeToCaseStudyAControl.set("Load case A-> A108", true));
+
+	changeToCaseStudyBControl.addListener(this, &ofApp::changeToCaseStudyB);
+	leftPanel.add(changeToCaseStudyBControl.set("Load case B-> BoardRoom", false));
+	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel6.set("=== LOAD RESOURCES ==="));
 
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("Load audio", false));
@@ -340,6 +347,9 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 
 	changeBRIRControl.addListener(this, &ofApp::changeBRIR);
 	leftPanel.add(changeBRIRControl.set("Load BRIR", false));
+	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel7.set("=== OTHERS ==="));
 
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
 	leftPanel.add(helpDisplayControl.set("Help", false));
@@ -348,16 +358,34 @@ void ofApp::SetupGUI(const std::string& pathResources, float& secToRecordIR)
 	leftPanel.add(aboutDisplayControl.set("About", false));
 }
 
-bool ofApp::LoadHRTFSofa(const std::string& pathResources)
+
+bool ofApp::SetupCaseStudy(const std::string& geometryFilePath, const std::string& hrtfFilePath, const std::string& brirFilePath) {
+
+	// HRTF setup
+	bool result = LoadHRTFSofa(hrtfFilePath); //TODO check samplerate
+	if (!result) return false;
+
+	// Environment setup
+	result = LoadBRIRSofa(brirFilePath); //TODO check samplerate
+	if (!result) return false;
+		
+	// Room setup	
+	result = SetupRoomFromGeometryFile(geometryFilePath);
+	if (!result) return false;
+
+	return true;
+}
+
+bool ofApp::LoadHRTFSofa(const std::string& fullPath)
 {
 	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
-	std::string fullPath = pathResources + "\\HRTF\\" + "HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	//std::string fullPath = pathResources + "\\HRTF\\" + "HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
 	//string fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa";
 	//string fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_direct_path.sofa";
 	//string fullPath = pathResources + "\\" + "D1_44K_16bit_256tap_FIR_SOFA.sofa";
 	//string fullPath = pathResources + "\\" + "3DTI_HRTF_D2_128s_44100Hz.sofa";       //"hrtf.sofa"= pathFile;
 	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";             // To test the Filterbank
-	fullPathHRTF = fullPath;
+	//fullPathHRTF = fullPath;
 
 	bool specifiedDelays;
 	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
@@ -366,6 +394,8 @@ bool ofApp::LoadHRTFSofa(const std::string& pathResources)
 	}
 	else {
 		std::cout << "HRTF SOFA file loaded correctly - "<< fullPath << endl << endl;
+		loadedHRTFFilePath = fullPath;
+		loadedHRTFFileName = GetFileName(fullPath);
 	}
 
 	return sofaLoadResult;
@@ -376,7 +406,7 @@ bool ofApp::LoadHRTFSofa(const std::string& pathResources)
  * @param pathResources 
  * @return 
  */
-bool ofApp::LoadBRIRSofa(const std::string& pathResources)
+bool ofApp::LoadBRIRSofa(const std::string& fullPath)
 {
 	/************************/
 	// Environment setup
@@ -384,14 +414,13 @@ bool ofApp::LoadBRIRSofa(const std::string& pathResources)
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(reverberationOrder);		// Setting number of ambisonic channels to use in reverberation processing
 	
-	std::string fullPath;
+	//std::string fullPath;
 	//fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";                      // LAB_ROOM 
-	fullPath = pathResources + "\\BRIR\\" + "Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";             // A108_ROOM 
+	//fullPath = pathResources + "\\BRIR\\" + "Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";             // A108_ROOM 
 	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";  // Juntas_ROOM
 	//fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa";       
 	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa";   
-
-	fullPathBRIR = fullPath;
+	//ullPathBRIR = fullPath;
 
 	bool result = BRIR::CreateFromSofa(fullPath, environment);		// Loading SOFAcoustics BRIR file and applying it to the environment
 	if (!result) {
@@ -399,24 +428,34 @@ bool ofApp::LoadBRIRSofa(const std::string& pathResources)
 	}
 	else {
 		std::cout << "BRIR SOFA file loaded correctly - " << fullPath << endl << endl;
+		loadedBRIRFilePath = fullPath;
+		loadedBRIRFileName = GetFileName(fullPath);
 	}
 	return result;
 }
 
-void ofApp::SetupRoomFromGeomtryFile(const std::string& fullPath)
+bool ofApp::SetupRoomFromGeometryFile(const std::string& fullPath)
 {
 	mainRoom = ISM::Room();		// Initialize room		
-		
+
 	ISM::RoomGeometry newRoomGeometry;
 	std::vector<std::vector<float>> absortionsWalls;
 	bool result = LoadGeometryFile(fullPath, newRoomGeometry, absortionsWalls);
-	
+
 	if (result) {
 		mainRoom.setupRoomGeometry(newRoomGeometry);
-		mainRoom.setWallAbsortion(absortionsWalls);				
+		mainRoom.setWallAbsortion(absortionsWalls);
 		std::cout << "New Room loaded " << fullPath << endl << endl;
+		loadedRoomGeometryFilePath = fullPath;
+		loadedRoomGeometryFileName = GetFileName(fullPath);
+		return true;
+	}
+	else {
+		std::cout << "ERROR: Error trying to load the room geometry file - " << fullPath << endl << endl;
+		return false;
 	}
 }
+
 
 void ofApp::SetupShoeboxRoom(float length, float width, float height, const std::vector<std::vector<float>>& absortionsWalls) {
 	mainRoom = ISM::Room();		// Initialize room	
@@ -558,19 +597,13 @@ void ofApp::draw() {
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
 
 	/// Logo of The University of Malaga and Title
-	logoUMA.draw(20, 20);
-	char title[40];
-	if (ofGetWidth() > 1500)
-	{
-		std::string titleText = "Image Source Method Simulator " + APP_VERSION;
-		sprintf(title, titleText.data()) ;
-	}
-	else
-	{
-		std::string titleText = "ISM Simulator " + APP_VERSION;
-		sprintf(title, titleText.data());
-	}
-	titleFont.drawString(title, ofGetWidth() / 2 - titleFont.stringWidth(title) / 2, 85);
+	logoUMA.draw(20, 20);	
+
+	std::string titleText = (ofGetWidth() > 1500)
+		? "Image Source Method Simulator " + APP_VERSION
+		: "ISM Simulator " + APP_VERSION;
+	titleFont.drawString(titleText, ofGetWidth() / 2 - titleFont.stringWidth(titleText) / 2, 85);
+	
 
 	/// Logo of the SAVLab project
 	logoSAVLab.draw(ofGetWidth() - 260, 20);
@@ -658,7 +691,7 @@ void ofApp::draw() {
 
 	}
 
-	leftPanel.draw();
+	leftPanel.draw();	
 
 	if (!boolToogleDisplayAbout)
 	{
@@ -743,6 +776,31 @@ void ofApp::draw() {
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 	}
+
+	drawResourcesLoaded();
+}
+
+void ofApp::drawResourcesLoaded() {	
+	if (!boolToogleDisplayHelp) return;
+	int leftMargin = 30;
+	ofPushStyle();
+	ofSetColor(50, 150);
+	ofRect(leftMargin, ofGetHeight() - 85, 550, 80);
+	ofPopStyle();
+	
+	char messageStr[1024];
+
+	snprintf(messageStr, sizeof(messageStr), "Resources loaded:");
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 70);
+
+	snprintf(messageStr, sizeof(messageStr), "-Room: %s", loadedRoomGeometryFileName.c_str());
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 45);
+
+	snprintf(messageStr, sizeof(messageStr), "-HRTF: %s", loadedHRTFFileName.c_str());
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 30);
+
+	snprintf(messageStr, sizeof(messageStr), "-BRIR: %s", loadedBRIRFileName.c_str());
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 15);
 }
 
 void ofApp::DrawRecordingOffline()
@@ -1740,6 +1798,17 @@ void ofApp::drawRoom()
 			}
 		}		
 	}	
+
+	//Draw the original room with full opacity (255)
+	ofSetColor(ofColor::hotPink, 255);
+	std::vector<ISM::Wall> walls = mainRoom.getWalls();
+	for (auto& wall : walls) {
+		if (wall.isActive()) {
+			drawWall(wall);
+			drawWallNormal(wall);
+		}
+	}
+
 	ofPopStyle();
 }
 
@@ -2217,15 +2286,7 @@ void ofApp::recordWavOffline(bool& _active)
 	stopToPlayControl.set("Play", false);
 }
 
-void ofApp::changeSecondsToRecordIR(float &_secondsToRecordIR)
-{
-	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=MAX_SECONDS_TO_RECORD)
-	{
-		secondsToRecordIR = _secondsToRecordIR;
-		numberOfSecondsToRecordControl.set(secondsToRecordIR);
-	}
-	   
-}
+
 
 void ofApp::toogleHelpDisplay(bool &_active)
 {
@@ -2294,14 +2355,12 @@ void ofApp::resetAudio()
 	
 	myCore.RemoveEnvironment(environment);
 
-
-
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
 	environment->SetReverberationOrder(reverberationOrder);		                // Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	BRIR::CreateFromSofa(fullPathBRIR, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
+	BRIR::CreateFromSofa(loadedBRIRFilePath, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
 	reCreateImageSourceDSP();
@@ -2357,11 +2416,106 @@ void ofApp::stopToPlay(bool &_active)
 	}
 }
 
+void ofApp::changeToCaseStudyA(bool& active) {
+	if (!setupDone) return;
+	
+	if (loadedRoomGeometryFilePath == caseARoomGeometryFilePath) {
+		cout << "Case Study A already loaded" << endl << endl;
+		return;
+	}
+	
+	bool result = changeToCaseStudy(caseARoomGeometryFilePath, caseAHRTFFilePath, caseABRIRFilePath);
+	if (result) { 
+		changeToCaseStudyBControl.setWithoutEventNotifications(false);
+	}
+}
+
+void ofApp::changeToCaseStudyB(bool& active) {
+	if (!setupDone) return;
+
+
+	if (loadedRoomGeometryFilePath == caseBRoomGeometryFilePath) {
+		cout << "Case Study B already loaded" << endl << endl;
+		return;
+	}
+	
+	bool result = changeToCaseStudy(caseBRoomGeometryFilePath, caseBHRTFFilePath, caseBBRIRFilePath);
+	if (result) {
+		changeToCaseStudyAControl.setWithoutEventNotifications(false);
+	}
+}
+
+bool ofApp::changeToCaseStudy(const std::string& _geometryFilePath, const std::string& _hrtfFilePath, const std::string& _brirFilePath) {
+
+	lock_guard < mutex > lock(audioMutex);
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+
+	setupDone = false;
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	/// Load Room geometry
+	ISM::RoomGeometry newRoomGeometry;
+	std::vector<std::vector<float>> absortionsWalls;
+	bool result = LoadGeometryFile(_geometryFilePath, newRoomGeometry, absortionsWalls);
+
+	if (result) {
+		mainRoom.setupRoomGeometry(newRoomGeometry);
+		mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ReconfigureISM();
+		SetupImageRooms();
+		loadedRoomGeometryFilePath = _geometryFilePath;
+		loadedRoomGeometryFileName = GetFileName(loadedRoomGeometryFilePath);
+		std::cout << "New Room loaded " << loadedRoomGeometryFilePath << endl << endl;
+	} else {
+		std::cout << "ERROR: Load new ROOM - Couldn't load file " << _geometryFilePath << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	// Load new HRTF file
+	bool specifiedDelays;
+	bool sofaLoadResult = HRTF::CreateFromSofa(_hrtfFilePath, listener, specifiedDelays);
+
+	if (!sofaLoadResult) {
+		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	else
+	{
+		loadedHRTFFilePath = _hrtfFilePath;
+		loadedHRTFFileName = GetFileName(loadedHRTFFilePath);
+		cout << "Load new HRTF File " << loadedHRTFFilePath << endl << endl;
+	}
+	// Load new BRIR file	
+	sofaLoadResult = BRIR::CreateFromSofa(_brirFilePath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+
+	if (!sofaLoadResult) {
+		cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	else
+	{
+		loadedBRIRFilePath = _brirFilePath;
+		loadedBRIRFileName = GetFileName(loadedBRIRFilePath);
+		cout << "Load new BRIR File " << loadedBRIRFilePath << endl << endl;
+		SetDefaultSecondsToRecordIR();
+	}
+		
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+	setupDone = true;
+	return true;
+}
+
+
 void ofApp::changeRoomGeometry(bool &_active)
 {
-	//string fileNameUsr;
+	
 	changeRoomGeometryControl = false;
-	if (setupDone == false) return;
+	if (!setupDone) return;
 	
 	lock_guard < mutex > lock(audioMutex);
 
@@ -2403,33 +2557,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 		if (!stopState) audioInterfaceController->StartAudioInterface();
 		return;
 	}
-
-	
-	//if (openFileResult.bSuccess) {		
-	//	/*if (fileExtension == "XML")
-	//	{
-	//		if (!xml.load(fullPath))
-	//		{
-	//			ofLogError() << "Couldn't load file";
-	//			std::cout << "ERROR: Load new ROOM - Couldn't load file " << fullPath << endl << endl;
-	//			if (!stopState) audioInterfaceController->StartAudioInterface();
-	//			return;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		ofLogError() << "Extension must be XML";
-	//		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
-	//		if (!stopState) audioInterfaceController->StartAudioInterface();
-	//		return;
-	//	}*/
-	//	if (fileExtension != "XML") {
-	//		//ofLogError() << "Extension must be XML";
-	//		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
-	//		if (!stopState) audioInterfaceController->StartAudioInterface();
-	//		return;
-	//	}
-	//}
+		
 	if (fileExtension != "XML") {
 		//ofLogError() << "Extension must be XML";
 		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
@@ -2441,106 +2569,20 @@ void ofApp::changeRoomGeometry(bool &_active)
 	std::vector<std::vector<float>> absortionsWalls;
 	bool result = LoadGeometryFile(fullPath, newRoomGeometry, absortionsWalls);
 
-	///////////////Read the XML file with the geometry of the room and absorption of the walls////////
-
-	//// select all corners and iterate through them
-	//auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
-	//if (cornersXml.empty()) {
-	//	std::cout << "ERROR: The file is not a room configuration" << endl;
-	//	if (!stopState) audioInterfaceController->StartAudioInterface();
-	//	return;
-	//}
-
-	//for (auto & currentCorner : cornersXml) {
-	//	// for each corner in the room insert its coordinates
-	//	auto cornersInFile = currentCorner.getChildren("CORNER");
-
-	//	for (auto aux : cornersInFile) {
-	//		std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
-	//		std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
-	//		Common::CVector3 tempP3d;
-	//		tempP3d.x = p3Dfloat[0];
-	//		tempP3d.y = p3Dfloat[1];
-	//		tempP3d.z = p3Dfloat[2];
-	//		newRoom.corners.push_back(tempP3d);
-	//	}
-	//}
-
-	///***********************/
-	////absortionsWalls.clear();
-	///***********************/
-
-	//// select all walls and iterate through them
-	//auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
-	//std::vector<std::vector<float>> absortionsWalls;
-	//for (auto & currentWall : wallsXml) {
-	//	// for each wall in the room insert corners its and absortions
-	//	auto wallsInFile = currentWall.getChildren("WALL");
-	//	for (auto aux : wallsInFile) {
-	//		std::string strVectInt = aux.getAttribute("corner").getValue();
-	//		std::vector<int> tempCornersWall = parserStToVectInt(strVectInt);
-	//		newRoom.walls.push_back(tempCornersWall);
-	//		std::string strVectFloat = aux.getAttribute("absor").getValue();
-	//		std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
-	//		absortionsWalls.push_back(tempAbsorsWall);
-	//	}
-	//}
-	////////////////////////////////////////////////
 	if (result) {
 		mainRoom.setupRoomGeometry(newRoomGeometry);
 		mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
 		ReconfigureISM();
 		SetupImageRooms();
+
+		loadedRoomGeometryFilePath = fullPath;
+		loadedRoomGeometryFileName = GetFileName(loadedRoomGeometryFilePath);
 		std::cout << "New Room loaded " << fullPath << endl << endl;
+	} else {
+		std::cout << "ERROR: Load new ROOM - Couldn't load file " << fullPath << endl << endl;
 	}
 		
-	if (!stopState) audioInterfaceController->StartAudioInterface();
-	//ISMHandler->setupArbitraryRoom(newRoom);
-	
-	//ISMHandler->SetupRoom(mainRoom);	
-	//Absortion as vector	
-	//ISMHandler->setReflectionOrder(0);
-	//mainRoom = ISMHandler->getRoom();
-	//reCreateImageSourceDSP();
-	
-	//listener located in the center of the room
-	//Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-	//Common::CVector3 listenerLocation(roomCenter);
-	//Common::CTransform listenerPosition = Common::CTransform();
-	//listenerPosition.SetPosition(listenerLocation);
-	//listener->SetListenerTransform(listenerPosition);
-
-	//moveSource(Common::CVector3(0, 0, 0));
-	
-	
-	//ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
-	//reflectionOrderControl.set(INITIAL_REFLECTION_ORDER);
-	//mainRoom = ISMHandler->getRoom();
-	//reCreateImageSourceDSP();
-		
-	/*int numWalls = mainRoom.getWalls().size();
-	guiActiveWalls.resize(numWalls);
-
-	for (int i = 0; i < numWalls; i++)
-	{
-		if (guiActiveWalls.at(i) == false) 	guiActiveWalls.at(i) = true;
-	}*/
-
-	//mainRoom = ISMHandler->getRoom();
-	//if (!stopState) audioInterfaceController->StartAudioInterface();
-
-	
-
-//#if 0
-////lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
-//	stopState = false;
-//	playState = true;
-//	source1Wav.setInitialPosition();
-//	audioInterfaceController->StartAudioInterface();
-//	playToStopControl.set("Stop", false);
-//	stopToPlayControl.set("Play", true);
-//#endif
-	
+	if (!stopState) audioInterfaceController->StartAudioInterface();		
 }
 
 /**
@@ -2558,7 +2600,6 @@ bool ofApp::LoadGeometryFile(const std::string& fullPath, ISM::RoomGeometry& new
 		return false;
 	}
 	
-
 	// select all corners and iterate through them
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	if (cornersXml.empty()) {
@@ -2675,9 +2716,9 @@ void ofApp::changeHRTF(bool& _active)
 		ofLogVerbose("The file exists - now checking the type via file extension");
 		if (fileExtension == "SOFA")
 		{
-			fullPathHRTF = fullPath;
+			//fullPathHRTF = fullPath;
 			bool specifiedDelays;
-			bool sofaLoadResult = HRTF::CreateFromSofa(fullPathHRTF, listener, specifiedDelays);
+			bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
 
 			if (!sofaLoadResult) {
 				cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
@@ -2686,7 +2727,9 @@ void ofApp::changeHRTF(bool& _active)
 			}
 			else
 			{
-				cout << "Load new HRTF File " << fullPathHRTF << endl  << endl;
+				loadedHRTFFilePath = fullPath;
+				loadedHRTFFileName = GetFileName(fullPath);
+				cout << "Load new HRTF File " << loadedHRTFFilePath << endl  << endl;
 			}
 		}
 		else
@@ -2752,8 +2795,8 @@ void ofApp::changeBRIR(bool& _active)
 		{
 			//char* charFilename = new char[fullPath.length() + 1];
 			//strcpy(charFilename, fullPath.c_str());
-			fullPathBRIR = fullPath;
-			bool sofaLoadResult = BRIR::CreateFromSofa(fullPathBRIR, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+			//fullPathBRIR = fullPath;
+			bool sofaLoadResult = BRIR::CreateFromSofa(fullPath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
 			
 			if (!sofaLoadResult) {
 				cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
@@ -2762,11 +2805,10 @@ void ofApp::changeBRIR(bool& _active)
 			}
 			else
 			{
-				cout << "Load new BRIR File " << fullPathBRIR << endl << endl;
-				int BRIRLength = environment->GetBRIR()->GetBRIRLength();
-				float sampleRate = myCore.GetAudioState().sampleRate;
-				float secToRecordIR = ((float)BRIRLength) / sampleRate;
-				changeSecondsToRecordIR(secToRecordIR);
+				loadedBRIRFilePath = fullPath;
+				loadedBRIRFileName = GetFileName(loadedBRIRFilePath);
+				cout << "Load new BRIR File " << loadedBRIRFilePath << endl << endl;
+				SetDefaultSecondsToRecordIR();
 			}
 		}
 		else
@@ -3423,7 +3465,7 @@ void ofApp::OscCallBackChangeTimeSaveIR(const ofxOscMessage& message) {
 	float secondsToRecordIR = message.getArgAsFloat(0);  //getArgAsFloat(0);	
 	std::cout << "Received Change Time to Record IR Command" << ",  " << secondsToRecordIR << std::endl;
 
-	changeSecondsToRecordIR(secondsToRecordIR);
+	SetSecondsToRecordIR(secondsToRecordIR);
 
 	SendOSCMessageToMatlab_Ready();
 }
@@ -3696,3 +3738,27 @@ bool ofApp::FileExist(const std::string& _filePath) {
 	return ofFile(_filePath, ofFile::Reference).exists();
 }
 
+std::string ofApp::GetFileName(const std::string& fullPath)
+{
+	// get file name with extension using ofFilePath
+	std::string fileNameWithExtension = ofFilePath().getFileName(fullPath);
+	return fileNameWithExtension;
+}
+
+// Others
+void ofApp::SetDefaultSecondsToRecordIR()
+{
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	float _secondsToRecordIR = ((float)BRIRLength) / sampleRate;
+	SetSecondsToRecordIR(_secondsToRecordIR);	
+}
+
+void ofApp::SetSecondsToRecordIR(float & _secondsToRecordIR)
+{
+	if (_secondsToRecordIR > 0 && _secondsToRecordIR <= MAX_SECONDS_TO_RECORD)
+	{
+		secondsToRecordIR = _secondsToRecordIR;
+		numberOfSecondsToRecordControl.set(secondsToRecordIR);
+	}
+}

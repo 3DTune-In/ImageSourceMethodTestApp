@@ -63,7 +63,7 @@
 
 #define MAX_ORDER_TO_DRAW_ROOMS 5
 
-static const std::string APP_VERSION = "v2.0.2";
+static const std::string APP_VERSION = "v2.1.0.Beta";
 
 class ofApp : public ofBaseApp{
 
@@ -112,7 +112,7 @@ private:
 
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;
-		ofParameter<int> reflectionOrderControl;
+		ofParameter<int> reflectionOrderControl;		
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
@@ -127,18 +127,25 @@ private:
 		ofParameter<float> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
 		ofParameter<bool> changeRoomGeometryControl;
+		ofParameter<bool> changeToCaseStudyAControl;
+		ofParameter<bool> changeToCaseStudyBControl;
+		ofParameter<bool> changeAbsorptionCoef_EE100;
+
 		ofParameter<bool> changeHRTFControl;
 		ofParameter<bool> changeBRIRControl;
 		ofParameter<bool> playToStopControl;
-		ofParameter<bool> stopToPlayControl;
+		ofParameter<bool> stopToPlayControl;		
 		ofParameter<bool> helpDisplayControl;
 		ofParameter<bool> aboutDisplayControl;	
 		ofParameter<void> audioInterfaceControl;
-		ofParameter<void> sectionLabel1;
+		ofParameter<void> sectionLabel1;		
 		ofParameter<void> sectionLabel2;
+		ofParameter<void> sectionLabelSeparator;		
 		ofParameter<void> sectionLabel3;
 		ofParameter<void> sectionLabel4;
 		ofParameter<void> sectionLabel5;
+		ofParameter<void> sectionLabel6;
+		ofParameter<void> sectionLabel7;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
@@ -229,9 +236,26 @@ private:
 		char* charFilenameOSC;                  // file name with the HRTF or geometry or BRIR of the room
 		char* charFolderOSC= "workFolder";      // working folder name
 		std::string recordingFolder;				// folder to save the recorded WAV files
-		std::string fullPathHRTF;
-		std::string fullPathBRIR;
+		//std::string fullPathHRTF;
+		//std::string fullPathBRIR;
 
+		std::string caseARoomGeometryFilePath;			// path of the geometry file for case study A
+		std::string caseAHRTFFilePath;					// path of the HRTF file for case study A
+		std::string caseABRIRFilePath;					// path of the BRIR file for case study A
+		
+		std::string caseBRoomGeometryFilePath;			// path of the geometry file for case study B		
+		std::string caseBHRTFFilePath;					// path of the HRTF file for case study B		
+		std::string caseBBRIRFilePath;					// path of the BRIR file for case study B
+
+		std::string loadedRoomGeometryFilePath;				// path of the loaded geometry file, to check if it has changed when loading a new one.
+		std::string loadedRoomGeometryFileName;				// path of the loaded geometry file, to check if it has changed when loading a new one.
+		
+		std::string loadedHRTFFilePath;					// path of the loaded HRTF file, to check if it has changed when loading a new one.
+		std::string loadedHRTFFileName;					// path of the loaded HRTF file, to check if it has changed when loading a new one.
+		
+		std::string loadedBRIRFilePath;					// path of the loaded BRIR file, to check if it has changed when loading a new one.
+		std::string loadedBRIRFileName;					// path of the loaded BRIR file, to check if it has changed when loading a new one.
+		
 		std::shared_ptr< CAudioInterfaceController> audioInterfaceController;
 		
 		//////////////////////////////
@@ -239,12 +263,14 @@ private:
 		////////////////////////////
 		
 		/// Methods to setup the application
+		bool SetupCaseStudy(const std::string& geometryFilePath, const std::string& hrtfFilePath, const std::string& brirFilePath);
+		
 		bool SetupAudioFile(const std::string& pathResources, const int& sampleRate);
 		void SetEnvironmentFadeInWindow(float& maxDistanceSourcesToListener);
-		void SetupGUI(const std::string& pathResources, float& secToRecordIR);
+		void SetupGUI(const std::string& pathResources);
 		bool LoadHRTFSofa(const std::string& pathResources);
 		bool LoadBRIRSofa(const std::string& pathResources);
-		void SetupRoomFromGeomtryFile(const std::string& fullPath);
+		bool SetupRoomFromGeometryFile(const std::string& fullPath);
 		void SetupShoeboxRoom(float length, float width, float height, const std::vector<std::vector<float>>& absortionsWalls);
 		void SetupImageRooms();
 		void CalculateImageRooms(const ISM::Room& room, int reflectionOrder);
@@ -266,6 +292,7 @@ private:
 		int calculateOpacity(int currentOrder, int maxOrder, unsigned char minOpacity);
 		void drawWall(const ISM::Wall& wall); //Draws the wall with lines between each pair of consecutive vertices.
 		void drawWallNormal(const ISM::Wall& wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		void drawResourcesLoaded();
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
@@ -289,12 +316,18 @@ private:
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
 		void recordWavOffline(bool& active);
-		void changeSecondsToRecordIR(float &secondsToRecordIR);
+		void SetDefaultSecondsToRecordIR();
+		void SetSecondsToRecordIR(float& _secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);
 		bool LoadGeometryFile(const std::string& fullPath, ISM::RoomGeometry& newRoom, std::vector<std::vector<float>>& absortionsWalls);
 		void changeHRTF(bool& active);
 		void changeBRIR(bool& active);
+		
+		bool changeToCaseStudy(const std::string& geometryFilePath, const std::string& hrtfFilePath, const std::string& brirFilePath);
+		void changeToCaseStudyA(bool& active);
+		void changeToCaseStudyB(bool& active);
+				
 		void playToStop(bool &active);
 		void stopToPlay(bool &active);		
 		void toogleHelpDisplay(bool &_active);
@@ -315,8 +348,8 @@ private:
 		void ShowRecordingMessage();
 		void StopWavRecord();
 		std::string GetFileIncrementalName(const std::string& _fileName);
-		bool ofApp::FileExist(const std::string& _filePath);
-
+		bool FileExist(const std::string& _filePath);
+		std::string GetFileName(const std::string& fullPath);
 		//
 		void StopSystemSoundStream();
 		void StartSystemSoundStream();

@@ -63,7 +63,7 @@
 
 #define MAX_ORDER_TO_DRAW_ROOMS 5
 
-static const std::string APP_VERSION = "v2.1.0.Beta";
+static const std::string APP_VERSION = "v2.1.1.Beta";
 
 class ofApp : public ofBaseApp{
 

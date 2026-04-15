@@ -91,13 +91,13 @@ void ofApp::setup() {
 	std::string pathResources = ofToDataPath("resources");	
 	
 	///
-	caseARoomGeometryFilePath = pathResources + "\\Room\\A108_room_Ini_EE100.xml";	
+	caseARoomGeometryFilePath = pathResources + "\\Room\\ROOM_A_EE100.xml";	
 	caseAHRTFFilePath = pathResources + "\\HRTF\\HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
-	caseABRIRFilePath = pathResources + "\\BRIR\\Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
+	caseABRIRFilePath = pathResources + "\\BRIR\\Room_A_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
 
-	caseBRoomGeometryFilePath = pathResources + "\\Room\\Juntas_room_Ini_EE100.xml";
+	caseBRoomGeometryFilePath = pathResources + "\\Room\\ROOM_B_EE100.xml";
 	caseBHRTFFilePath = pathResources + "\\HRTF\\HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
-	caseBBRIRFilePath = pathResources + "\\BRIR\\SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
+	caseBBRIRFilePath = pathResources + "\\BRIR\\Room_B_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
 
 	//
 	bool result = SetupCaseStudy(caseARoomGeometryFilePath, caseAHRTFFilePath, caseABRIRFilePath);
@@ -328,10 +328,10 @@ void ofApp::SetupGUI(const std::string& pathResources)
 	leftPanel.add(sectionLabel5.set("=== PREDEFINED SETUPS ==="));
 
 	changeToCaseStudyAControl.addListener(this, &ofApp::changeToCaseStudyA);
-	leftPanel.add(changeToCaseStudyAControl.set("Load case A-> A108", true));
+	leftPanel.add(changeToCaseStudyAControl.set("Load case ROOM A", true));
 
 	changeToCaseStudyBControl.addListener(this, &ofApp::changeToCaseStudyB);
-	leftPanel.add(changeToCaseStudyBControl.set("Load case B-> BoardRoom", false));
+	leftPanel.add(changeToCaseStudyBControl.set("Load case ROOM B", false));
 	
 	//leftPanel.add(sectionLabelSeparator.set(" "));
 	leftPanel.add(sectionLabel6.set("=== LOAD RESOURCES ==="));

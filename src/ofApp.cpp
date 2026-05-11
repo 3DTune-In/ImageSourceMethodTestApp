@@ -759,10 +759,10 @@ void ofApp::drawAbout()
 		sprintf(string, "This work has been partially funded by the Ministry of Science and Technology within the National R&D Plan through the SONIX ");
 		upPos += 30;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
-		sprintf(string, "project Redefining Sonic Interaction in Extended Reality (PID2023-152547NB-I00) and by the European Union, within the framework program ");
+		sprintf(string, "project Redefining Sonic Interaction in Extended Reality (PID2023-152547NB-I00) and by the European Union, within the ");
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
-		sprintf(string, "Horizon 2020 through the SONICOM project (agreement No. 101017743)");
+		sprintf(string, "framework program Horizon 2020 through the SONICOM project (agreement No. 101017743)");
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 	}

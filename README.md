@@ -83,4 +83,4 @@ To be added.
 
 ## License
 
-To be added.
+GNU General Public License v3.0

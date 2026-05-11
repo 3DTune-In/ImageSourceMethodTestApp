@@ -25,6 +25,8 @@
 #include <cstring>
 #include <iostream>
 #include <algorithm>
+#include <filesystem>
+
 
 #include <BinauralSpatializer/3DTI_BinauralSpatializer.h>
 #include <HRTF/HRTFFactory.h>
@@ -32,34 +34,83 @@
 #include <BRIR/BRIRFactory.h>
 #include <BRIR/BRIRCereal.h>
 #include "SoundSource.h"
-#include "ISM/ISM.h"
+#include "ISM/ISM.hpp"
 #include "ofxGui\src\ofxGui.h"
 #include "WavWriter.h"
 #include "OscManager.hpp"
 #include "ofxOsc.h"
+#include "ofFileUtils.h"
+#include "AudioInterfaceController.hpp"
 
-
-#define SAMPLERATE 44100
+#define SAMPLERATE 48000
 #define BUFFERSIZE 512
 
 #define LENGTH_OF_NORMALS 0.2
 #define DEFAULT_SCALE 20
-#define INITIAL_REFLECTION_ORDER 10
+#define INITIAL_REFLECTION_ORDER 3
 #define FRAME_RATE 60
 
 #define OSC_DEFAULT_TARGET_IP "127.0.0.1"
 #define OSC_DEFAULT_TARGET_PORT 12301
 #define OSC_DEFAULT_LISTEN_PORT 12300
 
+#define AUDIO_FILE_FEMALE_44100 "MusArch_Sample_44.1kHz_Anechoic_FemaleSpeech.wav"
+#define AUDIO_FILE_FEMALE_48000 "MusArch_Sample_48kHz_Anechoic_FemaleSpeech.wav"
+#define AUDIO_FILE_MALE_44100 "MusArch_Sample_44.1kHz_Anechoic_MaleSpeech.wav"
+#define AUDIO_FILE_MALE_48000 "MusArch_Sample_48kHz_Anechoic_MaleSpeech.wav"
+#define RECORD_FOLDER "recordings"
+
+#define MAX_ORDER_TO_DRAW_ROOMS 5
+
+static const std::string APP_VERSION = "v2.0.0";
+
+struct TCaseStudy {
+	std::string id;
+	std::string geometryFilePath;
+	std::string hrtfFilePath;
+	std::string brirFilePath;
+	float transitionTime;
+	int reflectionOrder;
+	Common::CVector3 sourcePosition;
+	Common::CVector3 listenerPosition;
+	
+	TCaseStudy() = default;
+
+	TCaseStudy(const std::string& _id, const std::string& _geometryFilePath, const std::string& _hrtfFilePath, const std::string& _brirFilePath, float _transitionTime, int _reflectionOrder, const Common::CVector3& _sourcePosition, const Common::CVector3& _listenerPosition)
+		: id{ _id }
+		, geometryFilePath{ _geometryFilePath }
+		, hrtfFilePath{ _hrtfFilePath }
+		, brirFilePath{ _brirFilePath }
+		, transitionTime{ _transitionTime }
+		, reflectionOrder{ _reflectionOrder }
+		, sourcePosition{ _sourcePosition }
+		, listenerPosition{ _listenerPosition }
+	{
+	}
+};
 
 class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
+		void setupHybridMethod();
+		void setupCaseStudies(std::string& pathResources);
 		void update();
 		void draw();
 
+		void drawHelp();
+
+		void drawAbout();
+
+		void drawLogos_Acknowledgements();
+
+		void DrawRecordingOffline();
+		
+
 		void keyPressed(int key);
+		void MoveListener(Common::CVector3 _movement);
+		void ShowImagesSourceSummaryData(float maxDistanceImagesToListener, std::vector<ISM::ImageSourceData>& images);
+		void ShowImageSourceData(std::vector<ISM::ImageSourceData>& data, const Common::CVector3& listenerLocation);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
 		void mouseDragged(int x, int y, int button);
@@ -67,6 +118,7 @@ class ofApp : public ofBaseApp{
 		void mouseReleased(int x, int y, int button);
 		void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
+		void mouseScrolled(int x, int y, float scrollX, float scrollY);
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
@@ -76,89 +128,128 @@ private:
 	    // Record to WAV
 	    WavWriter wavWriter;
 	    bool recordingOffline=false;
-		bool recordingOfflineSeries = false;
 		bool boolRecordingIR = false;
 	    float recordingPercent;
 	    int offlineRecordIteration = 0;
 	    int offlineRecordBuffers = 0;
 		bool systemSoundStream_Started;
-		mutex audioMutex;
+		std::mutex audioMutex;
 	    float frameRate;
 		/////////////////////////
 
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
-		ofImage logoSAVLab;
+		ofImage logoSonix;
 		ofImage logoSONICOM;
 
 		ofxPanel leftPanel;
 		ofxIntSlider zoom;
-		ofParameter<int> reflectionOrderControl;
+		ofParameter<int> reflectionOrderControl;		
 		ofParameter<bool> reverbEnableControl;
 		ofParameter<bool> anechoicEnableControl;
 		ofParameter<bool> binauralSpatialisationEnableControl;
-		ofParameter<int> maxDistanceImageSourcesToListenerControl;
-		ofParameter<int> reverbGainControl;
-		ofParameter<int> winThresholdControl;
+		ofParameter<bool> ismEnableControl;
+		ofParameter<float> maxDistanceImageSourcesToListenerControl;
+		ofParameter<float> reverbGainControl;
+		ofParameter<float> winThresholdControl;
 		ofParameter<int> windowSlopeControl;
 		ofParameter<bool> recordOfflineIRControl;
 		ofParameter<bool> recordOfflineIRScanControl;
 		ofParameter<bool> recordOfflineWAVControl;
-		ofParameter<int> numberOfSecondsToRecordControl;
+		ofParameter<float> numberOfSecondsToRecordControl;
 		ofParameter<bool> changeAudioToPlayControl;
 		ofParameter<bool> changeRoomGeometryControl;
-		ofParameter<bool> changeHRTFControl;
-		ofParameter<bool> playToStopControl;
-		ofParameter<bool> stopToPlayControl;
+		ofParameter<bool> changeToCaseStudyAControl;
+		ofParameter<bool> changeToCaseStudyBControl;
+		ofParameter<bool> changeAbsorptionCoef_EE100;
 
+		ofParameter<bool> changeHRTFControl;
+		ofParameter<bool> changeBRIRControl;
+		ofParameter<bool> playToStopControl;
+		ofParameter<bool> stopToPlayControl;		
 		ofParameter<bool> helpDisplayControl;
-		ofParameter<bool> aboutDisplayControl;
+		ofParameter<bool> aboutDisplayControl;	
+		ofParameter<void> audioInterfaceControl;
+		ofParameter<void> sectionLabel1;		
+		ofParameter<void> sectionLabel2;
+		ofParameter<void> sectionLabelSeparator;		
+		ofParameter<void> sectionLabel3;
+		ofParameter<void> sectionLabel4;
+		ofParameter<void> sectionLabel5;
+		ofParameter<void> sectionLabel6;
+		ofParameter<void> sectionLabel7;
 
 		std::vector<ofParameter<bool>> guiActiveWalls;
 
-		std::vector<string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
-		
-		
-
-		float azimuth;		//Camera azimuth
-		float elevation;	//Camera elevation
+		std::vector<std::string> wallNames = { "Front", "2", "3", "4", "5",  "6", "7", "8", "9", "0" };
+				
+		float cameraAzimuth;		//Camera azimuth
+		float cameraElevation;	//Camera elevation
 		float shoeboxLength;
 		float shoeboxWidth;
 		float shoeboxHeight;
+		int lastMouseX;
+		int lastMouseY;
 
 
 		//ISM::ISM ISMHandler;
-		shared_ptr<ISM::CISM> ISMHandler;
+		//shared_ptr<ISM::CISM> ISMHandler;
+		shared_ptr<ISM::CISM> ISMHandler2;
 		
-		ISM::Room mainRoom;		
+		ISM::Room mainRoom;
+
+		struct TImageRoomData{
+			ISM::Room room;
+			int reflectionOrder;
+
+			TImageRoomData(const ISM::Room& _room, int _reflectionOrder)
+				: room{ _room }
+				, reflectionOrder{ _reflectionOrder }
+			{
+			}
+		};
+		std::vector<TImageRoomData> mainRoomImages;
+		int limitOrderToDrawImageRooms;
+
 		////////////////////
 		ofXml xml;
 		std::vector<Common::CVector3> corners;
 		ofXml currentWall;
 		std::vector<std::vector<int>> walls;		
-		std::vector<std::vector<float>> absortionsWalls;
+		//std::vector<std::vector<float>> absortionsWalls;
 		/////////////////////
 
 		Binaural::CCore							myCore;												 // Core interface
 		shared_ptr<Binaural::CListener>			listener;											 // Pointer to listener interface
-		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface
-		bool bDisableReverb;                                                                         // true;
+		shared_ptr<Binaural::CEnvironment>		environment;                                         // Pointer to environment interface		                                                                   
 		int numberOfSilencedFrames = 0;
-		int numberOfSilencedSamples = 0;
-		int secondsToRecordIR = 1;
+		int numberOfSilencedSamplesInBRIR = 0;
+		float secondsToRecordIR;
 		int numberIRScan = 0;
 
-		float windowSlopeWidth;  //millisec
-		float reverbGainLinear;  //linear gain for reverb tail 
+		int	  currentReflectionOrder;
+		float currentMaxDistanceSourcesToListener;	// meters
+		float currentWindowThreshold;				// milliseconds
+		float currentWindowSlopeWidth;				// milliseconds
+		float reverbGainLinear;						// linear gain for reverb tail 		
+		
 
 		std::vector<ofSoundDevice> deviceList;
-		ofSoundStream systemSoundStream;
+		//ofSoundStream systemSoundStream;
 		
 		SoundSource source1Wav;
 
 		shared_ptr<Binaural::CSingleSourceDSP>	anechoicSourceDSP;							// Pointer to the original source DSP
-		bool stateAnechoicProcess;                                                          // Enabled o Disabled
-		bool stateBinauralSpatialisation;                                                   // Enabled o Disabled
+		bool stateAnechoicProcess;				// Enabled o Disabled
+		bool stateBinauralSpatialisation;		// Enabled o Disabled
+		bool stateISMProcess;					// Enabled o Disabled
+		//bool bDisableReverb;                  // Enabled o Disabled
+		bool stateBRIRReverbProcess;            // Enabled o Disabled
+
+		bool stateDistanceAttenuationAnechoic;	// Enabled o Disabled
+		bool stateDistanceAttenuationReverb; 	// Enabled o Disabled   
+		
+		TReverberationOrder reverberationOrder;
 
 		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> imageSourceDSPList;			// Vector of pointers to all image source DSPs
 
@@ -174,17 +265,56 @@ private:
 		bool setupDone;
 		
 		COscManager oscManager;					// OSC Manager
+		bool changeFileFromOSC;                 // initial value: false
+		char* charFilenameOSC;                  // file name with the HRTF or geometry or BRIR of the room
+		char* charFolderOSC= "workFolder";      // working folder name
+		std::string recordingFolder;				// folder to save the recorded WAV files
+		//std::string fullPathHRTF;
+		//std::string fullPathBRIR;
 
+		//std::string caseARoomGeometryFilePath;			// path of the geometry file for case study A
+		//std::string caseAHRTFFilePath;					// path of the HRTF file for case study A
+		//std::string caseABRIRFilePath;					// path of the BRIR file for case study A
+		//
+		//std::string caseBRoomGeometryFilePath;			// path of the geometry file for case study B		
+		//std::string caseBHRTFFilePath;					// path of the HRTF file for case study B		
+		//std::string caseBBRIRFilePath;					// path of the BRIR file for case study B
 
+		std::string loadedRoomGeometryFilePath;				// path of the loaded geometry file, to check if it has changed when loading a new one.
+		std::string loadedRoomGeometryFileName;				// path of the loaded geometry file, to check if it has changed when loading a new one.
+		
+		std::string loadedHRTFFilePath;					// path of the loaded HRTF file, to check if it has changed when loading a new one.
+		std::string loadedHRTFFileName;					// path of the loaded HRTF file, to check if it has changed when loading a new one.
+		
+		std::string loadedBRIRFilePath;					// path of the loaded BRIR file, to check if it has changed when loading a new one.
+		std::string loadedBRIRFileName;					// path of the loaded BRIR file, to check if it has changed when loading a new one.
+		
+		std::shared_ptr< CAudioInterfaceController> audioInterfaceController;
+		
 
-		/// Methods to handle Audio
-		int GetAudioDeviceIndex(std::vector<ofSoundDevice> list);
-		void SetDeviceAndAudio(Common::TAudioStateStruct audioState);
-		void audioOut(float * output, int bufferSize, int nChannels);
-		//void audioOut(ofSoundBuffer &outBuffer); //ofSoundBuffer
+		std::vector<TCaseStudy>	caseStudies;		// Vector with the different case studies that can be loaded in the application. 
+		TCaseStudy loadedCaseStudy;				// Current case study loaded in the application.
 
+		//////////////////////////////
+		// METHODS
+		////////////////////////////
+		
+		/// Methods to setup the application			
+		bool SetupAudioFile(const std::string& pathResources, const int& sampleRate);
+		void SetEnvironmentFadeInWindow(float& maxDistanceSourcesToListener);
+		void SetupGUI(const std::string& pathResources);
+		bool LoadHRTFSofa(const std::string& pathResources);
+		bool LoadBRIRSofa(const std::string& pathResources);
+		bool SetupRoomFromGeometryFile(const std::string& fullPath);
+		void SetupShoeboxRoom(float length, float width, float height, const std::vector<std::vector<float>>& absortionsWalls);
+		void SetupImageRooms();
+		void CalculateImageRooms(const ISM::Room& room, int reflectionOrder);
+		
+		/// Methods to handle Audio		
+		void ChangeAudioDevice();
+		void audioOut(float * output, int bufferSize, int nChannels);		
 		void audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, int uiBufferSize);
-		void LoadWavFile(SoundSource & source, const char* filePath);
+		bool LoadWavFile(SoundSource & source, const char* filePath);
 
 		/// Methods to render audio
 		void processAnechoic(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
@@ -192,37 +322,53 @@ private:
 		void processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMonoBuffer<float>> & bufferOutput);
 
 		/// Methods to draw rooms. 
-		void drawRoom(ISM::Room room, int reflectionOrder, int transparency); //Draws recursively rooms
-		void drawWall(ISM::Wall wall); //Draws the wall with lines between each pair of consecutive vertices.
-		void drawWallNormal(ISM::Wall wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		//void drawRoom(const ISM::Room& room, int reflectionOrder, int transparency); //Draws recursively rooms
+		void drawRoom();
+		int calculateOpacity(int currentOrder, int maxOrder, unsigned char minOpacity);
+		void drawWall(const ISM::Wall& wall); //Draws the wall with lines between each pair of consecutive vertices.
+		void drawWallNormal(const ISM::Wall& wall, float length = LENGTH_OF_NORMALS); //Draws a short line, normal to the wall and in the center of the wall towards inside the room.
+		void drawResourcesLoaded();
 
 		/// Methods to manage source images
 		void moveSource(Common::CVector3 movement);
-		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
-		std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP();
+		//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP();
+		//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP();
+		void createImageSourceDSP();
+		void reCreateImageSourceDSP();
 
 		/// Methods to manage GUI
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
-		void changeMaxDistanceImageSources(int &maxDistanceSourcesToListener);
-		void changeWinThreshold(int& windowThreshold);
+		void changeMaxDistanceImageSources(float &maxDistanceSourcesToListener);
+		void UpdateMaxDistanceAndWinThresholdParameters(const float& _maxDistanceSourcesToListener, bool& retFlag);
+		void changeWinThreshold(float& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
-		void changeReverbGain(int& reverbGain);
+		void changeReverbGain(float &reverbGain);
 		void toggleWall(bool &active);
 		void refreshActiveWalls();
 		void toggleAnechoic(bool& active);
+		void toggleISM(bool& active);
 		void toggleBinauralSpatialisation(bool& active);
 		void toggleReverb(bool &active);
 		void recordIrOffline(bool &active);
-		void recordIrSeriesOffline(bool& active);
 		void recordWavOffline(bool& active);
-		void changeSecondsToRecordIR(int &secondsToRecordIR);
+		void SetDefaultSecondsToRecordIR();
+		void SetSecondsToRecordIR(float& _secondsToRecordIR);
 		void changeAudioToPlay(bool &active);
 		void changeRoomGeometry(bool &active);
+		bool LoadGeometryFile(const std::string& fullPath, ISM::RoomGeometry& newRoom, std::vector<std::vector<float>>& absortionsWalls);
 		void changeHRTF(bool& active);
-		void playToStop(bool &active);
-		void stopToPlay(bool &active);
+		void changeBRIR(bool& active);
 		
+		bool SetupCaseStudy(const TCaseStudy& caseStudy);
+		bool changeToCaseStudy(const TCaseStudy& caseStudy);
+		bool changeToCaseStudy(std::string _id);
+		void changeToCaseStudyA(bool& active);
+		void changeToCaseStudyB(bool& active);
+		void ClearLoadedCaseStudy();
+
+		void playToStop(bool &active);
+		void stopToPlay(bool &active);		
 		void toogleHelpDisplay(bool &_active);
 		void toogleAboutDisplay(bool& _active);
 
@@ -233,14 +379,16 @@ private:
 		std::vector<int> parserStToVectInt(const std::string & st);
 
 		/// Record to WAV functions
-		void StartWavRecord(string filename, int bitspersample);
+		void StartWavRecord(std::string& filename, int bitspersample);
 		void EndWavRecord();
 		int OfflineWavRecordStartLoop(unsigned long long durationInMilliseconds);
 		void OfflineWavRecordOneLoopIteration(int _bufferSize);
 		void OfflineWavRecordEndLoop();
 		void ShowRecordingMessage();
 		void StopWavRecord();
-
+		std::string GetFileIncrementalName(const std::string& _fileName);
+		bool FileExist(const std::string& _filePath);
+		std::string GetFileName(const std::string& fullPath);
 		//
 		void StopSystemSoundStream();
 		void StartSystemSoundStream();
@@ -248,20 +396,46 @@ private:
 		void resetAudio();
 
 		// functions for conversion into samples
-		int millisec2samples(float _millisec);
+		float millisec2samples(float _millisec);
 		float samples2millisec(float _samples);
-		int meters2samples(float meters);
+		float meters2samples(float meters);
 		float samples2meters(float _samples);
 		float millisec2meters(float _millesec);
 		float meters2millisec(float _meters);
+		float meters2secs(float _meters);		
+		bool is_equal(float a, float b);
 
-		
+		void ReconfigureISM();
+		void ShowMessage(std::string message);
+
 		// OSC CallBack
 		void OscCallback(const ofxOscMessage& message);		
 		void OscCallBackPlay();
 		void OscCallBackStop();
 		void OscCallBackPlayAndRecord();
 		void OscCallBackCoefficients(const ofxOscMessage& message);
+		void OscCallBackAbsortions(const ofxOscMessage& message);
+		void OscCallBackReverbGain(const ofxOscMessage& message);
+		void OscCallBackDistMaxImgs(const ofxOscMessage& message);
+		void OscCallBackWindowSlope(const ofxOscMessage& message);
+		void OscCallBackReflectionOrder(const ofxOscMessage& message);
+		void OscCallBackDirectPathEnable(const ofxOscMessage& message);
+		void OscCallBackSpatialisationEnable(const ofxOscMessage& message);
+		void OscCallBackReverbEnable(const ofxOscMessage& message);
+		void OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message);
+		void OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& message);
+		void OscCallBackSaveIR();
+		void OscCallBackChangeRoom(const ofxOscMessage& message);
+		void OscCallBackChangeHRTF(const ofxOscMessage& message);
+		void OscCallBackChangeBRIR(const ofxOscMessage& message);
+		void OscCallBackListenerLocation(const ofxOscMessage& message);
+		void OscCallBackListenerOrientation(const ofxOscMessage& message);
+		void OscCallBackSourceLocation(const ofxOscMessage& message);
+		void OscCallBackChangeWorkFolder(const ofxOscMessage& message);
+		void OscCallBackChangeTimeSaveIR(const ofxOscMessage& message);
+		void OscCallBackChangeReverbOrder(const ofxOscMessage& message);
 		
 		void SendOSCMessageToMatlab_Ready();
+
+		TCaseStudy FindCaseStudy(std::string _id);
 };

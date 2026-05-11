@@ -1,29 +1,33 @@
 #include "ofApp.h"
 
-
 #define USE_PROFILER
 #ifdef USE_PROFILER
 #include <Windows.h>
 #include "Common/Profiler.h"
 //CProfilerDataSet dsAudioLoop;
 Common::CProfilerDataSet dsProcessFrameTime;
-//Common::CProfilerDataSet dsProcessReverb;
+Common::CProfilerDataSet dsProcessAnechoicTime;
+Common::CProfilerDataSet dsProcessReverbTime;
+Common::CProfilerDataSet dsProcessISMTime;
+
 Common::CTimeMeasure startOfflineRecord;
 #endif
+#include <filesystem>
 
 
 #define SOURCE_STEP 0.02f
 #define LISTENER_STEP 0.01f
 #define MAX_REFLECTION_ORDER 40
-#define MAX_DIST_SILENCED_FRAMES 500          //meters
-#define MIN_DIST_SILENCED_FRAMES 1            //meters
-#define INITIAL_DIST_SILENCED_FRAMES 3       //meters
+#define MAX_DIST_SILENCED_FRAMES 100          //meters
+#define MIN_DIST_SILENCED_FRAMES 1           //meters
+#define INITIAL_DIST_SILENCED_FRAMES 3.43     //meters
 #define MAX_SECONDS_TO_RECORD 30
 
 #define MAX_WIN_SLOPE 50                      //mseg
-#define MIN_WIN_SLOPE 2.91                    //mseg
-#define INITIAL_WIN_SLOPE 10                  //mseg
+#define MIN_WIN_SLOPE 2                       //mseg
+#define INITIAL_WIN_SLOPE 2                   //mseg
 #define MIN_WIN_THRESHOLD 2.92                //mseg
+
 
 
 //--------------------------------------------------------------
@@ -32,18 +36,39 @@ void ofApp::setup() {
 	
 	setupDone = false;
 	
+	stateAnechoicProcess = true;
+	stateBinauralSpatialisation = true;
+	stateISMProcess = true;	
+	stateDistanceAttenuationAnechoic = true;
+	stateDistanceAttenuationReverb = false;	
+	stateBRIRReverbProcess = true;
+
+	recordingFolder = RECORD_FOLDER;
+	
+	limitOrderToDrawImageRooms = 0;
+	lastMouseX = -1;
+	lastMouseY = -1;
+	
+	// Paths setup
+	std::string pathData = ofToDataPath("");
+	std::string pathResources = ofToDataPath("resources");
+
 	// SETUP PROFILER
 #ifdef USE_PROFILER
 	Common::PROFILER3DTI.InitProfiler();
-	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessFrameTime, "PROF_APP_ProcessAllSourcesTIME.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessFrameTime, "PROFILLING_APP_ProcessAll.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessAnechoicTime, "PROFILLING_APP_ProcessAnechoic.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessReverbTime, "PROFILLING_APP_ProcessReverb.txt");
+	Common::PROFILER3DTI.SetAutomaticWrite(dsProcessISMTime, "PROFILLING_APP_ProcessISM.txt");
+
 	Common::PROFILER3DTI.StartRelativeSampling(dsProcessFrameTime);
-	//PROFILER3DTI.SetAutomaticWrite(dsProcessReverb, "PROF_APP_PROCESSREVERB.txt");
-	//PROFILER3DTI.StartRelativeSampling(dsProcessReverb);
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessAnechoicTime);
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessReverbTime);
+	Common::PROFILER3DTI.StartRelativeSampling(dsProcessISMTime);	
 #endif
 
 	// Core setup
-	Common::TAudioStateStruct audioState;	                            // Audio State struct declaration
-	//audioState.bufferSize = myCore.GetAudioState().bufferSize;		// Setting buffer size 
+	Common::TAudioStateStruct audioState;	                            // Audio State struct declaration	
 	audioState.bufferSize = BUFFERSIZE;			                        // Setting buffer size 
 	audioState.sampleRate = SAMPLERATE;						   			// Setting frame rate 
 	myCore.SetAudioState(audioState);									// Applying configuration to core
@@ -51,239 +76,277 @@ void ofApp::setup() {
 
 	// Listener setup
 	listener = myCore.CreateListener();								 // First step is creating listener
-	Common::CVector3 listenerLocation(0, 0, 0);
-	Common::CTransform listenerPosition = Common::CTransform();		 // Setting listener in (0,0,0)
-	listenerPosition.SetPosition(listenerLocation);
-	listener->SetListenerTransform(listenerPosition);
+	//Common::CVector3 listenerLocation(0, 0, 0.15);                 // Juntas_ROOM
+	//Common::CVector3 listenerLocation(-0.45, 0.02, -0.68);         // A108_ROOM
+	//Common::CVector3 listenerLocation(-2.4, -1.5, -0.8);           // LAB_ROOM
+	//Common::CVector3 listenerLocation(-1.5, 2.4, -0.8);            // LAB_ROOM_ROT
+	Common::CTransform listenerPosition = Common::CTransform();	 // Setting listener in (0,0,0)
+	//listenerPosition.SetPosition(listenerLocation);
+	listener->SetListenerTransform(listenerPosition);		
 	listener->DisableCustomizedITD();								 // Disabling custom head radius
-	// HRTF can be loaded in SOFA (more info in https://sofacoustics.org/) Some examples of HRTF files can be found in 3dti_AudioToolkit/resources/HRTF
-	string pathData = ofToDataPath("");
-	string pathResources = ofToDataPath("resources");
 	
-	string fullPath = pathResources + "\\" + "hrtf.sofa";  //"hrtf.sofa"= pathFile;
-	//string fullPath = pathResources + "\\" + "UMA_NULL_S_HRIR_512.sofa";  // To test the Filterbank
-	bool specifiedDelays;
-	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
-	//bool sofaLoadResult = HRTF::CreateFromSofa("hrtf.sofa", listener, specifiedDelays);                 //VSTUDIO
-	//bool sofaLoadResult = HRTF::CreateFromSofa("UMA_NULL_S_HRIR_512.sofa", listener, specifiedDelays);  //VSTUDIO
-	if (!sofaLoadResult) {
-		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
-	}
 
-	/************************/
-	// Environment setup
-	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
-	fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
-	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the environment
-	//BRIR::CreateFromSofa("brir.sofa", environment);							// Loading SOFAcoustics BRIR file and applying it to the environment
-	
-	// Room setup
-	ISM::RoomGeometry trapezoidal;
-
-	/////////////Read the XML file with the geometry of the room and absorption of the walls////////
-
-	//fullPath = pathResources + "\\" + "trapezoidal_1_A1.xml";
-	fullPath = pathResources + "\\" + "lab_B1_AbsorLow.xml";
-	if (!xml.load(fullPath))
-	{
-		ofLogError() << "Couldn't load file";
-	}
-
-	// select all corners and iterate through them
-	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
-	for (auto & currentCorner : cornersXml) {
-		// for each corner in the room insert its coordinates
-		auto cornersInFile = currentCorner.getChildren("CORNER");
-
-		for (auto aux : cornersInFile) {
-			std::string p3Dstr = aux.getAttribute("_3Dpoint").getValue();
-			std::vector<float> p3Dfloat = parserStToFloat(p3Dstr);
-			Common::CVector3 tempP3d;
-			tempP3d.x = p3Dfloat[0];
-			tempP3d.y = p3Dfloat[1];
-			tempP3d.z = p3Dfloat[2];
-			trapezoidal.corners.push_back(tempP3d);
-		}		
-	}
-	// select all walls and iterate through them
-	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");	
-	for (auto & currentWall : wallsXml) {
-		// for each wall in the room insert corners its and absortions
-		auto wallsInFile = currentWall.getChildren("WALL");
-		for (auto aux : wallsInFile) {
-			std::string strVectInt = aux.getAttribute("corner").getValue();
-			std::vector<int> tempCornersWall  = parserStToVectInt(strVectInt);
-			trapezoidal.walls.push_back(tempCornersWall);
-
-			std::string strVectFloat = aux.getAttribute("absor").getValue();
-			std::vector<float> tempAbsorsWall = parserStToFloat(strVectFloat);
-			absortionsWalls.push_back(tempAbsorsWall);
-		}
-	}
-			
-	ISMHandler = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM	
-
-	// Setup maxDistanceSourcesToListener and numberOfSilencedFrames
-	float maxDistanceSourcesToListener = INITIAL_DIST_SILENCED_FRAMES;
-	ISMHandler->setMaxDistanceImageSources (maxDistanceSourcesToListener, millisec2meters((float)INITIAL_WIN_SLOPE));
-	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
-	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
-	//if (numberOfSilencedFrames > 25) numberOfSilencedFrames = 25;
-
-	// Setup windowThreshold and windowSlope
-	   //Get BRIRLength
-	windowSlopeWidth = INITIAL_WIN_SLOPE;
-	reverbGainLinear = 1.0;
-	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
-	int samplesWindowSlope = millisec2samples(windowSlopeWidth);
-	if (numberOfSilencedSamples + samplesWindowSlope/2 > BRIRLength) 
-	{
-		numberOfSilencedSamples = BRIRLength - samplesWindowSlope/2;
-		maxDistanceSourcesToListener = (float) samples2meters(numberOfSilencedSamples);
-		maxDistanceImageSourcesToListenerControl.set (maxDistanceSourcesToListener);
-		ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, millisec2meters(windowSlopeWidth));
-	}
-		
-	//numberOfSilencedFrames = floor(numberOfSilencedSamples / myCore.GetAudioState().bufferSize);
-
-	// Setup windowThreshold
-	float windowThreshold = float(numberOfSilencedSamples) / (float)myCore.GetAudioState().sampleRate;
-	
-	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0, reverbGainLinear);
-
-	numberOfSilencedFrames = floor((numberOfSilencedSamples - windowSlopeWidth/2) / myCore.GetAudioState().bufferSize);
-
-	ISMHandler->setupArbitraryRoom(trapezoidal);
-	shoeboxLength = 7.5; shoeboxWidth = 3; shoeboxHeight = 3;
-	//ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-	
-	//Absortion as vector
-	ISMHandler->setAbsortion( (std::vector<std::vector<float>>)  absortionsWalls);
-
-	ISMHandler->setReflectionOrder(0);
-
-	mainRoom = ISMHandler->getRoom();
-
-	// setup of the anechoic source
-	//Common::CVector3 initialLocation(13, 0, -4);
-	Common::CVector3 initialLocation(1.2, 0, 0);
-	ISMHandler->setSourceLocation(initialLocation);					// Source to be rendered
+	// Anechoic Source setup
 	anechoicSourceDSP = myCore.CreateSingleSourceDSP();				// Creating audio source
 	Common::CTransform sourcePosition;
-	sourcePosition.SetPosition(initialLocation);
-	anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
+	//Common::CVector3 initialLocation(2.0, 0.0, 0.15);             // Juntas_ROOM
+	//Common::CVector3 initialLocation(1.55, 0.02, -0.68);            // A108_ROOM	
+	//Common::CVector3 initialLocation(-2.4, -0.3, -0.8);           // LAB_ROOM
+	//Common::CVector3 initialLocation(-0.3, 2.4, -0.8);            // LAB_ROOM_ROT	
+	//sourcePosition.SetPosition(initialLocation);
+	//anechoicSourceDSP->SetSourceTransform(sourcePosition);							//Set source position
 	anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);	// Choosing high quality mode for anechoic processing
-	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
-	anechoicSourceDSP->EnableAnechoicProcess();										// Enable anechoic processing for this source
-	//anechoicSourceDSP->DisableAnechoicProcess();										// Disable anechoic processing for this source
-	//stateAnechoicProcess = true;                  //Is set to true in the method in toggleAnechoic             
-	anechoicSourceDSP->EnableDistanceAttenuationAnechoic();								// Do not perform distance simulation
-	anechoicSourceDSP->EnableDistanceAttenuationReverb();
+	anechoicSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect	
+	anechoicSourceDSP->EnableAnechoicProcess();										// Disable anechoic processing for this source
+	// DistanceAttenuation	
+	anechoicSourceDSP->DisableDistanceAttenuationReverb();
 	anechoicSourceDSP->EnablePropagationDelay();
-	
-	// setup of the image sources
-	imageSourceDSPList = createImageSourceDSP();
-	
-	fullPath = pathResources + "\\" + "speech_female.wav";
-	const char* _filePath = fullPath.c_str();
-	LoadWavFile(source1Wav, _filePath);
-	//LoadWavFile(source1Wav, "impulse16bits44100hz_b.wav");                            // Loading .wav file
-	//LoadWavFile(source1Wav, "speech_female.wav");									// Loading .wav file										   
-	//LoadWavFile(source1Wav, "sweep0_5.wav");										// Loading .wav file										   
-	//AudioDevice Setup
-	//// Before getting the devices list for the second time, the strean must be closed. Otherwise,
-	//// the app crashes when systemSoundStream.start(); or stop() are called.
-	systemSoundStream.close();
-	SetDeviceAndAudio(audioState);
+		
+	// Define case studies	
+	setupCaseStudies(pathResources);	
+	// Load case of Study
+	loadedCaseStudy = FindCaseStudy("roomB");	
+	if (loadedCaseStudy.id == "") {
+		std::cout << "Error loading case studies" << std::endl;
+		return;	
+	}	
+	bool result = SetupCaseStudy(loadedCaseStudy);
+	if (!result) {
+		std::cout << "Error setting up case study " << loadedCaseStudy.id << std::endl;
+		return;
+	} else {
+		std::cout << "Case study " << loadedCaseStudy.id << " setup correctly" << std::endl;		
+	}
 
+	// Recording setup
+	SetDefaultSecondsToRecordIR();				
+	// Load wav file
+	result = SetupAudioFile(pathResources, audioState.sampleRate);           // Loading .wav file
+	if (!result) return;
+	
+	// HYBRID REVERB setup - croosfade window setup	
+	setupHybridMethod();
+
+	// AudioDevice Setup	
+	audioInterfaceController = std::make_shared<CAudioInterfaceController>(std::bind(&ofApp::ShowMessage, this, std::placeholders::_1));
+	audioInterfaceController->Setup(this, audioState.sampleRate, audioState.bufferSize, 4);
+	
+	//The system starts its execution in STOP mode
+	playState = false;
+	stopState = true;
+	
+	// GUI setup
+	SetupGUI(pathResources);
+	
+	// Setup active walls in GUI
+	int numWalls = mainRoom.getWalls().size();
+	for (int i = 0; i < numWalls; i++)
+	{
+		ofParameter<bool> tempWall;
+		guiActiveWalls.push_back(tempWall);
+		guiActiveWalls.at(i) = true;
+	}
+	// Setup Image Rooms
+	SetupImageRooms();
+
+	// Offline WAV record
+	recordingOffline = false;
+	recordingPercent = 0.0f;
+	offlineRecordIteration = 0;
+	offlineRecordBuffers = 0;
+	frameRate = ofGetFrameRate();	
+	numberIRScan = 0;
+
+	// Profilling
+	profilling = false;
+	setupDone = true;
+		
+	// OSC
+	oscManager.Setup(OSC_DEFAULT_TARGET_PORT, OSC_DEFAULT_TARGET_IP, OSC_DEFAULT_LISTEN_PORT, std::bind(&ofApp::OscCallback, this, std::placeholders::_1));	
+	changeFileFromOSC = false;
+}
+
+void ofApp::setupHybridMethod()
+{	
+	currentWindowSlopeWidth = INITIAL_WIN_SLOPE;
+
+	float maxDistanceSourcesToListener = millisec2meters(loadedCaseStudy.transitionTime);
+	float numSamplesThreshold = meters2samples(maxDistanceSourcesToListener);
+	float numsamplesWindowSlope = millisec2samples(currentWindowSlopeWidth);
+	float numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope / 2;
+
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+
+	if (numSamplesTotal > BRIRLength)
+	{   // WindowThreshold + WindowSlope must be less than BRIR duration		
+		numberOfSilencedSamplesInBRIR = BRIRLength - millisec2samples(currentWindowSlopeWidth) / 2;
+		currentMaxDistanceSourcesToListener = samples2meters(numberOfSilencedSamplesInBRIR);
+
+	}
+	else {
+		currentMaxDistanceSourcesToListener = maxDistanceSourcesToListener;
+	}
+
+	// 
+	SetEnvironmentFadeInWindow(currentMaxDistanceSourcesToListener);
+	currentWindowThreshold = meters2millisec(currentMaxDistanceSourcesToListener);
+	reverbGainLinear = 1.0;
+	SetEnvironmentFadeInWindow(currentMaxDistanceSourcesToListener);
+
+	// INIT ISM
+	currentReflectionOrder = INITIAL_REFLECTION_ORDER;
+	//ISMHandler->setReflectionOrder(currentReflectionOrder);
+
+	ISMHandler2 = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM
+	//ISMHandler2->enableStaticDistanceCriterion();
+	ISMHandler2->disableStaticDistanceCriterion();
+	ISMHandler2->setSourceLocation(FindCaseStudy("roomB").sourcePosition);
+	ISMHandler2->Setup(currentReflectionOrder, currentMaxDistanceSourcesToListener, millisec2meters(currentWindowSlopeWidth), mainRoom);
+
+	// setup of the image sources
+	createImageSourceDSP();
+}
+
+void ofApp::setupCaseStudies(std::string& pathResources)
+{
+	std::string caseARoomGeometryFilePath = pathResources + "\\Room\\ROOM_A_EE100.xml";
+	std::string caseAHRTFFilePath = pathResources + "\\HRTF\\HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	std::string caseABRIRFilePath = pathResources + "\\BRIR\\Room_A_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
+	// CaseStudyA App center vs paper diagram -4.75f, -6.69f, 0;
+	TCaseStudy caseStudyA("roomA", caseARoomGeometryFilePath, caseAHRTFFilePath, caseABRIRFilePath, 58, 3, Common::CVector3(1.55, 0, 0.15f), Common::CVector3(-0.45f, 0, 0.15f));
+	caseStudies.push_back(caseStudyA);
+
+	std::string caseBRoomGeometryFilePath = pathResources + "\\Room\\ROOM_B_EE100.xml";
+	std::string caseBHRTFFilePath = pathResources + "\\HRTF\\HRTF_SADIE_II_D1_48K_24bit_256tap_FIR_SOFA_aligned.sofa";
+	std::string caseBBRIRFilePath = pathResources + "\\BRIR\\Room_B_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";
+	// CaseStudyB App center vs paper diagram -6.78f, -4.97f, 0;
+	TCaseStudy caseStudyB("roomB", caseBRoomGeometryFilePath, caseBHRTFFilePath, caseBBRIRFilePath, 43, 3, Common::CVector3(2, 0.03f, 0.15f), Common::CVector3(0, 0.03f, 0.15f));
+	caseStudies.push_back(caseStudyB);
+}
+
+bool ofApp::SetupAudioFile(const std::string& _pathResources, const int& sampleRate)
+{
+	std::string fullPath;
+	if (sampleRate == 44100){
+		fullPath = _pathResources + "\\" + AUDIO_FILE_FEMALE_44100;
+	}
+	else if (sampleRate == 48000)
+	{
+		fullPath = _pathResources + "\\" + AUDIO_FILE_FEMALE_48000;
+	}
+	else {
+		//ERROR
+		return false;
+	}	
+	const char* _filePath = fullPath.c_str();
+	return LoadWavFile(source1Wav, _filePath);
+}
+
+bool ofApp::LoadWavFile(SoundSource& source, const char* filePath)
+{
+	if (!source.LoadWav(filePath)) {
+		cout << "ERROR: file " << filePath << " doesn't exist." << endl << endl;
+		return false;
+	}
+	return true;
+}
+
+void ofApp::SetEnvironmentFadeInWindow(float & _maxDistanceSourcesToListener)
+{	
+	float windowThreshold = meters2secs(_maxDistanceSourcesToListener);
+	environment->SetFadeInWindow(windowThreshold, currentWindowSlopeWidth * 0.001, reverbGainLinear);
+	numberOfSilencedFrames = floor((numberOfSilencedSamplesInBRIR - currentWindowSlopeWidth / 2) / myCore.GetAudioState().bufferSize);
+}
+
+void ofApp::SetupGUI(const std::string& pathResources)
+{
 	//GUI setup
 	logoUMA.loadImage(pathResources + "\\" + "UMA.png");
 	logoUMA.resize(logoUMA.getWidth() / 10, logoUMA.getHeight() / 10);
 	titleFont.load(pathResources + "\\" + "Verdana.ttf", 32);
-	logoSAVLab.loadImage(pathResources + "\\" + "SAVLab.png");
-	logoSAVLab.resize(logoSAVLab.getWidth() / 14, logoSAVLab.getHeight() / 14);
+	logoSonix.loadImage(pathResources + "\\" + "Sonix.png");
+	logoSonix.resize(logoSonix.getWidth() / 5, logoSonix.getHeight() / 5);
 	logoSONICOM.loadImage(pathResources + "\\" + "SONICOM.png");
 	logoSONICOM.resize(logoSONICOM.getWidth() / 19, logoSONICOM.getHeight() / 19);
 
 	leftPanel.disableHeader();
 	leftPanel.setup(pathResources + "\\", "config.xml", 20, 150);
 	leftPanel.setWidthElements(220);
+				
+	leftPanel.add(sectionLabel1.set("=== GENERAL CONFIG ==="));	
 
-	zoom.addListener(this, &ofApp::changeZoom);
-	leftPanel.add(zoom.setup("Zoom (Pg. up/down)", 0, -20, 20, 50, 15));
+	/*zoom.addListener(this, &ofApp::changeZoom);
+	leftPanel.add(zoom.setup("Zoom (Pg. up/down)", 0, -20, 20, 50, 15));*/
+
+	audioInterfaceControl.addListener(this, &ofApp::ChangeAudioDevice);
+	leftPanel.add(audioInterfaceControl.set("Change Audio Device"));
+			
+	//leftPanel.add(sectionLabelSeparator.set(" "));	
+	leftPanel.add(sectionLabel2.set("=== RENDERING PARAM ==="));
+	
+	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
+	leftPanel.add(anechoicEnableControl.set("Direct Path", stateAnechoicProcess));
+
+	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
+	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", stateBinauralSpatialisation));
+	
+	ismEnableControl.addListener(this, &ofApp::toggleISM);
+	leftPanel.add(ismEnableControl.set("ISM", stateISMProcess));
+
+	reverbEnableControl.addListener(this, &ofApp::toggleReverb);
+	leftPanel.add(reverbEnableControl.set("Late Reverb", stateBRIRReverbProcess));
+
+	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
+	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -40, 40));
+	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel3.set("=== ISM PARAMETERS ==="));
 
 	reflectionOrderControl.addListener(this, &ofApp::changeReflectionOrder);
 	leftPanel.add(reflectionOrderControl.set("Relection Order (+/-)", INITIAL_REFLECTION_ORDER, 0, MAX_REFLECTION_ORDER));
-	
+
 	maxDistanceImageSourcesToListenerControl.addListener(this, &ofApp::changeMaxDistanceImageSources);
-	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", INITIAL_DIST_SILENCED_FRAMES, MIN_DIST_SILENCED_FRAMES, MAX_DIST_SILENCED_FRAMES));
-				
-	anechoicEnableControl.addListener(this, &ofApp::toggleAnechoic);
-	leftPanel.add(anechoicEnableControl.set("Direct Path", true));
-
-	binauralSpatialisationEnableControl.addListener(this, &ofApp::toggleBinauralSpatialisation);
-	leftPanel.add(binauralSpatialisationEnableControl.set("Binaural spatialisation", true));
-
-	reverbEnableControl.addListener(this, &ofApp::toggleReverb);
-	leftPanel.add(reverbEnableControl.set("REVERB", false));
-	bDisableReverb = true;
-
-	//// Setup windowThreshold and windowSlope
-
-	reverbGainControl.addListener(this, &ofApp::changeReverbGain);
-	leftPanel.add(reverbGainControl.set("ReverbGain (dB)", 0, -12, 12));
-
-	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);
-	leftPanel.add(winThresholdControl.set("WinThreshold (ms)", (INITIAL_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
-		(MIN_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed(),
-		(MAX_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed()));
-
+	leftPanel.add(maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", currentMaxDistanceSourcesToListener, MIN_DIST_SILENCED_FRAMES, MAX_DIST_SILENCED_FRAMES));
+	
+	winThresholdControl.addListener(this, &ofApp::changeWinThreshold);	
+	leftPanel.add(winThresholdControl.set("Transition Time (ms)"
+		, currentWindowThreshold
+		, (MIN_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed()
+		, (MAX_DIST_SILENCED_FRAMES * 1000) / myCore.GetMagnitudes().GetSoundSpeed()));				
+		
 	windowSlopeControl.addListener(this, &ofApp::changeWindowSlope);
-	leftPanel.add(windowSlopeControl.set("WinSlople (ms)", INITIAL_WIN_SLOPE, MIN_WIN_SLOPE, MAX_WIN_SLOPE));
+	leftPanel.add(windowSlopeControl.set("WinSlople (ms)", INITIAL_WIN_SLOPE, MIN_WIN_SLOPE, MAX_WIN_SLOPE));		
 
-	environment->SetFadeInWindow(windowThreshold, windowSlopeWidth/1000.0, reverbGainLinear);
-
-/*++++* /
-
-	
-	/*
-	//The system starts its execution in PLAY mode
-	playState = true;
-	stopState = false;
-
-	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
-	leftPanel.add(stopToPlayControl.set("PLAY_AUDIO", true));
-
-	playToStopControl.addListener(this, &ofApp::playToStop);
-	leftPanel.add(playToStopControl.set("STOP_AUDIO", false));
-	*/
-	
-	
-	//The system starts its execution in STOP mode
-	playState = false;
-	stopState = true;
-
-	systemSoundStream.stop();
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel4.set("=== PLAYBACK CONTROLS ==="));
 
 	stopToPlayControl.addListener(this, &ofApp::stopToPlay);
 	leftPanel.add(stopToPlayControl.set("Play", false));
 
 	playToStopControl.addListener(this, &ofApp::playToStop);
 	leftPanel.add(playToStopControl.set("Stop", true));
-	   	
-	numberOfSecondsToRecordControl.addListener(this, &ofApp::changeSecondsToRecordIR);
-	leftPanel.add(numberOfSecondsToRecordControl.set("IR lenght (s)", 1, 1, MAX_SECONDS_TO_RECORD));
+
+	numberOfSecondsToRecordControl.addListener(this, &ofApp::SetSecondsToRecordIR);
+	leftPanel.add(numberOfSecondsToRecordControl.set("IR record length(s)", secondsToRecordIR, 0.2, MAX_SECONDS_TO_RECORD));
 
 	recordOfflineIRControl.addListener(this, &ofApp::recordIrOffline);
 	leftPanel.add(recordOfflineIRControl.set("Save IR", false));
 
-	recordOfflineIRScanControl.addListener(this, &ofApp::recordIrSeriesOffline);
-	leftPanel.add(recordOfflineIRScanControl.set("Generate IR series", false));
-
 	recordOfflineWAVControl.addListener(this, &ofApp::recordWavOffline);
 	leftPanel.add(recordOfflineWAVControl.set("Record (offline)", false));
 	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel5.set("=== PREDEFINED SETUPS ==="));
+
+	changeToCaseStudyAControl.addListener(this, &ofApp::changeToCaseStudyA);
+	leftPanel.add(changeToCaseStudyAControl.set("Load case ROOM A", false));
+
+	changeToCaseStudyBControl.addListener(this, &ofApp::changeToCaseStudyB);
+	leftPanel.add(changeToCaseStudyBControl.set("Load case ROOM B", true));
+	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel6.set("=== LOAD RESOURCES ==="));
+
 	changeAudioToPlayControl.addListener(this, &ofApp::changeAudioToPlay);
 	leftPanel.add(changeAudioToPlayControl.set("Load audio", false));
 
@@ -292,48 +355,124 @@ void ofApp::setup() {
 
 	changeHRTFControl.addListener(this, &ofApp::changeHRTF);
 	leftPanel.add(changeHRTFControl.set("Load HRTF", false));
+
+	changeBRIRControl.addListener(this, &ofApp::changeBRIR);
+	leftPanel.add(changeBRIRControl.set("Load BRIR", false));
 	
+	//leftPanel.add(sectionLabelSeparator.set(" "));
+	leftPanel.add(sectionLabel7.set("=== OTHERS ==="));
+
 	helpDisplayControl.addListener(this, &ofApp::toogleHelpDisplay);
 	leftPanel.add(helpDisplayControl.set("Help", false));
 
 	aboutDisplayControl.addListener(this, &ofApp::toogleAboutDisplay);
 	leftPanel.add(aboutDisplayControl.set("About", false));
-	
-	int numWalls = ISMHandler->getRoom().getWalls().size();
-	for (int i = 0; i < numWalls; i++)
-	{
-		ofParameter<bool> tempWall;
-		guiActiveWalls.push_back(tempWall);
-		guiActiveWalls.at(i) = true;
+}
+
+
+bool ofApp::LoadHRTFSofa(const std::string& fullPath)
+{		
+	bool specifiedDelays;
+	bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
+	if (!sofaLoadResult) {
+		std::cout << "ERROR: Error trying to load the SOFA file - " << fullPath << endl << endl;
 	}
+	else {
+		std::cout << "HRTF SOFA file loaded correctly - "<< fullPath << endl << endl;
+		loadedHRTFFilePath = fullPath;
+		loadedHRTFFileName = GetFileName(fullPath);
+	}
+
+	return sofaLoadResult;
+}
+
+/**
+ * @brief 
+ * @param pathResources 
+ * @return 
+ */
+bool ofApp::LoadBRIRSofa(const std::string& fullPath)
+{
+	/************************/
+	// Environment setup
+	reverberationOrder = BIDIMENSIONAL;
+	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
+	environment->SetReverberationOrder(reverberationOrder);		// Setting number of ambisonic channels to use in reverberation processing
 	
-	// Offline WAV record
-	recordingOffline = false;
-	recordingPercent = 0.0f;
-	offlineRecordIteration = 0;
-	offlineRecordBuffers = 0;
-	frameRate = ofGetFrameRate();	
+	//std::string fullPath;
+	//fullPath = pathResources + "\\" + "lab138_3_KU100_reverb_120cm_adjusted_44100.sofa";                      // LAB_ROOM 
+	//fullPath = pathResources + "\\BRIR\\" + "Sala108_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";             // A108_ROOM 
+	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_reverb_adjusted.sofa";  // Juntas_ROOM
+	//fullPath = pathResources + "\\" + "Sala108_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa";       
+	//fullPath = pathResources + "\\" + "SalaJuntasTeleco_listener1_sourceQuad_2m_48kHz_Omnidirectional_reverb.sofa";   
+	//ullPathBRIR = fullPath;
 
-	recordingOfflineSeries = false;
-	numberIRScan = 0;
+	bool result = BRIR::CreateFromSofa(fullPath, environment);		// Loading SOFAcoustics BRIR file and applying it to the environment
+	if (!result) {
+		std::cout << "ERROR: Error trying to load the BRIR SOFA file - " << fullPath << endl << endl;		
+	}
+	else {
+		std::cout << "BRIR SOFA file loaded correctly - " << fullPath << endl << endl;
+		loadedBRIRFilePath = fullPath;
+		loadedBRIRFileName = GetFileName(fullPath);
+	}
+	return result;
+}
 
-	// Profilling
-	profilling = false;
-	setupDone = true;
+bool ofApp::SetupRoomFromGeometryFile(const std::string& fullPath)
+{
+	mainRoom = ISM::Room();		// Initialize room		
 
-	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
-	imageSourceDSPList = reCreateImageSourceDSP();
+	ISM::RoomGeometry newRoomGeometry;
+	std::vector<std::vector<float>> absortionsWalls;
+	bool result = LoadGeometryFile(fullPath, newRoomGeometry, absortionsWalls);
 
-	// OSC
-	oscManager.Setup(OSC_DEFAULT_TARGET_PORT, OSC_DEFAULT_TARGET_IP, OSC_DEFAULT_LISTEN_PORT, std::bind(&ofApp::OscCallback, this, std::placeholders::_1));	
+	if (result) {
+		mainRoom.setupRoomGeometry(newRoomGeometry);
+		mainRoom.setWallAbsortion(absortionsWalls);
+		std::cout << "New Room loaded " << fullPath << endl << endl;
+		loadedRoomGeometryFilePath = fullPath;
+		loadedRoomGeometryFileName = GetFileName(fullPath);
+		return true;
+	}
+	else {
+		std::cout << "ERROR: Error trying to load the room geometry file - " << fullPath << endl << endl;
+		return false;
+	}
+}
+
+
+void ofApp::SetupShoeboxRoom(float length, float width, float height, const std::vector<std::vector<float>>& absortionsWalls) {
+	mainRoom = ISM::Room();		// Initialize room	
+	mainRoom.setupShoeBox(length, width, height);
+	mainRoom.setWallAbsortion(absortionsWalls);
+}
+
+void ofApp::SetupImageRooms() {
+	mainRoomImages.clear();
+	limitOrderToDrawImageRooms = std::max(0, currentReflectionOrder - MAX_ORDER_TO_DRAW_ROOMS);
+	CalculateImageRooms(mainRoom, currentReflectionOrder);
+}
+
+void ofApp::CalculateImageRooms(const ISM::Room& room, int reflectionOrder)
+{	
+	if (reflectionOrder <= limitOrderToDrawImageRooms) return;
+	
+	TImageRoomData roomData(room, reflectionOrder);
+	mainRoomImages.push_back(roomData);
+	
+	reflectionOrder--;
+	std::vector<ISM::Room> roomImages;
+	room.getImageRooms(roomImages);
+	for (int i = 0; i < roomImages.size(); i++)
+	{
+		CalculateImageRooms(roomImages.at(i), reflectionOrder);
+	}	
 }
 
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	//float width = ofGetWidth();
-	//float height = ofGetHeight();
-
 	// OSC
 	oscManager.ReceiveOSCCommand();
 }
@@ -343,160 +482,8 @@ void ofApp::draw() {
 		
 	if (recordingOffline)											//OF_KEY_F9 (OFFLINE WAV RECORD)
 	{
-		uint64_t frameStart = ofGetElapsedTimeMillis();
-		//int bufferSize = 512;
-		int bufferSize = myCore.GetAudioState().bufferSize;
-
-
-
-		if (offlineRecordBuffers == 0) {
-
-//			string pathData = ofToDataPath("", true);
-			string fileNameUsr;
-			if (boolRecordingIR)
-			{
-				if (!recordingOfflineSeries) // save a single file
-				{
-					ofFileDialogResult saveFileResult = ofSystemSaveDialog("IR.wav", "Save Impulse Response");
-				    fileNameUsr = saveFileResult.getPath();
-				}
-				else                       // save a set of files
-				{
-					string pathData = ofToDataPath("");
-					string pathResources = ofToDataPath("resources");
-					fileNameUsr = pathResources + "\\SeriesIr\\";
-				}		
-			}
-			else
-			{
-				ofFileDialogResult saveFileResult = ofSystemSaveDialog("sample.wav", "Save output audio");
-				fileNameUsr = saveFileResult.getPath();
-			}
-			if (fileNameUsr.size() > 0) {
-				if (reverbEnableControl && reflectionOrderControl.get()==0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
-				else if (reverbEnableControl && reflectionOrderControl.get() > 0) fileNameUsr = fileNameUsr + "t"; // Hybrid
-				else fileNameUsr = fileNameUsr + "i";                                                              // ISM
-
-				//reflection order
-				fileNameUsr = fileNameUsr + "IrRO" + std::to_string(reflectionOrderControl);
-
-				//pruning distance
-				if (maxDistanceImageSourcesToListenerControl<10)
-				    fileNameUsr = fileNameUsr + "DP0" + std::to_string(maxDistanceImageSourcesToListenerControl);
-				else
-					fileNameUsr = fileNameUsr + "DP" + std::to_string(maxDistanceImageSourcesToListenerControl);
-
-				//window width
-				if (windowSlopeControl < 10)
-					fileNameUsr = fileNameUsr + "W0" + std::to_string(windowSlopeControl);
-				else
-					fileNameUsr = fileNameUsr + "W" + std::to_string(windowSlopeControl);
-
-				if (reverbEnableControl && reflectionOrderControl.get() > 0)
-					fileNameUsr = fileNameUsr + "HYB";
-
-				StartWavRecord(fileNameUsr+".wav", 16);                        // Open wav file
-				startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
-			}
-			else
-			{
-				recordingOffline = false;                               // Cancel recording process
-				boolRecordingIR = false;
-				return;
-			}
-			
-			if (boolRecordingIR)
-			{
-				offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);
-				//cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
-			}
-			else
-			{                                                           //Calculates the number of buffers associated with the size of the wav file
-				unsigned long long samplesVectorSize = source1Wav.getSizeSamplesVector();
-				offlineRecordBuffers = ceil(samplesVectorSize / myCore.GetAudioState().bufferSize);
-				//cout << "Number of offlineRecordBuffers= " << offlineRecordBuffers << "\n";
-			}
-
-			lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
-			if (!stopState) systemSoundStream.stop();
-			environment->ResetReverbBuffers();
-			anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
-			anechoicSourceDSP->DisableDistanceAttenuationSmoothingAnechoic();
-			
-			for (int i = 0; i < imageSourceDSPList.size(); i++) {
-				imageSourceDSPList.at(i)->ResetSourceBuffers();
-				imageSourceDSPList.at(i)->DisableDistanceAttenuationSmoothingAnechoic();
-			}
-
-			if (boolRecordingIR)
-			{                                                                                        
-				source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
-			}
-			source1Wav.setInitialPosition(); //Now the wav file is always recorded from the beginning
-		}
-				
-		
-		ofPushStyle();
-		ofBackground(80, 80, 80);
-		ShowRecordingMessage();
-
-		float frameDurationInMilliseconds = 1000.0f / frameRate;
-		
-		float aux;
-		while ((aux = ofGetElapsedTimeMillis() - frameStart) < frameDurationInMilliseconds)		{
-			OfflineWavRecordOneLoopIteration(bufferSize);  //audioProcess + wavWriter_AppendToFile + offlineRecordBuffers++
-			offlineRecordIteration++;
-			if (offlineRecordIteration == offlineRecordBuffers) 
-				break;
-		}
-		if (offlineRecordBuffers != 0)
-			recordingPercent = 0 + (100 * float(offlineRecordIteration)) / offlineRecordBuffers;
-
-		if (recordingPercent >= 100.0f){
-			stopRecordingOfflineTime = std::chrono::high_resolution_clock::now();
-			ShowRecordingDurationTime();
-			OfflineWavRecordEndLoop();    // StopWavRecord & recordingOffline = false;
-			EndWavRecord();               // Close wav file
-			
-			if (boolRecordingIR)
-			{
-				source1Wav.endRecordOfflineOfImpulseResponse();    //Restore initial wav file
-				boolRecordingIR = false;
-			}
-			source1Wav.setInitialPosition();
-			anechoicSourceDSP->EnableDistanceAttenuationSmoothingAnechoic();
-			for (int i = 0; i < imageSourceDSPList.size(); i++) {
-				imageSourceDSPList.at(i)->EnableDistanceAttenuationSmoothingAnechoic();
-			}
-
-			if (!stopState && playState) systemSoundStream.start();
-		}
-		
-		// iteratively recording multiple impulse responses
-
-		if (recordingOfflineSeries && (numberIRScan > 0) && recordingPercent >= 100.0f)
-		{ 
-			numberIRScan--;
-
-			if (numberIRScan == 0) {
-				recordingOfflineSeries = false;
-			}
-			else {
-				recordOfflineIRControl.set(true);
-				ofApp::recordIrOffline(recordingOfflineSeries);
-
-				if (!stopState) systemSoundStream.stop();
-				int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
-				ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-				imageSourceDSPList = reCreateImageSourceDSP();
-				if (!stopState) systemSoundStream.start();
-			}
-		}
-
-		ofPopStyle();
-		return;
+		return DrawRecordingOffline();
 	}
-
 	
 	//////////////////////////////////////begin of 3D drawing//////////////////////////////////////
 	ofPushMatrix();
@@ -504,8 +491,8 @@ void ofApp::draw() {
 	ofScale(1, -1, 1);
 	ofTranslate(ofGetWidth() / (scale * 2), -ofGetHeight() / (scale * 2), 0);
 	ofRotateZ(90);
-	ofRotateY(elevation);
-	ofRotateZ(azimuth);
+	ofRotateY(cameraElevation);
+	ofRotateZ(cameraAzimuth);
 
 	//draw reference axis
 	ofPushStyle();
@@ -518,13 +505,34 @@ void ofApp::draw() {
 	ofPopStyle();
 
 
-	int ordReflectDraw = reflectionOrderControl;
-	drawRoom(mainRoom, std::min(ordReflectDraw, 3), 255);
+	//int ordReflectDraw = reflectionOrderControl;
+	//drawRoom(mainRoom, std::min(ordReflectDraw, 3), 255);	
+	//drawRoom(mainRoom, currentReflectionOrder, 255);
+	drawRoom();
 
 	//draw lisener
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 	ofSphere(listenerLocation.x, listenerLocation.y, listenerLocation.z, 0.09);						//draw listener
+
+	Common::CVector3 axis, nose; 	
+	float angle;
+	Common::CQuaternion QListener = listenerTransform.GetOrientation();
+	QListener.ToAxisAngle(axis, angle);
+	if (angle < 0.000001) {
+		nose.x = listenerLocation.x + axis.x;
+		nose.y = listenerLocation.y + axis.y;
+		nose.z = listenerLocation.z + axis.z;
+	}
+	else {
+		float yaw, pitch, roll;
+		QListener.ToYawPitchRoll(yaw, pitch, roll);
+		nose.x = listenerLocation.x + cos (yaw);
+		nose.y = listenerLocation.y - sin (yaw);
+		nose.z = listenerLocation.z;
+	}
+	ofLine(listenerLocation.x, listenerLocation.y, listenerLocation.z,
+		nose.x, nose.y, nose.z);
 
 	//draw anechoic source
 	ofPushStyle();
@@ -532,14 +540,14 @@ void ofApp::draw() {
 
 	if (stateAnechoicProcess)
 	{
-		Common::CVector3 sourceLocation = ISMHandler->getSourceLocation();
+		Common::CVector3 sourceLocation = ISMHandler2->getSourceLocation();
 		ofBox(sourceLocation.x, sourceLocation.y, sourceLocation.z, 0.2);								//draw anechoic source
 		ofLine(sourceLocation.x, sourceLocation.y, sourceLocation.z,
 			listenerLocation.x, listenerLocation.y, listenerLocation.z);								//draw ray from anechoic source
 	}
 
 	int numberOfVisibleImages = 0;
-	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler->getImageSourceData();
+	std::vector<ISM::ImageSourceData> imageSourceDataList = ISMHandler2->getImageSourceData();
 	if (!stopState) {
 		//draw image sources (only if play state)
 		for (int i = 0; i < imageSourceDataList.size(); i++)
@@ -574,94 +582,107 @@ void ofApp::draw() {
 	//////////////////////////////////////end of 3D drawing//////////////////////////////////////
 
 	/// Logo of The University of Malaga and Title
-	logoUMA.draw(20, 20);
-	char title[40];
-	if (ofGetWidth() > 1500)
-	{
-		sprintf(title, "Image Source Method Simulator");
-	}
-	else
-	{
-		sprintf(title, "ISM Simulator");
-	}
-	titleFont.drawString(title, ofGetWidth() / 2 - titleFont.stringWidth(title) / 2, 85);
+	logoUMA.draw(20, 20);	
 
-	/// Logo of the SAVLab project
-	logoSAVLab.draw(ofGetWidth() - 260, 20);
-	/// Logo of the SONICOM project
-	logoSONICOM.draw(ofGetWidth() - 250, 100);
-	/// This work has been partially funded by the Spanish project Spatial Audio Virtual Laboratory (SAVLab) - PID2019-107854GB-I00, Ministerio de Ciencia e Innovación
-	ofDrawBitmapString("funded by the Spanish project", ofGetWidth() - 280, 155);
-	ofDrawBitmapString("Spatial Audio Virtual Laboratory", ofGetWidth() - 280, 170);
-	ofDrawBitmapString("(SAVLab) - PID2019-107854GB-I00", ofGetWidth() - 280, 185);
-	ofDrawBitmapString("and the European project H2020", ofGetWidth() - 280, 200);
-	ofDrawBitmapString("SONICOM (agreement No. 101017743)", ofGetWidth() - 280, 215);
+	std::string titleText = (ofGetWidth() > 1500)
+		? "Hybrid ISM + BRIR Simulator " + APP_VERSION
+		: "Hybrid Simulator " + APP_VERSION;
+	titleFont.drawString(titleText, ofGetWidth() / 2 - titleFont.stringWidth(titleText) / 2, 85);
+	
+
+	drawLogos_Acknowledgements();
 
 	/// print number of visible images
 	ofPushStyle();
 	ofSetColor(50, 150);
-	ofRect(ofGetWidth() - 300, ofGetHeight()- 100, 290, 90);
+	ofRect(ofGetWidth() - 300, ofGetHeight()- 130, 290, 120);
 	ofPopStyle();
-	char numberOfImagesStr[255];
-	sprintf(numberOfImagesStr, "Number of visible images: %d", numberOfVisibleImages);
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 85);
-	sprintf(numberOfImagesStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight()-65);
-	sprintf(numberOfImagesStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
-	ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 45);
+	char messageStr[255];
+	sprintf(messageStr, "Number of visible images: %d", numberOfVisibleImages);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 115);
+	sprintf(messageStr, "Number of source DSPs: %d", imageSourceDSPList.size()+1);  //number of DSPs for teh images plus one for the anechoic
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight()-100);
+	//sprintf(messageStr, "Max distance images-listener: %d", int(ISMHandler->getMaxDistanceImageSources()));
+	sprintf(messageStr, "Max distance images-listener: %d", int(maxDistanceImageSourcesToListenerControl.get()));
+		ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 85);
 //#if 0
-	if (!bDisableReverb) 
+	if (stateBRIRReverbProcess)
 	{
- 	    sprintf(numberOfImagesStr, "Number of silences frames: %d", numberOfSilencedFrames);
-		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
+ 	    sprintf(messageStr, "Number of silences frames: %d", numberOfSilencedFrames);
+		ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 70);
 	}
 	else
 	{
-		sprintf(numberOfImagesStr, "Reverb Disabled");
-		ofDrawBitmapString(numberOfImagesStr, ofGetWidth() - 285, ofGetHeight() - 25);
+		sprintf(messageStr, "Reverb Disabled");
+		ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 70);
 	}
 //#endif
+	sprintf(messageStr, "List_Pos: %.2f %.2f %.2f", listenerLocation.x, listenerLocation.y, listenerLocation.z);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 55);
 	
+	//Common::CQuaternion QListener = listenerTransform.GetOrientation();
+	float yaw, pitch, roll;
+	QListener.ToYawPitchRoll(yaw, pitch, roll);
+	//sprintf(messageStr, "Listener Ori: %.1f %.1f %.1f %.1f", QListener.w, QListener.x, QListener.y, QListener.z);
+	sprintf(messageStr, "List_Ori: %.1f(Y) %.1f(P) %.1f(R)", ofRadToDeg(yaw), ofRadToDeg(pitch), ofRadToDeg(roll));
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 40);
+	Common::CVector3 sourceLocation = ISMHandler2->getSourceLocation();
+	sprintf(messageStr, "SourcePos: %.2f %.2f %.2f", sourceLocation.x, sourceLocation.y, sourceLocation.z);
+	ofDrawBitmapString(messageStr, ofGetWidth() - 285, ofGetHeight() - 25);
+	
+	drawHelp();
+
+	leftPanel.draw();	
+
+	drawAbout();
+
+	drawResourcesLoaded();
+}
+
+void ofApp::drawHelp()
+{
 	if (!boolToogleDisplayHelp)
 	{
 		ofPushStyle();
 		ofSetColor(50, 150);
 		ofRect(20, ofGetHeight() - 250, 390, 355);
 		ofPopStyle();
-		char numberOfImagesStr[255];
-		sprintf(numberOfImagesStr, "Point of View Control: cursor keys");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() -230);
-		
-		sprintf(numberOfImagesStr, "MoveSOURCE:      'k'_Left(-X)   'i'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 210);
-		sprintf(numberOfImagesStr, "                 'j'_Up  (+Y)   'l'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 190);
-		sprintf(numberOfImagesStr, "                 'u'_Up  (+Z)   'm'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 170);
+		char messageStr[255];
+		sprintf(messageStr, "Point of View:");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 230);
+		sprintf(messageStr, "      - Control: Mouse left-click and drag.");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 210);
+		sprintf(messageStr, "      - Scale: Mouse wheel.");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 190);
 
-		sprintf(numberOfImagesStr, "MoveLISTENER:    's'_Left(-X)   'w'_Right(+X)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 150);
-		sprintf(numberOfImagesStr, "                 'a'_Up  (+Y)   'd'_Down (-Y)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 130);
-		sprintf(numberOfImagesStr, "                 'e'_Up  (+Z)   'x'_Down (-Z)");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 110);
-		
-		sprintf(numberOfImagesStr, "RotateLISTENER:  'A'_Left       'D'_right");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 90);
-				
-		sprintf(numberOfImagesStr, "ShoeBoxRoom:     'y'_Length++   'b'_Length--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 70);
-		sprintf(numberOfImagesStr, "                 'g'_Width++    'h'_Width--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 50);
-		sprintf(numberOfImagesStr, "                 'v'_Height++   'n'_Height--");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 30);
-		sprintf(numberOfImagesStr, "Enable or disable wall: '1' '2' '3' '4' ... ");
-		ofDrawBitmapString(numberOfImagesStr, 30, ofGetHeight() - 10);
+		sprintf(messageStr, "SOURCE movement keys:");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 170);
+		sprintf(messageStr, "      - Y Axis: a/d");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 150);
+		sprintf(messageStr, "      - X Axis: w/s");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 130);
+		sprintf(messageStr, "      - Z Axis: e/q");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 110);
 
+		sprintf(messageStr, "LISTENER control keys:");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 90);
+		sprintf(messageStr, "      - Movement: Arrow keys and page up/down");		
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 70);		
+
+		sprintf(messageStr, "      - Rotation: Yaw [j/l]");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 50);
+		sprintf(messageStr, "                  Pitch [i/k]");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 30);
+		sprintf(messageStr, "                  Roll [u/o]");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 10);
+
+		/*sprintf(messageStr, "Enable/Disable wall: 1,2,3 ... 0");
+		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 70);*/
 	}
+}
 
-	leftPanel.draw();
-
+void ofApp::drawAbout()
+{
 	if (!boolToogleDisplayAbout)
 	{
 		int width = 1050;
@@ -680,16 +701,16 @@ void ofApp::draw() {
 
 		char string[255];
 
-		sprintf(string, "ABOUT IMAGE SOURCE METHOD (ISM) SIMULATOR");
+		sprintf(string, "ABOUT HYBRID ISM + BRIR SIMULATOR");
 		upPos += 5;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 
-		sprintf(string, "Version: 1.0.0");
+		sprintf(string, "Version: 2.0.0");
 		upPos += 40;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 
 		sprintf(string, "Copyright (c) University of Malaga. Contact email: areyes@uma.es.");
-		upPos += 30; 
+		upPos += 30;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 
 		sprintf(string, "This software is available under GPLv3 license at https://github.com/3DTune-In/ImageSourceMethodTestApp");
@@ -724,7 +745,7 @@ void ofApp::draw() {
 		sprintf(string, "      3D Tune-In Toolkit: An open-source library for real-time binaural spatialisation. PLOS ONE 14(3): e0211899. ");
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
-		
+
 		sprintf(string, "You may use this software to generate 3D sounds or room IR without additional restrictions to those imposed by the license of ");
 		upPos += 30;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
@@ -735,16 +756,206 @@ void ofApp::draw() {
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 
-		sprintf(string, "This work has been partially funded by the Ministry of Science and Technology within the National R&D Plan through the SAVLab ");
+		sprintf(string, "This work has been partially funded by the Ministry of Science and Technology within the National R&D Plan through the SONIX ");
 		upPos += 30;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
-		sprintf(string, "project Virtual Spatial Audio Laboratory (PID2019-107854GB-I00) and by the European Union, within the framework program ");
+		sprintf(string, "project Redefining Sonic Interaction in Extended Reality (PID2023-152547NB-I00) and by the European Union, within the ");
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
-		sprintf(string, "Horizon 2020 through the SONICOM project (agreement No. 101017743)");
+		sprintf(string, "framework program Horizon 2020 through the SONICOM project (agreement No. 101017743)");
 		upPos += 20;
 		ofDrawBitmapString(string, leftSide + 15, upSide + upPos);
 	}
+}
+
+void ofApp::drawLogos_Acknowledgements()
+{
+		
+	logoSonix.draw(ofGetWidth() - 190, 45);		// Logo of the SONIX project
+	logoSONICOM.draw(ofGetWidth() - 240, 100);	// Logo of the SONICOM project
+	ofDrawBitmapString("Funded by the Spanish project SONIX", ofGetWidth() - 310, 155);
+	ofDrawBitmapString("`Redefining Sonic Interaction in", ofGetWidth() - 310, 170);
+	ofDrawBitmapString("Extended Reality' (PID2023-152547NB", ofGetWidth() - 310, 185);
+	ofDrawBitmapString("-I00) and the European project H2020", ofGetWidth() - 310, 200);
+	ofDrawBitmapString("SONICOM (agreement No.101017743).", ofGetWidth() - 310, 215);
+
+	/*ofDrawBitmapString("Funded by the Spanish project SONIX:", ofGetWidth() - 420, 155);
+	ofDrawBitmapString("Redefining Sonic Interaction in Extended Reality'", ofGetWidth() - 420, 170);
+	ofDrawBitmapString("(PID2023-152547NB-I00) and the European project", ofGetWidth() - 420, 185);	
+	ofDrawBitmapString("H2020 - SONICOM (agreement No.101017743).", ofGetWidth() - 420, 200);*/
+}
+
+void ofApp::drawResourcesLoaded() {	
+	if (!boolToogleDisplayHelp) return;
+	int leftMargin = 30;
+	ofPushStyle();
+	ofSetColor(50, 150);
+	ofRect(leftMargin, ofGetHeight() - 85, 550, 80);
+	ofPopStyle();
+	
+	char messageStr[1024];
+
+	if (loadedRoomGeometryFileName.empty() && loadedHRTFFileName.empty() && loadedBRIRFileName.empty())
+	{
+		 snprintf(messageStr, sizeof(messageStr), "No resources loaded");
+		 ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 70);
+		 return;
+	}
+
+	
+	if (loadedCaseStudy.id != ""){
+		snprintf(messageStr, sizeof(messageStr), "Case study loaded: %s", loadedCaseStudy.id.c_str());	
+	}
+	else {
+		snprintf(messageStr, sizeof(messageStr), "Resources loaded:");
+	}	
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 70);
+
+	snprintf(messageStr, sizeof(messageStr), "-Room: %s", loadedRoomGeometryFileName.c_str());
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 45);
+
+	snprintf(messageStr, sizeof(messageStr), "-HRTF: %s", loadedHRTFFileName.c_str());
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 30);
+
+	snprintf(messageStr, sizeof(messageStr), "-BRIR: %s", loadedBRIRFileName.c_str());
+	ofDrawBitmapString(messageStr, leftMargin + 5, ofGetHeight() - 15);
+}
+
+void ofApp::DrawRecordingOffline()
+{
+	uint64_t frameStart = ofGetElapsedTimeMillis();	
+
+	if (offlineRecordBuffers == 0) {		
+		std::string fileNameUsr;
+		std::string pathData = ofToDataPath("");
+		
+		std::string defaultPath = pathData + recordingFolder + "\\sample.wav";
+		ofFileDialogResult saveFileResult = ofSystemSaveDialog(defaultPath, "Save output audio");
+		fileNameUsr = saveFileResult.getPath();
+		fileNameUsr += ".wav";
+		//if (boolRecordingIR)
+		//{					
+		//	fileNameUsr = pathData + recordingFolder+ "\\ImpulseResponse.wav";
+		//	fileNameUsr = GetFileIncrementalName(fileNameUsr);
+		//}
+		//else
+		//{
+		//	std::string defaultPath = pathData + recordingFolder+ "\\sample.wav";
+		//	ofFileDialogResult saveFileResult = ofSystemSaveDialog(defaultPath, "Save output audio");
+		//	fileNameUsr = saveFileResult.getPath();
+		//	//fileNameUsr += ".wav";
+		//}
+		if (fileNameUsr.size() > 0) {
+			//if (reverbEnableControl && reflectionOrderControl.get() == 0) fileNameUsr = fileNameUsr + "w";       // Windowed+reverb
+			//else if (reverbEnableControl && reflectionOrderControl.get() > 0) fileNameUsr = fileNameUsr + "t"; // Hybrid
+			//else fileNameUsr = fileNameUsr + "i";                                                              // ISM
+
+			////reflection order
+			//fileNameUsr = fileNameUsr + "IrRO" + std::to_string(reflectionOrderControl);
+
+			////pruning distance
+			//if (maxDistanceImageSourcesToListenerControl<10)
+			//	fileNameUsr = fileNameUsr + "DP0" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
+			//else
+			//	fileNameUsr = fileNameUsr + "DP" + std::to_string((int)maxDistanceImageSourcesToListenerControl);
+
+			////window width
+			//if (windowSlopeControl < 10)
+			//	fileNameUsr = fileNameUsr + "W0" + std::to_string(windowSlopeControl);
+			//else
+			//	fileNameUsr = fileNameUsr + "W" + std::to_string(windowSlopeControl);
+
+			//if (reverbEnableControl && reflectionOrderControl.get() > 0)
+			//	fileNameUsr = fileNameUsr + "HYB";
+
+		
+
+			StartWavRecord(fileNameUsr, 16);                        // Open wav file
+			startRecordingOfflineTime = std::chrono::high_resolution_clock::now();
+		}
+		else
+		{
+			recordingOffline = false;                               // Cancel recording process
+			boolRecordingIR = false;
+			return;
+		}
+
+		if (boolRecordingIR)
+		{
+			offlineRecordBuffers = OfflineWavRecordStartLoop((secondsToRecordIR) * 1000);			
+		}
+		else
+		{   
+			//Calculates the number of buffers associated with the size of the wav file
+			unsigned long long samplesVectorSize = source1Wav.getSizeSamplesVector();
+			offlineRecordBuffers = ceil(samplesVectorSize / myCore.GetAudioState().bufferSize);
+			
+		}
+
+		std::lock_guard <std::mutex> lock(audioMutex); // Avoids race conditions with audio thread when cleaning buffers					
+		if (!stopState) audioInterfaceController->StopAudioInterface();
+		environment->ResetReverbBuffers();
+		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
+		anechoicSourceDSP->DisableDistanceAttenuationSmoothingAnechoic();
+
+		for (int i = 0; i < imageSourceDSPList.size(); i++) {
+			imageSourceDSPList.at(i)->ResetSourceBuffers();
+			imageSourceDSPList.at(i)->DisableDistanceAttenuationSmoothingAnechoic();
+		}
+
+		if (boolRecordingIR)
+		{
+			source1Wav.startRecordOfflineOfImpulseResponse(secondsToRecordIR);      //Save initial wav file
+		}
+		source1Wav.setInitialPosition(); //Now the wav file is always recorded from the beginning
+	}
+
+
+	ofPushStyle();
+	ofBackground(80, 80, 80);
+	ShowRecordingMessage();
+
+	float frameDurationInMilliseconds = 1000.0f / frameRate;
+
+	float aux;
+	while ((aux = ofGetElapsedTimeMillis() - frameStart) < frameDurationInMilliseconds) {
+		OfflineWavRecordOneLoopIteration(myCore.GetAudioState().bufferSize);  //audioProcess + wavWriter_AppendToFile + offlineRecordBuffers++
+		offlineRecordIteration++;
+		if (offlineRecordIteration == offlineRecordBuffers)
+			break;
+	}
+	if (offlineRecordBuffers != 0)
+		recordingPercent = 0 + (100 * float(offlineRecordIteration)) / offlineRecordBuffers;
+
+	if (recordingPercent >= 100.0f) {
+		stopRecordingOfflineTime = std::chrono::high_resolution_clock::now();
+		ShowRecordingDurationTime();
+		OfflineWavRecordEndLoop();    // StopWavRecord & recordingOffline = false;
+		EndWavRecord();               // Close wav file
+
+		if (boolRecordingIR)
+		{
+			source1Wav.endRecordOfflineOfImpulseResponse();    //Restore initial wav file
+			boolRecordingIR = false;
+		}
+		source1Wav.setInitialPosition();
+		anechoicSourceDSP->EnableDistanceAttenuationSmoothingAnechoic();
+		for (int i = 0; i < imageSourceDSPList.size(); i++) {
+			imageSourceDSPList.at(i)->EnableDistanceAttenuationSmoothingAnechoic();
+		}
+
+		if (!stopState && playState) audioInterfaceController->StartAudioInterface(); /*audioInterfaceController->StartAudioInterface();*/
+
+	}
+
+	if (recordingPercent >= 100.0f) {
+		// TODO Delete me, just for testing
+		// Send msg to matlab
+		SendOSCMessageToMatlab_Ready();
+	}
+
+	ofPopStyle();
+	return;
 }
 
 //--------------------------------------------------------------
@@ -759,218 +970,98 @@ void ofApp::keyPressed(int key) {
 	switch (key)
 	{
 	case OF_KEY_LEFT:
-		azimuth++;
+	{
+		MoveListener(Common::CVector3(0, LISTENER_STEP, 0));		
 		break;
+	}		
 	case OF_KEY_RIGHT:
-		azimuth--;
+	{
+		MoveListener(Common::CVector3(0, -LISTENER_STEP, 0));		
 		break;
+	}		
 	case OF_KEY_UP:
-		elevation++;
+	{
+		MoveListener(Common::CVector3(LISTENER_STEP, 0, 0));
 		break;
+	}
 	case OF_KEY_DOWN:
-		elevation--;
+	{
+		MoveListener(Common::CVector3(-LISTENER_STEP, 0, 0));		
 		break;
+	}
 	case OF_KEY_PAGE_UP:
-		scale *= 0.9;
+	{
+		MoveListener(Common::CVector3(0, 0, LISTENER_STEP));
 		break;
+	}
 	case OF_KEY_PAGE_DOWN:
-		scale *= 1.1;
-		break;
-#if 0
-	case OF_KEY_INSERT:
-		numberOfSilencedFrames++;
-		if (numberOfSilencedFrames > 251) numberOfSilencedFrames = 251;
-		numberOfSilencedSamples = numberOfSilencedFrames * myCore.GetAudioState().bufferSize;
-		/*int numberOfSilencedFrames;
-		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
-		numberOfSilencedFrames++;
-		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
-		break;
-
-	case OF_KEY_DEL:
-		numberOfSilencedFrames--;
-		if (numberOfSilencedFrames < 0) numberOfSilencedFrames = 0;
-		numberOfSilencedSamples = numberOfSilencedFrames * myCore.GetAudioState().bufferSize;
-		/*int numberOfSilencedFrames;
-		numberOfSilencedFrames = environment->GetNumberOfSilencedFrames();
-		numberOfSilencedFrames--;
-		environment->SetNumberOfSilencedFrames(numberOfSilencedFrames);*/
-		break;
-#endif
-
-	case OF_KEY_HOME: // OF_KEY_PAGE_UP:
 	{
-		if (maxDistanceImageSourcesToListenerControl.get() < MAX_DIST_SILENCED_FRAMES)
-		{
-			if (!stopState) systemSoundStream.stop();
-
-			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() + 1;
-
-			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
-
-			imageSourceDSPList = reCreateImageSourceDSP();
-			if (!stopState) systemSoundStream.start();
-		}
+		MoveListener(Common::CVector3(0, 0, -LISTENER_STEP));
 		break;
 	}
-	case OF_KEY_END: //OF_KEY_PAGE_DOWN:
-	{
-		if (maxDistanceImageSourcesToListenerControl.get() > MIN_DIST_SILENCED_FRAMES)
-		{
-			if (!stopState) systemSoundStream.stop();
-
-			int maxDistanceISM = maxDistanceImageSourcesToListenerControl.get() - 1;
-
-			ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-			//maxDistanceImageSourcesToListenerControl.set("Max Distance (m)", maxDistanceISM);
-
-			imageSourceDSPList = reCreateImageSourceDSP();
-			if (!stopState) systemSoundStream.start();
-		}
-		break;
-	}
-	case 'k': //Moves the source left (-X)
+	
+	case 's': //Moves the source back (-X)
 		moveSource(Common::CVector3(-SOURCE_STEP, 0, 0));
 		break;
-	case 'i': //Moves the source right (+X)
+	case 'w': //Moves the source front (+X)
 		moveSource(Common::CVector3(SOURCE_STEP, 0, 0));
 		break;
-	case 'j': //Moves the source up (+Y)
+	case 'a': //Moves the source left (+Y)
 		moveSource(Common::CVector3(0, SOURCE_STEP, 0));
 		break;
-	case 'l': //Moves the source down (-Y)
+	case 'd': //Moves the source right (-Y)
 		moveSource(Common::CVector3(0, -SOURCE_STEP, 0));
 		break;
-	case 'u': //Moves the source up (Z)
+	case 'e': //Moves the source up (Z)
 		moveSource(Common::CVector3(0, 0, SOURCE_STEP));
 		break;
-	case 'm': //Moves the source down (-Z)
+	case 'q': //Moves the source down (-Z)
 		moveSource(Common::CVector3(0, 0, -SOURCE_STEP));
-		break;
-	case 's': //Moves the listener left (-X)
-	{
-		listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location);  //FIXME: when the listener is moved images should be updated
-		break;
-	}
-	case 'w': //Moves the listener right (X)
-	{
-		listenerTransform.Translate(Common::CVector3(LISTENER_STEP, 0, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(-LISTENER_STEP, 0, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		break;
-	}
-	case 'a': //Moves the listener up (Y)
-	{
-		listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		break;
-	}
-	case 'd': //Moves the listener down (-Y)
-	{
-		listenerTransform.Translate(Common::CVector3(0, -LISTENER_STEP, 0));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, LISTENER_STEP, 0));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		break;
-	}
-	case 'e': //Moves the listener up (Z)
-	{
-		listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
-		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
-		break;
-	}
+		break;	
 
-	case 'x': //Moves the listener up (-Z)
+	case 'j': //Yaw
 	{
-		listenerTransform.Translate(Common::CVector3(0, 0, -LISTENER_STEP));
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI / 32);
 		listener->SetListenerTransform(listenerTransform);
-		/////
-		listenerTransform = listener->GetListenerTransform();
-		listenerLocation = listenerTransform.GetPosition();
-		mainRoom = ISMHandler->getRoom();
-		state = mainRoom.checkPointInsideRoom(listenerLocation, distanceNearestWall);
-		if (state == false)
-		{
-			listenerTransform.Translate(Common::CVector3(0, 0, LISTENER_STEP));
-			listener->SetListenerTransform(listenerTransform);
-		}
-		Common::CVector3 Location = ISMHandler->getSourceLocation();
-		ISMHandler->setSourceLocation(Location); // FIXME: when the listener is moved images should be updated
 		break;
 	}
-	case 'A': //Rotate Left
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), 0.05);
+	case 'l': //Yaw
+	{
+		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -PI / 32);
 		listener->SetListenerTransform(listenerTransform);
 		break;
-	case 'D': //Rotate Right
-		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -0.05);
+	}
+	case 'i': //Pitch
+	{
+		listenerTransform.Rotate(Common::CVector3(0, 1, 0), PI / 32);
 		listener->SetListenerTransform(listenerTransform);
 		break;
+	}
+	case 'k': //Pitch
+	{
+		listenerTransform.Rotate(Common::CVector3(0, 1, 0), -PI / 32);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	}
+	case 'u': //Roll
+	{
+		listenerTransform.Rotate(Common::CVector3(1, 0, 0), -PI / 32);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	}
+	case 'p': //Roll
+	{
+		listenerTransform.Rotate(Common::CVector3(1, 0, 0), PI / 32);
+		listener->SetListenerTransform(listenerTransform);
+		break;
+	}
 	case '+': //increases the reflection order 
 		if (reflectionOrderControl < MAX_REFLECTION_ORDER) reflectionOrderControl++;
 		break;
 	case '-': //decreases the reflection order 
 		if (reflectionOrderControl > 0) reflectionOrderControl--;
 		break;
+
 	case '1': //enable/disable wall number 1 
 		if (guiActiveWalls.size() > 0)
 		{
@@ -1041,224 +1132,47 @@ void ofApp::keyPressed(int key) {
 			refreshActiveWalls();
 		}
 		break;
-#if 0
-	case OF_KEY_F1://ABSORTION -- null
-	{
-		if (!stopState) systemSoundStream.stop();
-
-		int numWalls = ISMHandler->getRoom().getWalls().size();
-		for (int i = 0; i < numWalls; i++) {
-			absortionsWalls.at(i) = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		}
-		ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-		imageSourceDSPList = reCreateImageSourceDSP();
-
-		mainRoom = ISMHandler->getRoom();
-		if (!stopState) systemSoundStream.start();
-		break;
-	}
-#endif
-
-	case 'y': //increase room's length
-		if (!stopState) systemSoundStream.stop();
-
-		shoeboxLength += 0.5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-
-		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
-		if (!stopState) systemSoundStream.start();
-		break;
-	case 'b': //decrease room's length
-		if (!stopState) systemSoundStream.stop();
-		if (shoeboxLength > 3.0)  shoeboxLength -= 0.5;
-
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-
-		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
-		if (!stopState) systemSoundStream.start();
-		break;
-	case 'g': //decrease room's width
-		if (!stopState) systemSoundStream.stop();
-		if (shoeboxWidth > 3.0) shoeboxWidth -= 0.5;
-
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-
-		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
-		if (!stopState) systemSoundStream.start();
-		break;
-	case 'h': //increase room's width
-		if (!stopState) systemSoundStream.stop();
-		shoeboxWidth += 0.5;
-
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-
-		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
-		if (!stopState) systemSoundStream.start();
-		break;
-	case 'v': //decrease room's height
-		if (!stopState) systemSoundStream.stop();
-		if (shoeboxHeight > 2.5) shoeboxHeight -= 0.5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-
-		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
-		if (!stopState) systemSoundStream.start();
-		break;
-	case 'n': //increase room's height
-		if (!stopState) systemSoundStream.stop();
-		shoeboxHeight += 0.5;
-		ISMHandler->SetupShoeBoxRoom(shoeboxLength, shoeboxWidth, shoeboxHeight);
-
-		ISMHandler->setAbsortion({ {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3},
-								  {0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3} });
-
-		mainRoom = ISMHandler->getRoom();
-		imageSourceDSPList = reCreateImageSourceDSP();
-		if (!stopState) systemSoundStream.start();
-		break;
 
 	case 'T':
 	{
-		std::vector<ISM::ImageSourceData> images = ISMHandler->getImageSourceData();
-
-		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
-
-		int numberOfVisibleImages = 0;
-		for (int i = 0; i < images.size(); i++)
-		{
-			if (images.at(i).visible) numberOfVisibleImages++;
-		}
-		cout << "Total images = " << images.size();
-		cout << " -- " << numberOfVisibleImages << " visible" << "\n";
-
+		std::vector<ISM::ImageSourceData> images = ISMHandler2->getImageSourceData();
+		float maxDistanceImagesToListener = ISMHandler2->getMaxDistanceImageSources();		
+		ShowImagesSourceSummaryData(maxDistanceImagesToListener, images);
 		break;
 	}
 
 	case 't': //Test
 	{
-		std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
-		auto w2 = std::setw(2);
-		auto w5 = std::setw(5);
-		auto w6 = std::setw(6);
-		auto w7 = std::setw(7);
-		cout << "------------------------------------------------List of Source Images ---------------------------------------------\n";
-		cout << "  Visibility | Refl. |                Reflection coeficients                 |        Location       | Dist. (Room)\n";
-		cout << "             | order | ";
-		float freq = 62.5;
-		for (int i = 0; i < NUM_BAND_ABSORTION; i++)
-		{
-			if (freq < 100) { cout << ' '; }
-			if (freq < 1000) { cout << ((int)freq) << "Hz "; }
-			else { cout << w2 << ((int)(freq / 1000)) << "kHz "; }
-			freq *= 2;
-		}
-		cout << "|    X       Y       Z  |  \n";
-		cout << "-------------+-------+-------------------------------------------------------+-----------------------+--------\n";
-		for (int i = 0; i < data.size(); i++)
-		{
-			if (data.at(i).visible) cout << "VISIBLE "; else cout << "        ";
-			cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;							//print source visibility 
-			cout << "|   " << data.at(i).reflectionWalls.size();												//print number of reflection needed for this source
-			cout << "   | ";
-			for (int j = 0; j < NUM_BAND_ABSORTION; j++)
-			{
-				cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";	//print abortion coefficientes for a source
-			}
-			cout << "| " << w6 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";			//print source location
-			cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
-			cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.z << "|";
+		std::vector<ISM::ImageSourceData> data = ISMHandler2->getImageSourceData();		
+		ShowImageSourceData(data, listenerLocation);
 
-			cout << w6 << (data.at(i).location - listenerLocation).GetDistance();								//print distance to listener and distance between first and last reflection walls
-			cout << " (" << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << ")" << "\n";
-		}
-		cout << "Shoebox \n";
-		cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
-
-		if (stateAnechoicProcess)
-			cout << "AnechoicProcess Enabled" << "\n";
-		else
-			cout << "AnechoicProcess Disabled" << "\n";
-
-		if (stateBinauralSpatialisation)
-			cout << "BinauralSpatialisation Enabled" << "\n";
-		else
-			cout << "BinauralSpatialisation Disabled" << "\n";
-
-		//#if 0
-		if (!bDisableReverb)
-		{
-			cout << "Reverb Enabled" << "\n";
-			cout << "Number of silenced frames= " << numberOfSilencedFrames << "\n";
-		}
-		else
-			cout << "Reverb Disabled" << "\n";
-		//#endif
-
-		cout << "Max distance images to listener = " << ISMHandler->getMaxDistanceImageSources() << "\n";
-
-		break;
-
-	}
-	case 'z':
-	{			
-		// TODO Delete me, just for testing
-		SendOSCMessageToMatlab_Ready();
-		break;
+		break;				
 	}
 	}
 }
 
+void ofApp::MoveListener(Common::CVector3 _movement)
+{
+	Common::CTransform newListenerTransform = listener->GetListenerTransform();	
+	newListenerTransform.Translate(_movement);
+	Common::CVector3 newListenerLocation = newListenerTransform.GetPosition();
+		
+	float distanceNearestWall;
+	bool result = mainRoom.checkPointInsideRoom(newListenerLocation, distanceNearestWall);
+	if (result)
+	{				
+		listener->SetListenerTransform(newListenerTransform);
+		ISMHandler2->SetListenerPosition();
+	}		
+}
+
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-	if (key == 32 /*space*/) {
-		std::cout << "Starting profilling" << std::endl;
-		std::this_thread::sleep_for(10ms);		// In case "cout" will create some kind of interference with the profile measurement.
-		profilling = true;
-	}
+	//if (key == 32 /*space*/) {
+	//	std::cout << "Starting profilling" << std::endl;
+	//	std::this_thread::sleep_for(10ms);		// In case "cout" will create some kind of interference with the profile measurement.
+	//	profilling = true;
+	//}
 }
 
 //--------------------------------------------------------------
@@ -1268,12 +1182,34 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
+	// Rotation is only applied if it is the main (left) button.
+	if (button == 0) {		
+		// 1. Calculate the displacement (delta) from the last position
+		float deltaX = x - lastMouseX;
+		float deltaY = y - lastMouseY;
 
+		// 2. Update azimuth and elevation based on movement
+		// Horizontal Movement (X) -> Controls Azimuth (Left/Right)		
+		cameraAzimuth += deltaX * 0.25;
+		// Vertical Movement (Y) -> Controls Elevation (Up/Down)		
+		cameraElevation -= deltaY * 0.25; 
+
+		// 3. Limit (optional)
+		// elevation = ofClamp(elevation, -90, 90);
+
+		// 4. Update last mouse position for next frame
+		lastMouseX = x;
+		lastMouseY = y;
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-														
+	// We are only interested in the left button (typically button == 0).
+	if (button == 0) {
+		lastMouseX = x;
+		lastMouseY = y;
+	}
 }
 
 //--------------------------------------------------------------
@@ -1291,6 +1227,20 @@ void ofApp::mouseExited(int x, int y){
 
 }
 
+void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
+	// scrollY is the vertical scroll value of the wheel.
+	// Positive for "up" (zooming out), Negative for "down" (zooming in).
+
+	// If the wheel scrolls upwards (scroll forward)
+	if (scrollY > 0) {		
+		scale *= 1.1;
+	}
+	// If the wheel scrolls downwards (scroll backwards)
+	else if (scrollY < 0) {		
+		scale *= 0.9;
+	}	
+}
+
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
 
@@ -1306,99 +1256,128 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
-/// Read the list of devices of the user computer, allowing the user to select which device to use. Configure the Audio using openFramework
-void ofApp::SetDeviceAndAudio(Common::TAudioStateStruct audioState) {
-	// This call could block the app when the motu audio interface is unplugged
-	// It gives the message: 
-	// RtApiAsio::getDeviceInfo: error (Hardware input or output is not present or available).
-	// initializing driver (Focusrite USB 2.0 Audio Driver).
-	deviceList = systemSoundStream.getDeviceList();
 
+void ofApp::ChangeAudioDevice() {
 
-	for (int c = deviceList.size() - 1; c >= 0; c--)
-	{
-		if (deviceList[c].outputChannels == 0)
-			deviceList.erase(deviceList.begin() + c);
-	}
+	audioInterfaceController->StopAudioInterface();
+	audioInterfaceController->CloseAudioInterface();
+	std::vector<CAudioInterfaceController::TAudioInterface> audioInterfaceList = audioInterfaceController->GetOutputAudioDeviceList();
+	audioInterfaceController->ShowListAvailableAudioInterface();
 
-	//Show list of devices and return the one selected by the user
-	int deviceId = GetAudioDeviceIndex(deviceList);
-
-	if (deviceId >= 0)
-	{
-		systemSoundStream.setDevice(deviceList[deviceId]);
-
-		ofSoundDevice &dev = deviceList[deviceId];
-
-		//Setup Aduio
-		systemSoundStream.setup(this,		// Pointer to ofApp so that audioOut is called									  
-			2,								//dev.outputChannels, // Number of output channels reported
-			0,								// Number of input channels
-			audioState.sampleRate,			// sample rate, e.g. 44100 
-			audioState.bufferSize,			// Buffer size, e.g. 512
-			4   // -> Is the number of buffers that your system will create and swap out.The more buffers, 
-			   // the faster your computer will write information into the buffer, but the more memory it 
-			  // will take up.You should probably use two for each channel that you’re using.Here’s an 
-			 // example call : ofSoundStreamSetup(2, 0, 44100, 256, 4);
-			//     http://openframeworks.cc/documentation/sound/ofSoundStream/
-		);
-		cout << "Device selected : " << "ID: " << dev.deviceID << "  Name: " << dev.name << endl;
-
-		systemSoundStream_Started = true;
-
-		//lastBuffer.setDeviceID(deviceId);
-		
-	}
-	else
-	{
-		cout << "Could not find any usable sound Device" << endl;
-
-		systemSoundStream_Started = false;
-	}
-}
-
-/// Ask the user to select the audio device to be used and return the index of the selected device
-int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
-{
-	//Show in the console the Audio device list
-	int numberOfAudioDevices = list.size(); 
-	cout << "     List of available audio outputs" << endl;
-	cout << "----------------------------------------" << endl;
-	for (int i = 0; i < numberOfAudioDevices; i++) {
-		cout << "ID: " << i << "-" << list[i].name << endl;
-	}
 	int selectedAudioDevice;
-
 	do {
 		cout << "Please choose which audio output you wish to use: ";
 		cin >> selectedAudioDevice;
 		cin.clear();
 		cin.ignore(INT_MAX, '\n');
-	} while (!(selectedAudioDevice > -1 && selectedAudioDevice <= numberOfAudioDevices));
+	} while (!(selectedAudioDevice > -1 && selectedAudioDevice <= audioInterfaceList.back().ID));
 
-	// First, we try to retrieve the <Conf.audioInterfaceIndex> th suitable device in the list:
-	for (int c = 0; c < numberOfAudioDevices; c++)
-	{
-		ofSoundDevice &dev = list[c];
 
-		if ((dev.outputChannels >= 0) && c == selectedAudioDevice)
-			return c;
-	}
+	CAudioInterfaceController::TAudioInterfaceSelected _outDevice;
+	_outDevice.ID = audioInterfaceList[selectedAudioDevice].ID;
+	_outDevice.name = audioInterfaceList[selectedAudioDevice].name;
+	_outDevice.API = audioInterfaceList[selectedAudioDevice].API;
+	_outDevice.channels = 2;
 
-	// Otherwise, we try to get the defult device
-	for (int c = 0; c < numberOfAudioDevices; c++)
-	{
-		ofSoundDevice &dev = list[c];
-
-		// dev.isDefaultOutput is not really the same that windows report
-		// TODO: update to latest openFrameworks that really can report all drivers present
-		// via ofSoundStream::getDevicesByApi 
-		//if ((dev.outputChannels >= NUMBER_OF_SPEAKERS) && dev.isDefaultOutput)
-		if ((dev.outputChannels >= 0) && dev.isDefaultOutput)
-			return c;
-	}
-	return -1;
+	CAudioInterfaceController::TAudioInterfaceSelected _inDevice = CAudioInterfaceController::TAudioInterfaceSelected();
+	audioInterfaceController->SetupAudioDevices(_outDevice, _inDevice);
 }
+
+
+
+/// Read the list of devices of the user computer, allowing the user to select which device to use. Configure the Audio using openFramework
+//void ofApp::SetDeviceAndAudio(Common::TAudioStateStruct audioState) {
+	//// This call could block the app when the motu audio interface is unplugged
+	//// It gives the message: 
+	//// RtApiAsio::getDeviceInfo: error (Hardware input or output is not present or available).
+	//// initializing driver (Focusrite USB 2.0 Audio Driver).
+	//deviceList = systemSoundStream.getDeviceList();
+
+
+	//for (int c = deviceList.size() - 1; c >= 0; c--)
+	//{
+	//	if (deviceList[c].outputChannels == 0)
+	//		deviceList.erase(deviceList.begin() + c);
+	//}
+
+	////Show list of devices and return the one selected by the user
+	//int deviceId = GetAudioDeviceIndex(deviceList);
+
+	//if (deviceId >= 0)
+	//{
+	//	systemSoundStream.setDevice(deviceList[deviceId]);
+
+	//	ofSoundDevice &dev = deviceList[deviceId];
+
+	//	//Setup Aduio
+	//	systemSoundStream.setup(this,		// Pointer to ofApp so that audioOut is called									  
+	//		2,								//dev.outputChannels, // Number of output channels reported
+	//		0,								// Number of input channels
+	//		audioState.sampleRate,			// sample rate, e.g. 44100 
+	//		audioState.bufferSize,			// Buffer size, e.g. 512
+	//		4   // -> Is the number of buffers that your system will create and swap out.The more buffers, 
+	//		   // the faster your computer will write information into the buffer, but the more memory it 
+	//		  // will take up.You should probably use two for each channel that you’re using.Here’s an 
+	//		 // example call : ofSoundStreamSetup(2, 0, 44100, 256, 4);
+	//		//     http://openframeworks.cc/documentation/sound/ofSoundStream/
+	//	);
+	//	cout << "Device selected : " << "ID: " << dev.deviceID << "  Name: " << dev.name << endl;
+
+	//	systemSoundStream_Started = true;
+
+	//	//lastBuffer.setDeviceID(deviceId);
+	//	
+	//}
+	//else
+	//{
+	//	cout << "Could not find any usable sound Device" << endl;
+
+	//	systemSoundStream_Started = false;
+	//}
+//}
+
+/// Ask the user to select the audio device to be used and return the index of the selected device
+//int ofApp::GetAudioDeviceIndex(std::vector<ofSoundDevice> list)
+//{
+	////Show in the console the Audio device list
+	//int numberOfAudioDevices = list.size(); 
+	//cout << "     List of available audio outputs" << endl;
+	//cout << "----------------------------------------" << endl;
+	//for (int i = 0; i < numberOfAudioDevices; i++) {
+	//	cout << "ID: " << i << "-" << list[i].name << endl;
+	//}
+	//int selectedAudioDevice;
+
+	//do {
+	//	cout << "Please choose which audio output you wish to use: ";
+	//	cin >> selectedAudioDevice;
+	//	cin.clear();
+	//	cin.ignore(INT_MAX, '\n');
+	//} while (!(selectedAudioDevice > -1 && selectedAudioDevice <= numberOfAudioDevices));
+
+	//// First, we try to retrieve the <Conf.audioInterfaceIndex> th suitable device in the list:
+	//for (int c = 0; c < numberOfAudioDevices; c++)
+	//{
+	//	ofSoundDevice &dev = list[c];
+
+	//	if ((dev.outputChannels >= 0) && c == selectedAudioDevice)
+	//		return c;
+	//}
+
+	//// Otherwise, we try to get the defult device
+	//for (int c = 0; c < numberOfAudioDevices; c++)
+	//{
+	//	ofSoundDevice &dev = list[c];
+
+	//	// dev.isDefaultOutput is not really the same that windows report
+	//	// TODO: update to latest openFrameworks that really can report all drivers present
+	//	// via ofSoundStream::getDevicesByApi 
+	//	//if ((dev.outputChannels >= NUMBER_OF_SPEAKERS) && dev.isDefaultOutput)
+	//	if ((dev.outputChannels >= 0) && dev.isDefaultOutput)
+	//		return c;
+	//}
+//	return -1;
+//}
 
 
 /// Audio output management by openFramework
@@ -1439,33 +1418,51 @@ void ofApp::audioProcess(Common::CEarPair<CMonoBuffer<float>> & bufferOutput, in
 	source1Wav.FillBuffer(source1);
 		
 #ifdef USE_PROFILER
-	if (profilling) { Common::PROFILER3DTI.RelativeSampleStart(dsProcessFrameTime); }	
+	if (profilling) {
+		Common::PROFILER3DTI.RelativeSampleStart(dsProcessFrameTime);
+		Common::PROFILER3DTI.RelativeSampleStart(dsProcessAnechoicTime);
+	}
 #endif
 
+	// Anechoic processing
 	processAnechoic(source1, bufferOutput);
 
-	if (!bDisableReverb)
+#ifdef USE_PROFILER
+	if (profilling) Common::PROFILER3DTI.RelativeSampleEnd(dsProcessAnechoicTime);
+#endif
+
+	if (stateBRIRReverbProcess)
 	{
+#ifdef USE_PROFILER
+		if (profilling) Common::PROFILER3DTI.RelativeSampleStart(dsProcessReverbTime);
+#endif
+		// Reverberation processing
 		processReverb(source1, bufferOutput);
+#ifdef USE_PROFILER
+		if (profilling) Common::PROFILER3DTI.RelativeSampleEnd(dsProcessReverbTime);
+#endif
 	}
 
-	//Common::CTransform lisenerTransform = listener->GetListenerTransform();
-	//Common::CVector3 lisenerPosition = lisenerTransform.GetPosition();
-
-	processImages(source1, bufferOutput);
+	if (stateISMProcess)
+	{
 
 #ifdef USE_PROFILER
-	if (profilling) { Common::PROFILER3DTI.RelativeSampleEnd(dsProcessFrameTime); }
+		if (profilling) Common::PROFILER3DTI.RelativeSampleStart(dsProcessISMTime);
+#endif		
+		processImages(source1, bufferOutput);	// Image source processing
+
+#ifdef USE_PROFILER
+		if (profilling) Common::PROFILER3DTI.RelativeSampleEnd(dsProcessISMTime);
+#endif
+	}
+
+#ifdef USE_PROFILER
+	if (profilling) { Common::PROFILER3DTI.RelativeSampleEnd(dsProcessFrameTime);	}
 #endif	
 }
 #endif
 
-void ofApp::LoadWavFile(SoundSource & source, const char* filePath)
-{	
-	if (!source.LoadWav(filePath)) {
-		cout << "ERROR: file " << filePath << " doesn't exist." << endl<<endl;
-	}
-}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1490,10 +1487,8 @@ void ofApp::processReverb(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 	Common::CEarPair<CMonoBuffer<float>> bufferReverb;
 
 	// Reverberation processing of direct path
-	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedSamples);
+	environment->ProcessVirtualAmbisonicReverb(bufferReverb.left, bufferReverb.right, numberOfSilencedSamplesInBRIR);
 	// Adding reverberated sound to the direct path
-	//bufferReverb.left.ApplyGain(0.25);
-	//bufferReverb.right.ApplyGain(0.25);
 	bufferOutput.left += bufferReverb.left;
 	bufferOutput.right += bufferReverb.right;
 
@@ -1504,12 +1499,12 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 {
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	std::vector<ISM::ImageSourceData> data = ISMHandler->getImageSourceData();
+	std::vector<ISM::ImageSourceData> data = ISMHandler2->getImageSourceData();
 
 	if (data.size() != imageSourceDSPList.size()) { cout << "ERROR: DSP list ("<< imageSourceDSPList.size() <<") and source list ("<< data.size()<<") have different sizes \n"; }
 
 	std::vector<CMonoBuffer<float>> bufferImages;
-	ISMHandler->proccess(bufferInput, bufferImages, listenerLocation);
+	ISMHandler2->proccess(bufferInput, bufferImages, listenerLocation);
 
 	for (int i = 0; i < imageSourceDSPList.size(); i++)
 	{
@@ -1530,33 +1525,121 @@ void ofApp::processImages(CMonoBuffer<float> &bufferInput, Common::CEarPair<CMon
 ////////////////////////////////////////////////////////////////////////////////////////
 //Methods for drawing 
 ////////////////////////////////////////////////////////////////////////////////////////
-void ofApp::drawRoom(ISM::Room room, int reflectionOrder,int transparency)
-{
-	if (reflectionOrder > 0)
-	{
-		ofPushStyle();
-		ofSetColor(200, transparency);
-		reflectionOrder--;
-		std::vector<ISM::Wall> walls = room.getWalls();
-		for (int i = 0; i < walls.size(); i++)
-		{
-			if (walls.at(i).isActive())
-			{
-				drawWall(walls[i]);
-				drawWallNormal(walls[i]);
+//void ofApp::drawRoom(const ISM::Room& room, int reflectionOrder,int transparency)
+//{
+//	if (reflectionOrder > 0)
+//	{
+//		ofPushStyle();
+//		ofSetColor(200, transparency);
+//		reflectionOrder--;		
+//		std::vector<ISM::Wall> walls = room.getWalls();
+//		for (int i = 0; i < walls.size(); i++)
+//		{
+//			if (walls.at(i).isActive())
+//			{
+//				drawWall(walls[i]);
+//				drawWallNormal(walls[i]);
+//			}
+//		}
+//		std::vector<ISM::Room> roomImages;
+//		room.getImageRooms(roomImages);
+//		for (int i = 0; i < roomImages.size(); i++)
+//		{
+//			drawRoom(roomImages.at(i), reflectionOrder, transparency/2);
+//		}
+//		ofPopStyle();
+//	}	
+//}
+
+void ofApp::drawRoom()
+{	
+	ofPushStyle();
+		
+	for (auto& roomData : mainRoomImages) {
+		
+		int opacity = calculateOpacity(roomData.reflectionOrder, currentReflectionOrder, 24);
+
+		if (roomData.reflectionOrder == currentReflectionOrder) {
+			ofSetColor(ofColor::hotPink, opacity);
+		}
+		else {
+			ofSetColor(ofColor(200), opacity);
+		}
+				
+		std::vector<ISM::Wall> walls = roomData.room.getWalls();		
+		for (auto& wall : walls){
+			if (wall.isActive()) {
+				drawWall(wall);
+				drawWallNormal(wall);
 			}
+		}		
+	}	
+
+	//Draw the original room with full opacity (255)
+	ofSetColor(ofColor::hotPink, 255);
+	std::vector<ISM::Wall> walls = mainRoom.getWalls();
+	for (auto& wall : walls) {
+		if (wall.isActive()) {
+			drawWall(wall);
+			drawWallNormal(wall);
 		}
-		std::vector<ISM::Room> roomImages = room.getImageRooms();
-		for (int i = 0; i < roomImages.size(); i++)
-		{
-			drawRoom(roomImages.at(i), reflectionOrder, transparency/2);
-		}
-		ofPopStyle();
 	}
-	
+
+	ofPopStyle();
 }
 
-void ofApp::drawWall(ISM::Wall wall)
+/**
+ * @brief Calculates the opacity (alpha value) for a mirrored room, decreasing
+ * linearly from max opacity (255) at maxOrder to minOpacity at order 1.
+ * * @param currentOrder The current recursion level (n). Must be >= 1.
+ * @param maxOrder The initial, maximum recursion level (N). Must be >= 1.
+ * @param minOpacity The minimum opacity value for order 1. [0-255].
+ * @return unsigned char The opacity (alpha) value [0-255].
+ */
+int ofApp::calculateOpacity(int currentOrder, int maxOrder, unsigned char minOpacity) {
+
+	// --- Edge Cases and Clamping ---
+
+	// If maxOrder is 1 or less, return full opacity or minOpacity (whichever is higher/more sensible).
+	if (maxOrder <= 1) {
+		return std::max((unsigned char)255, minOpacity);
+	}
+
+	// Clamp the currentOrder to the valid range [1, maxOrder]
+	currentOrder = std::max(1, currentOrder);
+	currentOrder = std::min(maxOrder, currentOrder);
+
+	// If it's the maximum order (N), return full opacity (255).
+	if (currentOrder == maxOrder) {
+		return 255;
+	}
+
+	// If it's the minimum order (1), return the minimum configurable opacity.
+	if (currentOrder == 1) {
+		return minOpacity;
+	}
+
+	// --- Linear Interpolation ---
+
+	// Total range of opacity difference: (255 - minOpacity)
+	const double opacityRange = 255.0 - minOpacity;
+
+	// Total range of orders: (N - 1)
+	const double orderRange = (double)(maxOrder - 1);
+
+	// Progress factor: How far is 'currentOrder' along the [1, N] range, scaled to [0.0, 1.0].
+	// factor = (n - 1) / (N - 1)
+	const double progressFactor = (currentOrder - 1) / orderRange;
+
+	// Calculate final opacity using linear interpolation (Lerp):
+	// alpha = minOpacity + (opacityRange * progressFactor)
+	double calculatedOpacity = minOpacity + (opacityRange * progressFactor);
+
+	// Convert the result to unsigned char, ensuring proper rounding.
+	return (int)std::round(calculatedOpacity);
+}
+
+void ofApp::drawWall(const ISM::Wall& wall)
 {
 	std::vector<Common::CVector3> polygon = wall.getCorners();
 	int numberVertex = polygon.size();
@@ -1569,7 +1652,7 @@ void ofApp::drawWall(ISM::Wall wall)
 		polygon[numberVertex - 1].x, polygon[numberVertex - 1].y, polygon[numberVertex - 1].z);
 }
 
-void ofApp::drawWallNormal(ISM::Wall wall, float length)
+void ofApp::drawWallNormal(const ISM::Wall& wall, float length)
 {
 	Common::CVector3 center;
 	Common::CVector3 normalEnd;
@@ -1590,23 +1673,30 @@ void ofApp::drawWallNormal(ISM::Wall wall, float length)
 //Methods for managing sources 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Moving the original anechoic source
+ * @param movement 
+ */
 void ofApp::moveSource(Common::CVector3 movement)
 {
-	/// Moving the original anechoic source
-	Common::CVector3 newLocation = ISMHandler->getSourceLocation() + movement;
-	Common::CTransform listenerTransform = listener->GetListenerTransform();
-	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
-	ISMHandler->setSourceLocation(newLocation);
-	Common::CTransform sourcePosition;
+	Common::CTransform sourcePosition = anechoicSourceDSP->GetCurrentSourceTransform();
+	Common::CVector3 sourceLocation = sourcePosition.GetPosition();	
+	Common::CVector3 newLocation = sourceLocation + movement;			
+	//Common::CVector3 newLocation = ISMHandler2->getSourceLocation() + movement;
+	//Common::CTransform listenerTransform = listener->GetListenerTransform();
+	//Common::CVector3 listenerLocation = listenerTransform.GetPosition();	
+	ISMHandler2->setSourceLocation(newLocation);
+	//Common::CTransform sourcePosition;
 	sourcePosition.SetPosition(newLocation);
-	anechoicSourceDSP->SetSourceTransform(sourcePosition);	
+	anechoicSourceDSP->SetSourceTransform(sourcePosition);		
 }
 
-std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
+//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP()
+void ofApp::createImageSourceDSP()
 {
-	std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
-	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler->getImageSourceLocations();
-	
+	if (imageSourceDSPList.size() > 0) return; // Already created	
+	//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> tempImageSourceDSPList;
+	std::vector<Common::CVector3> imageSourceLocationList = ISMHandler2->getImageSourceLocations();		
 
 	for (int i = 0; i < imageSourceLocationList.size(); i++)
 	{
@@ -1623,23 +1713,28 @@ std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::createImageSourceDSP(
 			tempSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);	// Choosing no spatialisation mode for anechoic processing
 		}
 		tempSourceDSP->DisableNearFieldEffect();											// Audio source will not be close to listener, so we don't need near field effect
+		//DistanceAttenuation
 		tempSourceDSP->EnableAnechoicProcess();											// Enable anechoic processing for this source
-		tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
+		if (stateDistanceAttenuationAnechoic)
+		   tempSourceDSP->EnableDistanceAttenuationAnechoic();								//  distance simulation
+		else
+		   tempSourceDSP->DisableDistanceAttenuationAnechoic();
 		tempSourceDSP->EnablePropagationDelay();
 		tempSourceDSP->DisableReverbProcess();
-		tempImageSourceDSPList.push_back(tempSourceDSP);
+		imageSourceDSPList.push_back(tempSourceDSP);
 	}
-	return tempImageSourceDSPList;
+	//return tempImageSourceDSPList;
 }
 
-std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP()
+//std::vector<shared_ptr<Binaural::CSingleSourceDSP>> ofApp::reCreateImageSourceDSP()
+void ofApp::reCreateImageSourceDSP()
 {
 	for (int i = 0; i < imageSourceDSPList.size(); i++)					//Revome old sourcesDSP
 		myCore.RemoveSingleSourceDSP(imageSourceDSPList.at(i));
 
 	imageSourceDSPList.clear();
-	imageSourceDSPList = createImageSourceDSP();						//Create new sourceDSP
-	return imageSourceDSPList;
+	createImageSourceDSP();						//Create new sourceDSP
+	//return imageSourceDSPList;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1654,163 +1749,156 @@ void ofApp::changeZoom(int &zoom)
 void ofApp::changeReflectionOrder(int &_reflectionOrder)
 {
 	if (setupDone == false) return;
+	if (is_equal(currentReflectionOrder, _reflectionOrder)) return;
 
-	if (!stopState) systemSoundStream.stop();
-	ISMHandler->setReflectionOrder(_reflectionOrder);
-    imageSourceDSPList = reCreateImageSourceDSP();
-	if (!stopState) systemSoundStream.start();
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+	currentReflectionOrder = _reflectionOrder;
+	//ISMHandler->setReflectionOrder(_reflectionOrder);
+	ReconfigureISM();	
+	SetupImageRooms();
+
+    //reCreateImageSourceDSP();
+	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
 
 
-void ofApp::changeMaxDistanceImageSources(int &_maxDistanceSourcesToListener)
+void ofApp::changeMaxDistanceImageSources(float &_maxDistanceSourcesToListener)
 {
 	if (setupDone == false) return;
 
-	if (!stopState) systemSoundStream.stop();
+	if (is_equal(currentMaxDistanceSourcesToListener,_maxDistanceSourcesToListener)) return;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 	stopState = true;
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
 
-	float maxDistanceSourcesToListener = _maxDistanceSourcesToListener;
+	bool retFlag;
+	UpdateMaxDistanceAndWinThresholdParameters(_maxDistanceSourcesToListener, retFlag);
+	if (retFlag) return;
 
-	int numSamplesThreshold = meters2samples(maxDistanceSourcesToListener);
-	int numsamplesWindowSlope = millisec2samples(windowSlopeWidth);
-	int numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope/2;
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+}
+
+void ofApp::UpdateMaxDistanceAndWinThresholdParameters(const float& _maxDistanceSourcesToListener, bool& retFlag)
+{
+	retFlag = true;
+	float numSamplesThreshold = meters2samples(_maxDistanceSourcesToListener);
+	float numsamplesWindowSlope = millisec2samples(currentWindowSlopeWidth);
+	float numSamplesTotal = numSamplesThreshold + numsamplesWindowSlope / 2;
 
 	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+
 	if (numSamplesTotal > BRIRLength)
-	{   // WindowThreshold + WindowSlope must be less than BRIR duration
-		numSamplesTotal = BRIRLength - numsamplesWindowSlope;
-		maxDistanceSourcesToListener = samples2meters(numSamplesTotal);
-		maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
-	}
-		
-	if ( numSamplesThreshold - numsamplesWindowSlope/2 <= 0)
-	{   // WindowSlope too wide and WindowThreshold too low
-		//  WindowSlope*0.5 (half-window size to implement the "crossfade") must be less than the Threshold
-		numsamplesWindowSlope = meters2samples(MIN_DIST_SILENCED_FRAMES)-2;   //window is reduced
-		numSamplesThreshold = meters2samples(MIN_DIST_SILENCED_FRAMES)+2;
-		maxDistanceSourcesToListener = samples2meters(numSamplesThreshold);
-		maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
-		windowSlopeWidth = samples2millisec(numsamplesWindowSlope);
-		windowSlopeControl = windowSlopeWidth;
-	}
-	//
-	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
-	if (windowSlopeInMeters < MIN_DIST_SILENCED_FRAMES)
-	{	//windowSlope expressed in meters must be greater than the minimum distance
-		windowSlopeInMeters = MIN_DIST_SILENCED_FRAMES;
+	{   // WindowThreshold + WindowSlope must be less than BRIR duration		
+		maxDistanceImageSourcesToListenerControl.setWithoutEventNotifications(currentMaxDistanceSourcesToListener);
+		return;
 	}
 
-	if (maxDistanceSourcesToListener - (windowSlopeInMeters / 2.0) < 0)
-	{ //maxDistanceSourcesToListener must exceed half the WindowSlope in meters
-		windowSlopeInMeters = MIN_DIST_SILENCED_FRAMES;
+	if (numSamplesThreshold - numsamplesWindowSlope / 2 <= 0) {
+		maxDistanceImageSourcesToListenerControl.setWithoutEventNotifications(currentMaxDistanceSourcesToListener);
+		return;
 	}
-	
-	windowSlopeWidth = meters2millisec(windowSlopeInMeters);
-	windowSlopeControl = windowSlopeWidth;
+	// 
+	currentMaxDistanceSourcesToListener = _maxDistanceSourcesToListener;
+	maxDistanceImageSourcesToListenerControl.set(currentMaxDistanceSourcesToListener);
 
-	numberOfSilencedSamples = ISMHandler->calculateNumOfSilencedSamples(maxDistanceSourcesToListener);
-		
-	numberOfSilencedFrames = floor((numberOfSilencedSamples - numsamplesWindowSlope/2) / myCore.GetAudioState().bufferSize);
-	if (numberOfSilencedFrames < 0)
-	{   // NumberOfSilencedFrames cannot be negative
-		numberOfSilencedFrames = 0;
-		windowSlopeWidth = INITIAL_WIN_SLOPE;
-		windowSlopeControl = INITIAL_WIN_SLOPE;
-	}
+	SetEnvironmentFadeInWindow(currentMaxDistanceSourcesToListener);
 
-	float windowThreshold = 0.001 * meters2millisec(maxDistanceSourcesToListener);
-	environment->SetFadeInWindow(windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
-	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
-
-	imageSourceDSPList = reCreateImageSourceDSP();
-
-	winThresholdControl.set("WinThreshold (ms)", (maxDistanceSourcesToListener * 1000) / myCore.GetMagnitudes().GetSoundSpeed());
-
-	maxDistanceImageSourcesToListenerControl.set(maxDistanceSourcesToListener);
-		
-	if (!stopState) systemSoundStream.start();
+	currentWindowThreshold = meters2millisec(currentMaxDistanceSourcesToListener);
+	winThresholdControl.set(currentWindowThreshold);
+	ReconfigureISM();
+	retFlag = false;
 }
 
-void ofApp::changeWinThreshold(int& _windowThresold)
+void ofApp::changeWinThreshold(float& _windowThreshold)
 {
-	if (setupDone == false) return;
+	if (is_equal(currentWindowThreshold, _windowThreshold)) return;
 
-	float windowThresold = _windowThresold;
-	float maxDistanceSourcesToListener = (windowThresold * myCore.GetMagnitudes().GetSoundSpeed()) / 1000;
-
-	maxDistanceImageSourcesToListenerControl.set((int)maxDistanceSourcesToListener);
-
+	float maxDistanceSourcesToListener = millisec2meters(_windowThreshold);
+	changeMaxDistanceImageSources(maxDistanceSourcesToListener);		
 }
 
 
-void ofApp::changeWindowSlope(int& _windowSlope)
+void ofApp::changeWindowSlope(int& _windowSlopeWidth)
 {
 	if (setupDone == false) return;
 
-	if (!stopState) systemSoundStream.stop();
+	if (is_equal(currentWindowSlopeWidth, _windowSlopeWidth)) return;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 	stopState = true;
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
 
-	float windowSlope = (float) _windowSlope;
+	/*float windowSlope = (float)_windowSlopeWidth;
 	
 	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
 	float sampleRate = myCore.GetAudioState().sampleRate;
-	float maxDistanceSourcesToListener = ISMHandler->getMaxDistanceImageSources();
+	float maxDistanceSourcesToListener = ISMHandler->getMaxDistanceImageSources();*/
 
-	if (millisec2meters(windowSlope) >= 2 * maxDistanceSourcesToListener)  // 
-	{	//  WindowSlope (window size to implement the "crossfade") must be less than the Threshold
-		windowSlope = meters2millisec(maxDistanceSourcesToListener); //millisecs
+	//float a = millisec2meters(windowSlope);
+	//if (millisec2meters(windowSlope) >= 2 * maxDistanceSourcesToListener)  // 
+	//{	//  WindowSlope (window size to implement the "crossfade") must be less than the Threshold
+	//	//windowSlope = meters2millisec(maxDistanceSourcesToListener); //millisecs
+	//	//windowSlopeControl.set(windowSlope);
+	//	//_windowSlope = windowSlope;
+	//}	
+	if (_windowSlopeWidth >= 2* currentWindowThreshold) {
+		windowSlopeControl.setWithoutEventNotifications(currentWindowSlopeWidth);
+		return;
 	}
 
-	int numSamplesThreshold = meters2samples(float (maxDistanceSourcesToListener));
-	int numSamplesWindowSlope = millisec2samples(float(_windowSlope) / 2);
+	int numSamplesThreshold = meters2samples(float(currentMaxDistanceSourcesToListener));
+	int numSamplesWindowSlope = millisec2samples(float(_windowSlopeWidth) / 2);
 	int numSamplesTotal = numSamplesThreshold + numSamplesWindowSlope;
-
-	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();	
 	if (numSamplesTotal > BRIRLength)
 	{   // WindowThreshold + WindowSlope must be less than BRIR duration
-		windowSlopeControl = MIN_WIN_SLOPE; //millisecs
-		_windowSlope = MIN_WIN_SLOPE;       //millisecs
+		//windowSlopeControl.set(MIN_WIN_SLOPE); //millisecs
+		//_windowSlopeWidth = MIN_WIN_SLOPE;       //millisecs
+		windowSlopeControl.setWithoutEventNotifications(currentWindowSlopeWidth);
+		return;
 	}
 
+	// TODO Is this verification the same as before?
 	if (numSamplesWindowSlope/2 + 1 >= numSamplesThreshold)
 	{  // NumSamples of windowSlope/2 must be greater than the NumSamples of Threshold
-		numSamplesWindowSlope = numSamplesThreshold-2;
-		_windowSlope = samples2millisec(numSamplesWindowSlope);
-		windowSlopeControl = _windowSlope;
+		/*numSamplesWindowSlope = numSamplesThreshold-2;
+		_windowSlopeWidth = samples2millisec(numSamplesWindowSlope);
+		windowSlopeControl.set(_windowSlopeWidth);*/
+		windowSlopeControl.setWithoutEventNotifications(currentWindowSlopeWidth);
+		return;
 	}
 
-	windowSlopeWidth = _windowSlope;
-	
-	float windowThreshold = ((float)(maxDistanceSourcesToListener)) / soundSpeed;
+	currentWindowSlopeWidth = _windowSlopeWidth;
+	SetEnvironmentFadeInWindow(currentMaxDistanceSourcesToListener);
+	//float windowThreshold = ((float)(currentMaxDistanceSourcesToListener)) / myCore.GetMagnitudes().GetSoundSpeed();
+	////numberOfSilencedFrames = floor((numberOfSilencedSamplesInBRIR - numSamplesWindowSlope) / myCore.GetAudioState().bufferSize);
+	////if (numberOfSilencedFrames < 0)
+	////{  // NumberOfSilencedFrames cannot be negative 
+	////	numberOfSilencedFrames = 0;
+	////	currentWindowSlopeWidth = MIN_WIN_SLOPE;
+	////	windowSlopeControl.set(MIN_WIN_SLOPE);
+	////}
 
-	numberOfSilencedFrames = floor((numberOfSilencedSamples - numSamplesWindowSlope) / myCore.GetAudioState().bufferSize);
-	if (numberOfSilencedFrames < 0)
-	{  // NumberOfSilencedFrames cannot be negative 
-		numberOfSilencedFrames = 0;
-		windowSlopeWidth = MIN_WIN_SLOPE;
-		windowSlopeControl = MIN_WIN_SLOPE;
-	}
+	//environment->SetFadeInWindow(windowThreshold, (0.001*currentWindowSlopeWidth), reverbGainLinear);
+	//float windowSlopeInMeters = millisec2meters(currentWindowSlopeWidth);
 
-	environment->SetFadeInWindow(windowThreshold, (0.001*windowSlopeWidth), reverbGainLinear);
-	float windowSlopeInMeters = millisec2meters(windowSlopeWidth);
-	ISMHandler->setMaxDistanceImageSources(maxDistanceSourcesToListener, windowSlopeInMeters);
+	//ISMHandler->setMaxDistanceImageSources(currentMaxDistanceSourcesToListener, millisec2meters(currentWindowSlopeWidth));	
+	ReconfigureISM();
+	//reCreateImageSourceDSP();
 
-	imageSourceDSPList = reCreateImageSourceDSP();
-
-	if (!stopState) systemSoundStream.start();
+	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
 
-void ofApp::changeReverbGain(int& _reverbGain)
+void ofApp::changeReverbGain(float &_reverbGain)
 {
 	if (setupDone == false) return;
 
-	if (!stopState) systemSoundStream.stop();
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 	stopState = true;
 	playState = false;
 	playToStopControl.set("Stop", true);
@@ -1821,17 +1909,17 @@ void ofApp::changeReverbGain(int& _reverbGain)
 	reverbGainLinear = pow(10.0, ((reverGaindB) / 20.0));
 
 	float windowThreshold = winThresholdControl.get();
-	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * windowSlopeWidth), reverbGainLinear);
+	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * currentWindowSlopeWidth), reverbGainLinear);
 
-	if (!stopState) systemSoundStream.start();
+	if (!stopState) audioInterfaceController->StartAudioInterface();
 
 }
 
 
-int ofApp::millisec2samples(float _millisec)
+float ofApp::millisec2samples(float _millisec)
 {
 	float sampleRate = myCore.GetAudioState().sampleRate;
-	int samples = floor((_millisec * sampleRate ) / 1000.0);
+	float samples = ((_millisec * sampleRate ) / 1000.0);
 
 	return samples;
 }
@@ -1844,11 +1932,11 @@ float ofApp::samples2millisec(float _samples)
 	return millisec;
 }
 
-int ofApp::meters2samples(float _meters)
+float ofApp::meters2samples(float _meters)
 {
 	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
-	float sampleRate = myCore.GetAudioState().sampleRate;
-	int samples = floor((_meters * sampleRate) / soundSpeed);
+	float sampleRate = (float)myCore.GetAudioState().sampleRate;
+	float samples = ((_meters * sampleRate) / soundSpeed);
 	
 	return samples;
 }
@@ -1875,6 +1963,12 @@ float ofApp::meters2millisec(float _meters)
 	return millisec;
 }
 
+float ofApp::meters2secs(float _meters)
+{
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	float millisec = (_meters) / soundSpeed;
+	return millisec;
+}
 
 void ofApp::recordIrOffline(bool &_active)
 {
@@ -1885,29 +1979,11 @@ void ofApp::recordIrOffline(bool &_active)
 	offlineRecordIteration = 0;
 	recordOfflineIRControl = false;
 
-	if (!stopState) systemSoundStream.stop();
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 	stopState = true;
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
-}
-
-void ofApp::recordIrSeriesOffline(bool& _active)
-{
-	recordingOfflineSeries = true;
-	recordOfflineIRScanControl = false;
-
-	if (setupDone == false) return;
-
-	anechoicSourceDSP->DisableAnechoicProcess();
-	stateAnechoicProcess = false;
-
-	//int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(10); // 10m
-	int maxDistanceISM = maxDistanceImageSourcesToListenerControl.set(3);   // 3m
-	ofApp::changeMaxDistanceImageSources(maxDistanceISM);
-	numberIRScan = 33;                                                      // 3m-35m range      
-	ofApp::recordIrOffline(recordingOfflineSeries);
-
 }
 
 void ofApp::recordWavOffline(bool& _active)
@@ -1919,18 +1995,14 @@ void ofApp::recordWavOffline(bool& _active)
 	offlineRecordIteration = 0;
 	recordOfflineWAVControl = false;
 
-	if (!stopState) systemSoundStream.stop();
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 	stopState = true;
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
 }
 
-void ofApp::changeSecondsToRecordIR(int &_secondsToRecordIR)
-{
-	if (_secondsToRecordIR > 0 && _secondsToRecordIR <=MAX_SECONDS_TO_RECORD)
-	   secondsToRecordIR = _secondsToRecordIR;
-}
+
 
 void ofApp::toogleHelpDisplay(bool &_active)
 {
@@ -1953,7 +2025,7 @@ void ofApp::changeAudioToPlay(bool &_active)
 	//string pathData = ofToDataPath("", true);
 	string pathData = ofToDataPath("", false);
 	
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an WAV file to Play");
+	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select a WAV file to Play");
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
 		ofFile file(openFileResult.getPath());
@@ -1971,22 +2043,24 @@ void ofApp::changeAudioToPlay(bool &_active)
 		else
 		{
 			ofLogError() << "Extension must be WAV";
-			if (!stopState) systemSoundStream.start();
+			cout << "ERROR: Load new WAV File - Extension must be WAV " << endl << endl;
+			if (!stopState) audioInterfaceController->StartAudioInterface();
 			return;
 		}
 	}
 	else {
 		ofLogError() << "Couldn't load file";
-		if (!stopState) systemSoundStream.start();
+		cout << "ERROR: Load new WAV File - Couldn't load file " << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
 		return;
 	}
 	source1Wav.setInitialPosition();
-	if (!stopState)  systemSoundStream.start();
+	if (!stopState)  audioInterfaceController->StartAudioInterface();
 }
 
 void ofApp::resetAudio()
 {
-	if (!stopState) systemSoundStream.stop();
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 	lock_guard < mutex > lock(audioMutex);
 
 	anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
@@ -1999,15 +2073,13 @@ void ofApp::resetAudio()
 
 	//Environment setup
 	environment = myCore.CreateEnvironment();									// Creating environment to have reverberated sound
-	environment->SetReverberationOrder(TReverberationOrder::ADIMENSIONAL);		// Setting number of ambisonic channels to use in reverberation processing
+	environment->SetReverberationOrder(reverberationOrder);		                // Setting number of ambisonic channels to use in reverberation processing
 	string pathData = ofToDataPath("");
 	string pathResources = ofToDataPath("resources");
-	//string fullPath = pathResources + "\\" + "brir.sofa";  //"hrtf.sofa"= pathFile;
-	string fullPath = pathResources + "\\" + "2_KU100_reverb_120cm_original_meas.sofa";
-	BRIR::CreateFromSofa(fullPath, environment);								// Loading SOFAcoustics BRIR file and applying it to the e
+	BRIR::CreateFromSofa(loadedBRIRFilePath, environment);							// Loading SOFAcoustics BRIR file and applying it to the e
 	
 	// setup of the image sources
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 }
 
 void ofApp::playToStop(bool &_active)
@@ -2017,7 +2089,7 @@ void ofApp::playToStop(bool &_active)
 	if (playToStopControl && playState)
 	{
 		lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers					
-		if (!stopState) systemSoundStream.stop();
+		if (!stopState) audioInterfaceController->StopAudioInterface();
 		
 		environment->ResetReverbBuffers();
 		anechoicSourceDSP->ResetSourceBuffers();				  //Clean buffers
@@ -2048,7 +2120,7 @@ void ofApp::stopToPlay(bool &_active)
 		stopState = false;
 		playState = true;
 		source1Wav.setInitialPosition();
-		systemSoundStream.start();
+		audioInterfaceController->StartAudioInterface();
 		playToStopControl.set("Stop", false);
 		stopToPlayControl.set("Play", true);
 		
@@ -2060,70 +2132,241 @@ void ofApp::stopToPlay(bool &_active)
 	}
 }
 
-void ofApp::changeRoomGeometry(bool &_active)
-{
-	changeRoomGeometryControl = false;
 
-	if (setupDone == false) return;
-	
+bool ofApp::SetupCaseStudy(const TCaseStudy& caseStudy) {
+	// HRTF setup
+	bool result = LoadHRTFSofa(caseStudy.hrtfFilePath); //TODO check samplerate
+	if (!result) return false;
+
+	// Environment setup
+	result = LoadBRIRSofa(caseStudy.brirFilePath); //TODO check samplerate
+	if (!result) return false;
+
+	// Room setup	
+	result = SetupRoomFromGeometryFile(caseStudy.geometryFilePath);
+	if (!result) return false;
+
+	// Move listener
+	Common::CTransform listenerPosition = Common::CTransform();	 // Setting listener in (0,0,0)
+	listenerPosition.SetPosition(caseStudy.listenerPosition);
+	listener->SetListenerTransform(listenerPosition);
+
+	// Move source
+	Common::CTransform sourcePosition = Common::CTransform();
+	sourcePosition.SetPosition(caseStudy.sourcePosition);
+	anechoicSourceDSP->SetSourceTransform(sourcePosition);
+
+	// ISM setup
+	currentReflectionOrder = caseStudy.reflectionOrder;
+
+	return true;
+}
+void ofApp::ClearLoadedCaseStudy() {
+	loadedCaseStudy = TCaseStudy();
+	changeToCaseStudyBControl.setWithoutEventNotifications(false);
+	changeToCaseStudyAControl.setWithoutEventNotifications(false);
+}
+
+void ofApp::changeToCaseStudyA(bool& active) {
+	bool result = changeToCaseStudy("roomA");
+	if (result) {
+		changeToCaseStudyBControl.setWithoutEventNotifications(false);
+	}
+}
+
+void ofApp::changeToCaseStudyB(bool& active) {
+	bool result = changeToCaseStudy("roomB");
+	if (result) {
+		changeToCaseStudyAControl.setWithoutEventNotifications(false);
+	}
+}
+
+bool ofApp::changeToCaseStudy(std::string _id) {
+	if (!setupDone) return false;
+
+	TCaseStudy _caseStudy = FindCaseStudy(_id);
+	if (loadedRoomGeometryFilePath == _caseStudy.geometryFilePath) {
+		cout << "Case Study "<< _caseStudy.id <<" already loaded" << endl << endl;
+		return false;
+	}	
+	bool result = changeToCaseStudy(_caseStudy);
+	if (result) {
+		loadedCaseStudy = _caseStudy;		
+	}
+	return result;
+}
+
+bool ofApp::changeToCaseStudy(const TCaseStudy& caseStudy) {
+
 	lock_guard < mutex > lock(audioMutex);
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 
-	if (!stopState) systemSoundStream.stop();
-
+	setupDone = false;
 	stopState = true;
 	playState = false;
 	playToStopControl.set("Stop", true);
 	stopToPlayControl.set("Play", false);
 
-	ISM::RoomGeometry newRoom;
+	/// Load Room geometry
+	ISM::RoomGeometry newRoomGeometry;
+	std::vector<std::vector<float>> absortionsWalls;
+	bool result = LoadGeometryFile(caseStudy.geometryFilePath, newRoomGeometry, absortionsWalls);
 
-	//string pathData = ofToDataPath("", true);
-	string pathData = ofToDataPath("", false);
+	if (result) {
+		
+		mainRoom.setupRoomGeometry(newRoomGeometry);
+		mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		
+		bool retFlag;
+		UpdateMaxDistanceAndWinThresholdParameters(millisec2meters(caseStudy.transitionTime), retFlag);
+		if (retFlag) return false;
 
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an XML file with the new configuration of the room");
-	//Check if the user opened a file
-	if (openFileResult.bSuccess) {
+		SetupImageRooms();
+		loadedRoomGeometryFilePath = caseStudy.geometryFilePath;
+		loadedRoomGeometryFileName = GetFileName(loadedRoomGeometryFilePath);
+		std::cout << "New Room loaded " << loadedRoomGeometryFilePath << endl << endl;
+	} else {
+		std::cout << "ERROR: Load new ROOM - Couldn't load file " << caseStudy.geometryFilePath << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	// Load new HRTF file
+	bool specifiedDelays;
+	bool sofaLoadResult = HRTF::CreateFromSofa(caseStudy.hrtfFilePath, listener, specifiedDelays);
 
-	    ofFile file(openFileResult.getPath());
-		ofLogVerbose("The file exists - now checking the type via file extension");
-		string fileExtension = ofToUpper(file.getExtension());
-		if (fileExtension == "XML")
-		{
-			string pathData = openFileResult.getPath();
-			//	string fileName = openFileResult.getName();
-			if (!xml.load(pathData))
-			{
-				ofLogError() << "Couldn't load file";
-				if (!stopState) systemSoundStream.start();
-				return;
-			}
+	if (!sofaLoadResult) {
+		cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	else
+	{
+		loadedHRTFFilePath = caseStudy.hrtfFilePath;
+		loadedHRTFFileName = GetFileName(loadedHRTFFilePath);
+		cout << "Load new HRTF File " << loadedHRTFFilePath << endl << endl;
+	}
+	// Load new BRIR file	
+	sofaLoadResult = BRIR::CreateFromSofa(caseStudy.brirFilePath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+
+	if (!sofaLoadResult) {
+		cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	else
+	{
+		loadedBRIRFilePath = caseStudy.brirFilePath;
+		loadedBRIRFileName = GetFileName(loadedBRIRFilePath);
+		cout << "Load new BRIR File " << loadedBRIRFilePath << endl << endl;
+		SetDefaultSecondsToRecordIR();
+	}
+		
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+	setupDone = true;
+	return true;
+}
+
+
+void ofApp::changeRoomGeometry(bool &_active)
+{
+	
+	changeRoomGeometryControl = false;
+	if (!setupDone) return;
+	
+	lock_guard < mutex > lock(audioMutex);
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+			
+	//string pathData = ofToDataPath("", false);
+	ofFileDialogResult openFileResult;
+	std::string fileExtension, fileName, fullPath;
+	if (changeFileFromOSC) {
+		std::string pathResources = ofToDataPath("resources");
+		openFileResult.filePath = pathResources;
+		openFileResult.fileName = charFilenameOSC;
+		fullPath = pathResources + "\\" + charFilenameOSC;
+		ofFile file(fullPath);
+		if (file.exists()) {
+			openFileResult.bSuccess = true;
+			fileExtension = ofToUpper(file.getExtension());
 		}
 		else
-		{
-			ofLogError() << "Extension must be XML";
-			if (!stopState) systemSoundStream.start();
-			return;
-		}
-
+			openFileResult.bSuccess = false;
 	}
 	else {
-		ofLogError() << "Couldn't load file";
-		if (!stopState) systemSoundStream.start();
+		openFileResult = ofSystemLoadDialog("Select a XML file with the new configuration of the room");
+		ofFile file(openFileResult.getPath());
+		fileExtension = ofToUpper(file.getExtension());
+		fullPath = openFileResult.getPath();
+		fileName = openFileResult.getName();
+	}
+
+	// Check if the user opened a file
+	if (!openFileResult.bSuccess) {
+		//ofLogError() << "Couldn't load file";
+		std::cout << "ERROR: Couldn't load ROOM file -  " << fullPath << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return;
+	}
+		
+	if (fileExtension != "XML") {
+		//ofLogError() << "Extension must be XML";
+		std::cout << "ERROR: Load new ROOM - File extension must be XML " << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
 		return;
 	}
 
+	ISM::RoomGeometry newRoomGeometry;
+	std::vector<std::vector<float>> absortionsWalls;
+	bool result = LoadGeometryFile(fullPath, newRoomGeometry, absortionsWalls);
 
-		/////////////Read the XML file with the geometry of the room and absorption of the walls////////
+	if (result) {
+		mainRoom.setupRoomGeometry(newRoomGeometry);
+		mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+		ReconfigureISM();
+		SetupImageRooms();
 
-		// select all corners and iterate through them
+		loadedRoomGeometryFilePath = fullPath;
+		loadedRoomGeometryFileName = GetFileName(loadedRoomGeometryFilePath);
+		
+		ClearLoadedCaseStudy();
+		std::cout << "New Room loaded " << fullPath << endl << endl;
+	} else {
+		std::cout << "ERROR: Load new ROOM - Couldn't load file " << fullPath << endl << endl;
+	}
+		
+	if (!stopState) audioInterfaceController->StartAudioInterface();		
+}
+
+/**
+ * @brief Read the XML file with the geometry of the room and absorption of the walls
+ * @param fullPath full path of the XML file
+ * @return 
+ */
+bool ofApp::LoadGeometryFile(const std::string& fullPath, ISM::RoomGeometry& newRoom, std::vector<std::vector<float>>& absortionsWalls) {
+	
+	bool result = xml.load(fullPath);
+	if (!result)
+	{		
+		std::cout << "ERROR: Couldn't load ROOM file " << fullPath << endl << endl;
+		//if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
+	}
+	
+	// select all corners and iterate through them
 	auto cornersXml = xml.find("//ROOMGEOMETRY/CORNERS");
 	if (cornersXml.empty()) {
-		ofLogError() << "The file is not a room configuration";
-		if (!stopState) systemSoundStream.start();
-		return;
+		std::cout << "ERROR: The file is not a room configuration" << endl;
+		//if (!stopState) audioInterfaceController->StartAudioInterface();
+		return false;
 	}
 
-	for (auto & currentCorner : cornersXml) {
+	for (auto& currentCorner : cornersXml) {
 		// for each corner in the room insert its coordinates
 		auto cornersInFile = currentCorner.getChildren("CORNER");
 
@@ -2139,13 +2382,17 @@ void ofApp::changeRoomGeometry(bool &_active)
 	}
 
 	/***********************/
-	absortionsWalls.clear();
+	//absortionsWalls.clear();
 	/***********************/
 
 	// select all walls and iterate through them
 	auto wallsXml = xml.find("//ROOMGEOMETRY/WALLS");
+	if (wallsXml.empty()) {
+		std::cout << "ERROR: The file is not a room configuration" << endl;		
+		return false;
+	}
 	
-	for (auto & currentWall : wallsXml) {
+	for (auto& currentWall : wallsXml) {
 		// for each wall in the room insert corners its and absortions
 		auto wallsInFile = currentWall.getChildren("WALL");
 		for (auto aux : wallsInFile) {
@@ -2157,56 +2404,7 @@ void ofApp::changeRoomGeometry(bool &_active)
 			absortionsWalls.push_back(tempAbsorsWall);
 		}
 	}
-	////////////////////////////////////////////////
-	
-	ISMHandler->setupArbitraryRoom(newRoom);
-	
-	
-	//Absortion as vector
-	ISMHandler->setAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
-
-	ISMHandler->setReflectionOrder(0);
-
-	mainRoom = ISMHandler->getRoom();
-	imageSourceDSPList = reCreateImageSourceDSP();
-
-	//listener located in the center of the room
-	Common::CVector3 roomCenter = ISMHandler->getRoom().getCenter();
-	Common::CVector3 listenerLocation(roomCenter);
-	Common::CTransform listenerPosition = Common::CTransform();
-	listenerPosition.SetPosition(listenerLocation);
-	listener->SetListenerTransform(listenerPosition);
-
-	moveSource(Common::CVector3(0, 0, 0));
-			
-	ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
-	reflectionOrderControl = INITIAL_REFLECTION_ORDER;
-	mainRoom = ISMHandler->getRoom();
-	imageSourceDSPList = reCreateImageSourceDSP();
-		
-	int numWalls = ISMHandler->getRoom().getWalls().size();
-	guiActiveWalls.resize(numWalls);
-
-	for (int i = 0; i < numWalls; i++)
-	{
-		if (guiActiveWalls.at(i) == false) 	guiActiveWalls.at(i) = true;
-	}
-
-	//mainRoom = ISMHandler->getRoom();
-	//if (!stopState) systemSoundStream.start();
-
-	cout << "Load new ROOM" << endl << endl;
-
-#if 0
-//lock_guard < mutex > lock(audioMutex);	                  // Avoids race conditions with audio thread when cleaning buffers
-	stopState = false;
-	playState = true;
-	source1Wav.setInitialPosition();
-	systemSoundStream.start();
-	playToStopControl.set("Stop", false);
-	stopToPlayControl.set("Play", true);
-#endif
-	
+	return true;
 }
 
 void ofApp::toggleWall(bool &_active)
@@ -2216,15 +2414,21 @@ void ofApp::toggleWall(bool &_active)
 
 void ofApp::toggleAnechoic(bool &_active)
 {
+	if (!setupDone)	return;
+
+	if (stateAnechoicProcess == _active) return;
+
 	if (stateAnechoicProcess)
 	{
 		anechoicSourceDSP->DisableAnechoicProcess();
 		stateAnechoicProcess = false;
+		anechoicEnableControl.set(false);
 	}
 	else
 	{
 		anechoicSourceDSP->EnableAnechoicProcess();
 		stateAnechoicProcess = true;
+		anechoicEnableControl.set(true);
 	}
 }
 
@@ -2233,7 +2437,7 @@ void ofApp::changeHRTF(bool& _active)
 	changeHRTFControl = false;
 	if (setupDone == false) return;
 
-	if (!stopState) systemSoundStream.stop();
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 
 	stopState = true;
 	playState = false;
@@ -2242,58 +2446,159 @@ void ofApp::changeHRTF(bool& _active)
 		
 	string pathData = ofToDataPath("", false);
 
-	ofFileDialogResult openFileResult = ofSystemLoadDialog("Select an SOFA file with the new HRTF");
+	ofFileDialogResult openFileResult;
+	string fileExtension, fileName, fullPath;
+	if (changeFileFromOSC) {
+		string pathResources = ofToDataPath("resources");
+		openFileResult.filePath = pathResources;
+		openFileResult.fileName = charFilenameOSC;
+		fullPath = pathResources + "\\" + charFilenameOSC;
+		ofFile file(fullPath);
+		if (file.exists()) {
+			openFileResult.bSuccess = true;
+			fileExtension = ofToUpper(file.getExtension());
+		}
+		else
+			openFileResult.bSuccess = false;
+	}
+	else {
+		openFileResult = ofSystemLoadDialog("Select a SOFA file with the new HRTF");
+		ofFile file(openFileResult.getPath());
+		fileExtension = ofToUpper(file.getExtension());
+		fullPath = openFileResult.getPath();
+		fileName = openFileResult.getName();
+	}
+
 	//Check if the user opened a file
 	if (openFileResult.bSuccess) {
-		ofFile file(openFileResult.getPath());
 		ofLogVerbose("The file exists - now checking the type via file extension");
-		string fileExtension = ofToUpper(file.getExtension());
 		if (fileExtension == "SOFA")
 		{
-			string pathData = openFileResult.getPath();
-			char* charFilename = new char[pathData.length() + 1];
-			strcpy(charFilename, pathData.c_str());
+			//fullPathHRTF = fullPath;
 			bool specifiedDelays;
-			bool sofaLoadResult = HRTF::CreateFromSofa(pathData, listener, specifiedDelays);
+			bool sofaLoadResult = HRTF::CreateFromSofa(fullPath, listener, specifiedDelays);
 
 			if (!sofaLoadResult) {
 				cout << "ERROR: Error trying to load the SOFA file" << endl << endl;
-				if (!stopState) systemSoundStream.start();
+				if (!stopState) audioInterfaceController->StartAudioInterface();
 				return;
 			}
 			else
 			{
-				cout << "Load new HRTF File " << pathData << endl  << endl;
+				loadedHRTFFilePath = fullPath;
+				loadedHRTFFileName = GetFileName(fullPath);
+				
+				ClearLoadedCaseStudy();
+
+				cout << "Load new HRTF File " << loadedHRTFFilePath << endl  << endl;
 			}
 		}
 		else
 		{
 			ofLogError() << "Extension must be SOFA";
-			if (!stopState) systemSoundStream.start();
-			cout << "Load new HRTF File " << pathData << endl << endl;
+			cout << "ERROR: Load new HRTF File - Extension must be SOFA " << endl << endl;
+			if (!stopState) audioInterfaceController->StartAudioInterface();
 			return;
 		}
 	}
 	else 
 	{
 		ofLogError() << "Couldn't load file";
-		if (!stopState) systemSoundStream.start();
+		cout << "ERROR: Load new HRTF File - Couldn't load file " << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
 		return;
 	}
 
-	//if (!stopState) systemSoundStream.start();
+	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
+
+void ofApp::changeBRIR(bool& _active)
+{
+	changeBRIRControl = false;
+	if (setupDone == false) return;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+
+	stopState = true;
+	playState = false;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	string pathData = ofToDataPath("", false);
+	
+	ofFileDialogResult openFileResult;
+	string fileExtension, fileName, fullPath;
+	if (changeFileFromOSC) {
+		string pathResources = ofToDataPath("resources");
+		openFileResult.filePath = pathResources;
+		openFileResult.fileName = charFilenameOSC;
+		fullPath = pathResources + "\\" + charFilenameOSC;
+		ofFile file(fullPath);
+		if (file.exists()) {
+			openFileResult.bSuccess = true;
+			fileExtension = ofToUpper(file.getExtension());
+		}
+		else
+			openFileResult.bSuccess = false;
+	}
+	else {
+		openFileResult = ofSystemLoadDialog("Select a SOFA file with the new BRIR of the room");
+		ofFile file(openFileResult.getPath());
+		fileExtension = ofToUpper(file.getExtension());
+		fullPath = openFileResult.getPath();
+		fileName = openFileResult.getName();
+	}
+
+	//Check if the user opened a file
+	if (openFileResult.bSuccess) {
+		ofLogVerbose("The file exists - now checking the type via file extension");
+		if (fileExtension == "SOFA")
+		{
+			//char* charFilename = new char[fullPath.length() + 1];
+			//strcpy(charFilename, fullPath.c_str());
+			//fullPathBRIR = fullPath;
+			bool sofaLoadResult = BRIR::CreateFromSofa(fullPath, environment); // Loading SOFAcoustics BRIR file and applying it to the environment
+			
+			if (!sofaLoadResult) {
+				cout << "ERROR: Error trying to load the SOFA BRIR file" << endl << endl;
+				if (!stopState) audioInterfaceController->StartAudioInterface();
+				return;
+			}
+			else
+			{
+				loadedBRIRFilePath = fullPath;
+				loadedBRIRFileName = GetFileName(loadedBRIRFilePath);
+				
+				ClearLoadedCaseStudy();
+				cout << "Load new BRIR File " << loadedBRIRFilePath << endl << endl;
+				SetDefaultSecondsToRecordIR();
+			}
+		}
+		else
+		{
+			ofLogError() << "Extension must be SOFA";
+			cout << "ERROR: Load new BRIR File - Extension must be SOFA " << endl << endl;
+			if (!stopState) audioInterfaceController->StartAudioInterface();
+			return;
+		}
+	}
+	else
+	{
+		ofLogError() << "Couldn't load file";
+		cout << "ERROR: Load new BRIR File - Couldn't load file " << endl << endl;
+		if (!stopState) audioInterfaceController->StartAudioInterface();
+		return;
+	}
+
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+}
+
 
 void ofApp::toggleBinauralSpatialisation(bool& _active)
 {
-
-	if (setupDone == false)
-	{
-		stateBinauralSpatialisation = true;
-		return;
-	}
-		
-	if (!stopState) systemSoundStream.stop();
+	if (!setupDone) return;
+			
+	if (!stopState) audioInterfaceController->StopAudioInterface();
 
 	if (stateBinauralSpatialisation)
 	{
@@ -2306,31 +2611,41 @@ void ofApp::toggleBinauralSpatialisation(bool& _active)
 		stateBinauralSpatialisation = true;
 	}
 	
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
-	if (!stopState) systemSoundStream.start();
+	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
 
+void ofApp::toggleISM(bool& active) {
+	if (!setupDone) return;
+	stateISMProcess = !stateISMProcess;
 
+	if (!stateISMProcess) {
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->ResetSourceBuffers();
+	}
+}
 
 void ofApp::toggleReverb(bool &_active)
 {
-	if (bDisableReverb) bDisableReverb = false;
-	else bDisableReverb = true;
-	if (!stopState) systemSoundStream.stop();
-	anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
-
-	imageSourceDSPList = reCreateImageSourceDSP();
-
-	for (int i = 0; i < imageSourceDSPList.size(); i++)
-		imageSourceDSPList.at(i)->ResetSourceBuffers();
-	environment->ResetReverbBuffers();
-	if (!stopState) systemSoundStream.start();
+	if (!setupDone) return;
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+	stateBRIRReverbProcess = !stateBRIRReverbProcess;
+	
+	if (!stateBRIRReverbProcess) {
+		anechoicSourceDSP->ResetSourceBuffers();	//Clean buffers
+		//imageSourceDSPList = reCreateImageSourceDSP();	
+		for (int i = 0; i < imageSourceDSPList.size(); i++)
+			imageSourceDSPList.at(i)->ResetSourceBuffers();
+		environment->ResetReverbBuffers();
+	}		
+	
+	if (!stopState) audioInterfaceController->StartAudioInterface();
 }
 
 void ofApp::refreshActiveWalls()
 {
-	if (!stopState) systemSoundStream.stop();
+	/*if (!stopState) audioInterfaceController->StopAudioInterface();
 	Common::CTransform listenerTransform = listener->GetListenerTransform();
 	Common::CVector3 listenerLocation = listenerTransform.GetPosition();
 	for (int i = 0; i < guiActiveWalls.size(); i++)
@@ -2344,11 +2659,16 @@ void ofApp::refreshActiveWalls()
 			ISMHandler->disableWall(i);
 		}
 	}
-	mainRoom = ISMHandler->getRoom();
+	mainRoom = ISMHandler->getRoom();	
+	
+	float maxDistanceImageSources = maxDistanceImageSourcesToListenerControl.get();
+	float windowSlopeInMeters = millisec2meters(currentWindowSlopeWidth);
+	int order = (int)reflectionOrderControl.get();
+	ISMHandler2->Setup(order, maxDistanceImageSources, windowSlopeInMeters, mainRoom);
 
-	imageSourceDSPList = reCreateImageSourceDSP();
+	reCreateImageSourceDSP();
 
-	if (!stopState) systemSoundStream.start();
+	if (!stopState) audioInterfaceController->StartAudioInterface();*/
 }
 
 
@@ -2461,7 +2781,7 @@ void ofApp::OfflineWavRecordEndLoop()
 	recordingOffline = false;
 }
 
-void ofApp::StartWavRecord(string filename, int bitspersample)
+void ofApp::StartWavRecord(std::string& filename, int bitspersample)
 {
 	int sampleRate = myCore.GetAudioState().sampleRate;
 	wavWriter.Setup(2, sampleRate, bitspersample);
@@ -2514,7 +2834,7 @@ void ofApp::StopSystemSoundStream()
 	if (systemSoundStream_Started)
 	{
 		systemSoundStream_Started = false;
-		systemSoundStream.stop();
+		audioInterfaceController->StopAudioInterface();
 	}
 }
 //---------------------------------------------------------------
@@ -2523,7 +2843,7 @@ void ofApp::StartSystemSoundStream()
 	if (!systemSoundStream_Started)
 	{
 		systemSoundStream_Started = true;
-		systemSoundStream.start();
+		audioInterfaceController->StartAudioInterface();
 	}
 }
 
@@ -2543,17 +2863,45 @@ void ofApp::OscCallback(const ofxOscMessage& message) {
 	else if (message.getAddress() == "/stop")				OscCallBackStop();
 	else if (message.getAddress() == "/playAndRecord")		OscCallBackPlayAndRecord();
 	else if (message.getAddress() == "/coefficients")		OscCallBackCoefficients(message);
-	
-	
+	else if (message.getAddress() == "/reverbGain")		    OscCallBackReverbGain(message);
+	else if (message.getAddress() == "/distMaxImgs")		OscCallBackDistMaxImgs(message);
+	else if (message.getAddress() == "/windowSlope")		OscCallBackWindowSlope(message);
+	else if (message.getAddress() == "/reflectionOrder")	OscCallBackReflectionOrder(message);
+	else if (message.getAddress() == "/saveIR")	            OscCallBackSaveIR();
+	else if (message.getAddress() == "/directPathEnable")	OscCallBackDirectPathEnable(message);
+	else if (message.getAddress() == "/spatialisationEnable")	    OscCallBackSpatialisationEnable(message);
+	else if (message.getAddress() == "/distanceAttAnechoicEnable")	OscCallBackDistanceAttenuationEnable(message);
+	else if (message.getAddress() == "/distanceAttReverbEnable")    OscCallBackDistanceAttenuationReverbEnable(message);
+	else if (message.getAddress() == "/reverbEnable")	    OscCallBackReverbEnable(message);
+	else if (message.getAddress() == "/absortions")		    OscCallBackAbsortions(message);
+	else if (message.getAddress() == "/changeRoom") OscCallBackChangeRoom (message);
+	else if (message.getAddress() == "/changeHRTF") OscCallBackChangeHRTF(message);
+	else if (message.getAddress() == "/changeBRIR") OscCallBackChangeBRIR (message);
+	else if (message.getAddress() == "/listenerLocation") OscCallBackListenerLocation(message);
+	else if (message.getAddress() == "/listenerOrientation") OscCallBackListenerOrientation(message);
+	else if (message.getAddress() == "/sourceLocation") OscCallBackSourceLocation(message);
+	else if (message.getAddress() == "/workFolder") OscCallBackChangeWorkFolder(message);
+	else if (message.getAddress() == "/timeRecordIR") OscCallBackChangeTimeSaveIR(message);
+	else if (message.getAddress() == "/reverbOrder") OscCallBackChangeReverbOrder(message);
+
+
 	else std::cout << "Message OSC not recognised " << message << std::endl;
 }
 
-void ofApp::OscCallBackPlay() {	
-	std::cout << "Received Play"<< std::endl;
+void ofApp::OscCallBackPlay() {
+	std::cout << "Received Play" << std::endl;
+	playToStopControl.set("Stop", false);
+	stopToPlayControl.set("Play", true);
+	
+	SendOSCMessageToMatlab_Ready();
 }
 
 void ofApp::OscCallBackStop() {
 	std::cout << "Received Stop" << std::endl;
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+	
+	SendOSCMessageToMatlab_Ready();
 }
 
 void ofApp::OscCallBackPlayAndRecord() {
@@ -2564,17 +2912,629 @@ void ofApp::OscCallBackCoefficients(const ofxOscMessage& message) {
 	
 	message.getNumArgs();
 	std::vector<float> v;
+	std::vector<float> absorWall ={0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	
 	for (int i = 0; i < message.getNumArgs(); i++) {
 		v.push_back(message.getArgAsFloat(i));
 	}
-
+	int numWalls = mainRoom.getWalls().size();
+	std::vector<std::vector<float>> absortionsWalls;
+	for (int i = 0; i < numWalls; i++) {
+		//absortionsWalls.at(i) = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7 };
+		for (int k = 0; k < 9; k++){
+			absorWall[k] = v[i*9 + k];
+	     }
+		absortionsWalls.push_back(absorWall);
+	}
+	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	ReconfigureISM();
 	// DO whatever
-	std::cout<<v[0]<<","<<v[1]<<"," << v[2] << "," << v[3] << "," << v[4] << "," << v[5] << "," << v[6] << v[7] << "," << v[8] << "," << v[9] << std::endl;
+	//std::cout<< v[0]  << "," << v[1]  <<","  << v[2]  << "," << v[3]  << "," << v[4]  << "," << v[5]  << "," << v[6]  << ","  << v[7]  << "," << v[8] << std::endl;
+	//std::cout<< v[36] << "," << v[37] << "," << v[38] << "," << v[39] << "," << v[40] << "," << v[41] << "," << v[42] << "," << v[43] << "," << v[44] << std::endl;
+	//std::cout<< v[45] << "," << v[46] << "," << v[47] << "," << v[48] << "," << v[49] << "," << v[50] << "," << v[51] << ","  << v[52] << "," << v[53] << std::endl;
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 9; j++) {
+			std::cout << absortionsWalls.at(i).at(j) << ", ";
+		}
+		std::cout << std::endl;
+	}
+
+	recordOfflineIRScanControl.set(true);
 }
+
+void ofApp::OscCallBackReverbGain(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	reverbGainLinear = message.getArgAsFloat(0);
+	std::cout << "Received ReverbGain Command"<<",  "<< reverbGainLinear << std::endl;
+	float reverbGainDb = 20 * log10(reverbGainLinear);
+	reverbGainControl.set(reverbGainDb);
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+	playToStopControl.set("Stop", true);
+	stopToPlayControl.set("Play", false);
+
+	float windowThreshold = winThresholdControl.get();
+	environment->SetFadeInWindow((0.001) * windowThreshold, (0.001 * currentWindowSlopeWidth), reverbGainLinear);
+
+	reCreateImageSourceDSP();
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+void ofApp::OscCallBackDistMaxImgs(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	float maxDistImagesToListener = message.getArgAsFloat(0);  //getArgAsFloat(0);	
+	std::cout << "Received DistanceMaxImages Command"<<",  "<< maxDistImagesToListener << std::endl;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+		
+	changeMaxDistanceImageSources(maxDistImagesToListener);	
+	reCreateImageSourceDSP();
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackWindowSlope(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	int newWindowSlope = message.getArgAsInt(0);  //getArgAsFloat(0);	
+	std::cout << "Received WindowSlope Command"<<",  " << newWindowSlope << std::endl;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+	
+	changeWindowSlope(newWindowSlope);
+	windowSlopeControl.set(newWindowSlope);
+	reCreateImageSourceDSP();
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+void ofApp::OscCallBackReflectionOrder(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	int reflectionOrder = message.getArgAsInt(0);  
+	std::cout << "Received ReflectionOrder Command" << ",  " << reflectionOrder << std::endl;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+	
+	reflectionOrderControl.set(reflectionOrder);
+	changeReflectionOrder(reflectionOrder);
+	reCreateImageSourceDSP();
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackSaveIR() {
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+	
+	std::cout << "Received Save IR" << std::endl;
+	float maxDistanceSourcesToListener = maxDistanceImageSourcesToListenerControl.get();
+	cout << "MaxDist =" << maxDistanceSourcesToListener << "\n";
+	recordOfflineIRControl.set(true);
+}
+
+void ofApp::OscCallBackDirectPathEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+	
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DirectPathEnableDisable Command" << ",  " << state << std::endl;
+
+	if (state){
+		if (anechoicEnableControl.get())
+	    ;
+		else {
+			anechoicSourceDSP->EnableAnechoicProcess();
+			//anechoicEnableControl = true;
+			anechoicEnableControl.set(true);
+			stateAnechoicProcess = true;
+		}
+	}
+	else {
+		if ( ! anechoicEnableControl.get())
+		;
+		else {
+			anechoicSourceDSP->DisableAnechoicProcess();
+			//anechoicEnableControl = false;
+			anechoicEnableControl.set(false);
+			stateAnechoicProcess = false;
+		}
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackSpatialisationEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received EspatialisationEnable Command" << ",  " << state << std::endl;
+
+	if (!stopState) audioInterfaceController->StopAudioInterface();
+
+	if (state)
+	{
+		if (stateBinauralSpatialisation)
+		;
+		else {
+			anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::HighQuality);
+			binauralSpatialisationEnableControl.set(true);
+			stateBinauralSpatialisation = true;
+		}
+	}
+	else
+	{
+		if ( ! stateBinauralSpatialisation)
+			;
+		else {
+			anechoicSourceDSP->SetSpatializationMode(Binaural::TSpatializationMode::NoSpatialization);
+			binauralSpatialisationEnableControl.set(false);
+			stateBinauralSpatialisation = false;
+		}
+	}
+
+	reCreateImageSourceDSP();
+
+	if (!stopState) audioInterfaceController->StartAudioInterface();
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+void ofApp::OscCallBackReverbEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received ReverbPathEnableDisable Command" << ",  " << state << std::endl;
+		
+	stateBRIRReverbProcess = state;
+	reverbEnableControl.set(stateBRIRReverbProcess);	
+
+	//anechoicSourceDSP->ResetSourceBuffers();				//Clean buffers
+	//imageSourceDSPList = reCreateImageSourceDSP();
+	//for (int i = 0; i < imageSourceDSPList.size(); i++)
+	//	imageSourceDSPList.at(i)->ResetSourceBuffers();
+	//environment->ResetReverbBuffers();
+	
+	if (setupDone == false) std::chrono::milliseconds::duration(2000);
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackDistanceAttenuationEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DistanceAttenuationAnechoicEnableDisable Command" << ",  " << state << std::endl;
+	if (state) {
+		anechoicSourceDSP->EnableDistanceAttenuationAnechoic();
+		stateDistanceAttenuationAnechoic = true;
+	}
+	else {
+		anechoicSourceDSP->DisableDistanceAttenuationAnechoic();
+		stateDistanceAttenuationAnechoic = false;
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackDistanceAttenuationReverbEnable(const ofxOscMessage& message) {
+	message.getNumArgs();
+
+	bool state = message.getArgAsBool(0);
+	std::cout << "Received DistanceAttenuationReverbEnableDisable Command" << ",  " << state << std::endl;
+	if (state) {
+		anechoicSourceDSP->EnableDistanceAttenuationReverb();
+		stateDistanceAttenuationReverb = true;
+	}
+	else {
+		anechoicSourceDSP->DisableDistanceAttenuationReverb();
+		stateDistanceAttenuationReverb = false;
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackAbsortions(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> v;
+	std::vector<float> absorWall = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+	std::cout << "Received Absortions Command" << std::endl;
+
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		v.push_back(message.getArgAsFloat(i));
+	}
+	int numWalls = mainRoom.getWalls().size();
+	std::vector<std::vector<float>> absortionsWalls;
+	for (int i = 0; i < numWalls; i++) {
+		for (int k = 0; k < 9; k++) {
+			absorWall[k] = v[i * 9 + k];
+		}
+		absortionsWalls.push_back(absorWall);
+	}
+	mainRoom.setWallAbsortion((std::vector<std::vector<float>>)  absortionsWalls);
+	ReconfigureISM();
+	for (int j = 0; j < 9; j++) {
+		std::cout << absortionsWalls.at(0).at(j) << ", ";
+	}
+	std::cout << std::endl;
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+void ofApp::OscCallBackChangeRoom(const ofxOscMessage& message) {
+	changeFileFromOSC = true;
+
+	std::string filemaneOSC = message.getArgAsString(0);
+
+	charFilenameOSC = new char[filemaneOSC.length() + 1];
+	strcpy(charFilenameOSC, filemaneOSC.c_str());
+
+	std::cout << "Received ChangeRoom Command" << ",  " << charFilenameOSC << std::endl;
+
+	changeRoomGeometryControl.set(true);
+
+	changeFileFromOSC = false;
+	SendOSCMessageToMatlab_Ready();
+
+}
+
+void ofApp::OscCallBackChangeHRTF(const ofxOscMessage& message) {
+	changeFileFromOSC = true;
+
+	std::string filemaneOSC = message.getArgAsString(0);
+
+	charFilenameOSC = new char[filemaneOSC.length() + 1];
+	strcpy(charFilenameOSC, filemaneOSC.c_str());
+
+	std::cout << "Received changeHRTF Command" << ",  " << charFilenameOSC << std::endl;
+
+	changeHRTFControl.set(true);
+
+	changeFileFromOSC = false;
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackChangeBRIR(const ofxOscMessage& message) {
+	changeFileFromOSC = true;
+
+	std::string filemaneOSC = message.getArgAsString(0);
+
+	charFilenameOSC = new char[filemaneOSC.length() + 1];
+	strcpy(charFilenameOSC, filemaneOSC.c_str());
+
+	std::cout << "Received changeBRIR Command" << ",  " << charFilenameOSC << std::endl;
+
+	changeBRIRControl.set(true);
+
+	changeFileFromOSC = false;
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackChangeWorkFolder(const ofxOscMessage& message) {
+	
+	std::string folderOSC = message.getArgAsString(0);
+
+	charFolderOSC = new char[folderOSC.length() + 1];
+	strcpy(charFolderOSC, folderOSC.c_str());
+
+	std::cout << "Received changeWorkFolder Command" << ",  " << charFolderOSC << std::endl;
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackChangeTimeSaveIR(const ofxOscMessage& message) {
+
+	float secondsToRecordIR = message.getArgAsFloat(0);  //getArgAsFloat(0);	
+	std::cout << "Received Change Time to Record IR Command" << ",  " << secondsToRecordIR << std::endl;
+
+	SetSecondsToRecordIR(secondsToRecordIR);
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackChangeReverbOrder(const ofxOscMessage& message) {
+
+	int reverbOrder = message.getArgAsInt(0);  
+	std::cout << "Received Change Reverberation Order Command" << ",  " << reverbOrder << std::endl;
+	
+	if (reverbOrder == 0) {
+		reverberationOrder = ADIMENSIONAL;
+		environment->SetReverberationOrder(reverberationOrder);
+	}
+	else if (reverbOrder == 1) {
+		reverberationOrder = BIDIMENSIONAL;
+		environment->SetReverberationOrder(reverberationOrder);
+	}
+	else if (reverbOrder == 2)	{
+	    reverberationOrder = THREEDIMENSIONAL;
+	    environment->SetReverberationOrder(reverberationOrder);
+	}
+	else
+		std::cout << "Error: Reverberation Order out of range " << ",  " << reverberationOrder << std::endl;
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+
+void ofApp::OscCallBackListenerLocation(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> c;
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		c.push_back(message.getArgAsFloat(i));
+	}
+	std::cout << "Received Listener Location Command" << ",  " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
+
+	Common::CTransform listenerTransformOld = listener->GetListenerTransform();
+	Common::CVector3 listenerLocationOld = listenerTransformOld.GetPosition();
+	Common::CTransform listenerPositionNew = Common::CTransform();
+	Common::CVector3 listenerLocationNew(c[0], c[1], c[2]);
+
+	//mainRoom = ISMHandler->getRoom();
+	float distanceNearestWall;
+	bool result = mainRoom.checkPointInsideRoom(listenerLocationNew, distanceNearestWall);
+	if (result){
+		listenerPositionNew.SetPosition(listenerLocationNew);
+		listener->SetListenerTransform(listenerPositionNew);
+	}
+
+	//ISMHandler->setReflectionOrder(INITIAL_REFLECTION_ORDER);
+	//reflectionOrderControl = INITIAL_REFLECTION_ORDER;
+	//mainRoom = ISMHandler->getRoom();	
+	//reCreateImageSourceDSP();
+	ISMHandler2->SetListenerPosition();
+	SendOSCMessageToMatlab_Ready();
+}
+
+void ofApp::OscCallBackListenerOrientation(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> c;
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		c.push_back(message.getArgAsFloat(i));
+	}
+	std::cout << "Received Listener Orientation Command" << ",  " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
+
+	Common::CTransform lT = listener->GetListenerTransform();
+	Common::CVector3 lLocation = lT.GetPosition();
+	Common::CQuaternion lO = lT.GetOrientation();
+
+	float yaw, pitch, roll;
+	yaw = c[0]; pitch = c[1]; roll = c[2];
+	//lT.SetOrientation (lO.FromYawPitchRoll(yaw, pitch, roll));
+	lT.Rotate(Common::CVector3(0, 0, 1), yaw);
+	lT.Rotate(Common::CVector3(0, 1, 0), pitch);
+	lT.Rotate(Common::CVector3(1, 0, 0), roll);
+	listener->SetListenerTransform(lT);
+		
+	//ISMHandler->setReflectionOrder(0);
+	//reflectionOrderControl = 0;
+	
+	Common::CVector3 axis, nose;
+	nose.x = lLocation.x + cos(yaw);
+	nose.y = lLocation.y + sin(yaw);
+	nose.z = lLocation.z;
+    ofLine(lLocation.x, lLocation.y, lLocation.z,
+	nose.x, nose.y, nose.z);
+
+	SendOSCMessageToMatlab_Ready();
+}
+
+
+void ofApp::OscCallBackSourceLocation(const ofxOscMessage& message) {
+
+	message.getNumArgs();
+	std::vector<float> c;
+	for (int i = 0; i < message.getNumArgs(); i++) {
+		c.push_back(message.getArgAsFloat(i));
+	}
+	std::cout << "Received Source Location Command" << ",  " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
+	
+	Common::CVector3 newLocation = Common::CVector3(c[0], c[1], c[2]);
+	//mainRoom = ISMHandler->getRoom();
+	float distanceNearestWall;
+	bool result = mainRoom.checkPointInsideRoom(newLocation, distanceNearestWall);
+	if (result)			
+	{
+		ISMHandler2->setSourceLocation(newLocation);
+		Common::CTransform sourcePosition;
+		sourcePosition.SetPosition(newLocation);
+		anechoicSourceDSP->SetSourceTransform(sourcePosition);
+	}
+	SendOSCMessageToMatlab_Ready();
+}
+
 
 void ofApp::SendOSCMessageToMatlab_Ready() {
 	oscManager.SendOSCCommand_ToMatlab();
 }
 
+// DANI
 
+void ofApp::ShowImageSourceData(std::vector<ISM::ImageSourceData>& data, const Common::CVector3& listenerLocation)
+{
+	auto w2 = std::setw(2);
+	auto w5 = std::setw(5);
+	auto w6 = std::setw(6);
+	auto w7 = std::setw(7);
+	std::cout << "------------------------------------------------List of Source Images ---------------------------------------------\n";
+	std::cout << "  Visibility | Refl. |                Reflection coeficients                 |        Location       | Dist. (Room)\n";
+	std::cout << "             | order | ";
+	float freq = 62.5;
+	for (int i = 0; i < NUM_BAND_ABSORTION; i++)
+	{
+		if (freq < 100) { std::cout << ' '; }
+		if (freq < 1000) { std::cout << ((int)freq) << "Hz "; }
+		else { std::cout << w2 << ((int)(freq / 1000)) << "kHz "; }
+		freq *= 2;
+	}
+	std::cout << "|    X       Y       Z  |  \n";
+	std::cout << "-------------+-------+-------------------------------------------------------+-----------------------+--------\n";
+	for (int i = 0; i < data.size(); i++)
+	{
+		if (data.at(i).visible) std::cout << "VISIBLE "; else std::cout << "        ";
+		std::cout << w5 << std::fixed << std::setprecision(2) << data.at(i).visibility;							//print source visibility 
+		std::cout << "|   " << data.at(i).reflectionWalls.size();												//print number of reflection needed for this source
+		std::cout << "   | ";
+		for (int j = 0; j < NUM_BAND_ABSORTION; j++)
+		{
+			std::cout << w5 << std::fixed << std::setprecision(2) << data.at(i).reflectionBands.at(j) << " ";	//print abortion coefficientes for a source
+		}
+		std::cout << "| " << w6 << std::fixed << std::setprecision(2) << data.at(i).location.x << ", ";			//print source location
+		std::cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.y << ", ";
+		std::cout << w6 << std::fixed << std::setprecision(2) << data.at(i).location.z << "|";
+
+		std::cout << w6 << (data.at(i).location - listenerLocation).GetDistance();								//print distance to listener and distance between first and last reflection walls
+		std::cout << " (" << data.at(i).reflectionWalls.front().getMinimumDistanceFromWall(data.at(i).reflectionWalls.back()) << ")" << "\n";
+	}
+	//std::cout << "Shoebox \n";
+	//std::cout << "X=" << shoeboxLength << "\n" << "Y=" << shoeboxWidth << "\n" << "Z=" << shoeboxHeight << "\n";
+
+	if (stateAnechoicProcess)
+		std::cout << "AnechoicProcess Enabled" << "\n";
+	else
+		std::cout << "AnechoicProcess Disabled" << "\n";
+
+	if (stateBinauralSpatialisation)
+		std::cout << "BinauralSpatialisation Enabled" << "\n";
+	else
+		std::cout << "BinauralSpatialisation Disabled" << "\n";
+
+	if (stateDistanceAttenuationAnechoic)
+		std::cout << "DistanceAttenuationAnechoic Enabled" << "\n";
+	else
+		std::cout << "DistanceAttenuationAnechoic Disabled" << "\n";
+
+	if (stateDistanceAttenuationReverb)
+		std::cout << "DistanceAttenuationReverb Enabled" << "\n";
+	else
+		std::cout << "DistanceAttenuationReverb Disabled" << "\n";
+
+	//#if 0
+	if (stateBRIRReverbProcess)
+	{
+		std::cout << "Reverb Enabled" << "\n";
+		std::cout << "Reverberation Order: " << reverberationOrder << "\n";
+		std::cout << "Number of silenced frames= " << numberOfSilencedFrames << "\n";
+	}
+	else
+		std::cout << "Reverb Disabled" << "\n";
+	//#endif
+
+	std::cout << "Max distance images to listener = " << ISMHandler2->getMaxDistanceImageSources() << "\n";
+
+	Common::CTransform lT = listener->GetListenerTransform();
+	Common::CVector3 lLocation = lT.GetPosition();
+	Common::CQuaternion lO = lT.GetOrientation();
+	float yaw, pitch, roll;
+	lO.ToYawPitchRoll(yaw, pitch, roll);
+	std::cout << "Yaw = " << (yaw * 180 / PI) << " Pitch = " << (pitch * 180 / PI) << " Roll = " << (roll * 180 / PI) << "\n";
+
+	std::cout << "Absortions = ";
+	std::vector<std::vector<float>> absortionsWalls = mainRoom.GetWallAbsortion();	
+	for (int j = 0; j < NUM_BAND_ABSORTION; j++) {
+		std::cout << absortionsWalls.at(0).at(j) << ", ";
+	}
+	std::cout << "\n";
+}
+
+void ofApp::ShowImagesSourceSummaryData(float maxDistanceImagesToListener, std::vector<ISM::ImageSourceData>& images)
+{
+	std::cout << "Max distance images to listener = " << std::to_string(maxDistanceImagesToListener) << std::endl;
+
+	int numberOfVisibleImages = 0;
+	for (int i = 0; i < images.size(); i++)
+	{
+		if (images.at(i).visible) numberOfVisibleImages++;
+	}
+	cout << "Total images = " << images.size();
+	cout << " -- " << numberOfVisibleImages << " visible" << "\n";
+
+	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+	cout << "Sound Speed = " << soundSpeed << "\n";
+}
+
+//int ofApp::CalculateNumOfSilencedSamples(float maxDistanceSourcesToListener)
+//{	
+//	int samplerate = myCore.GetAudioState().sampleRate;
+//	float soundSpeed = myCore.GetMagnitudes().GetSoundSpeed();
+//
+//	int numberOfSlilencedSamples = floor((maxDistanceSourcesToListener * (float)samplerate / soundSpeed));
+//
+//	return numberOfSlilencedSamples;
+//}
+
+bool ofApp::is_equal(float a, float b) {
+	constexpr float epsilon = std::numeric_limits<float>::epsilon();
+    return std::fabs(a - b) < epsilon;
+}
+
+void ofApp::ReconfigureISM() {
+	float windowSlopeInMeters = millisec2meters(currentWindowSlopeWidth);	
+	ISMHandler2->Setup(currentReflectionOrder, currentMaxDistanceSourcesToListener, windowSlopeInMeters, mainRoom);
+	reCreateImageSourceDSP();	
+}
+
+void ofApp::ShowMessage(std::string message) {
+	//guiManager.showMessage(message, _messageType);			
+	std::cout << message << std::endl;	
+}
+
+std::string ofApp::GetFileIncrementalName(const std::string& _fileName) {
+	std::string newFileNamePath = _fileName;
+	std::string extension = ofFilePath().getFileExt(newFileNamePath);
+	std::string folderPath = ofFilePath().getEnclosingDirectory(newFileNamePath, false);
+	std::string fileName = ofFilePath().getBaseName(newFileNamePath);
+
+	int i = 0;
+	while (FileExist(newFileNamePath)) {
+		i++;
+		std::string fileNameTemp = fileName + "_" + std::to_string(i) + "." + extension;
+		newFileNamePath = ofFilePath().join(ofFilePath().addTrailingSlash(folderPath), fileNameTemp);
+	}
+	return newFileNamePath;
+}
+
+bool ofApp::FileExist(const std::string& _filePath) {
+	return ofFile(_filePath, ofFile::Reference).exists();
+}
+
+std::string ofApp::GetFileName(const std::string& fullPath)
+{
+	// get file name with extension using ofFilePath
+	std::string fileNameWithExtension = ofFilePath().getFileName(fullPath);
+	return fileNameWithExtension;
+}
+
+// Others
+void ofApp::SetDefaultSecondsToRecordIR()
+{
+	int BRIRLength = environment->GetBRIR()->GetBRIRLength();
+	float sampleRate = myCore.GetAudioState().sampleRate;
+	float _secondsToRecordIR = ((float)BRIRLength) / sampleRate;
+	SetSecondsToRecordIR(_secondsToRecordIR);	
+}
+
+void ofApp::SetSecondsToRecordIR(float & _secondsToRecordIR)
+{
+	if (_secondsToRecordIR > 0 && _secondsToRecordIR <= MAX_SECONDS_TO_RECORD)
+	{
+		secondsToRecordIR = _secondsToRecordIR;
+		numberOfSecondsToRecordControl.set(secondsToRecordIR);
+	}
+}
+
+
+TCaseStudy ofApp::FindCaseStudy(std::string _id) {
+	int index = std::find_if(caseStudies.begin(), caseStudies.end(), [&_id](const TCaseStudy& cs) { return cs.id == _id; }) - caseStudies.begin();
+
+	if (index != -1) {
+		return caseStudies.at(index);
+	}
+	else {
+		std::cout << "Error: Case Study not found with id " << _id << std::endl;
+		return TCaseStudy();
+	}	
+}

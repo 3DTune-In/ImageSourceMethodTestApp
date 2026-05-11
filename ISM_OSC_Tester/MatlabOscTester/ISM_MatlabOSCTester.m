@@ -12,7 +12,7 @@ receiver = InitOscServer(listenPort);
 % Working loop, just as example
 rng('default');
 i = 0;
-while ( i < 5)
+while ( i < 10)
     x=rand(1,9); %Generate a random vector of 9 doubles
     SendCoefficientsVectorToISM(connectionToISM, x);
 
@@ -47,7 +47,7 @@ end
 
 %% 
 function receiver = InitOscServer(port)
-    %cd('G:/Repos/3daudio/of_v0.11.2_vs2017_release/ImageSourceMethodTestApp/ISM_OSC_Tester/MatlabOscTester/')
+    cd('C:/Repos/of_v0.11.2_vs2017_release/ImageSourceMethodTestApp/ISM_OSC_Tester/MatlabOscTester')
     %version -java
     disp('Waiting OSC message');
     javaaddpath('javaosctomatlab.jar');    

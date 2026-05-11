@@ -36,7 +36,7 @@
 WavWriter::WavWriter()
 {
 	nchannels = 2;		// Stereo
-	samplerate = 44100;	// 44100 Hz
+	samplerate = 48000;	// 44100 Hz
 	bytespersample = 2; // 16 bits	
 	datachunkstart = 0;
 	SetupSampleRange();
@@ -203,6 +203,7 @@ size_t WavWriter::CloseFile()
 	WriteNBytes(filesize - datachunkstart + 8, 4);
 
 	// Close file
+	filestream.flush();
 	filestream.close();
 
 	return filesize; // OK

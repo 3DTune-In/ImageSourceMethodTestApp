@@ -669,11 +669,11 @@ void ofApp::drawHelp()
 		sprintf(messageStr, "      - Movement: Arrow keys and page up/down");		
 		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 70);		
 
-		sprintf(messageStr, "      - Rotation: Yaw [u/i]");
+		sprintf(messageStr, "      - Rotation: Yaw [j/l]");
 		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 50);
-		sprintf(messageStr, "                  Pitch [j/k]");
+		sprintf(messageStr, "                  Pitch [i/k]");
 		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 30);
-		sprintf(messageStr, "                  Roll [n/m]");
+		sprintf(messageStr, "                  Roll [u/o]");
 		ofDrawBitmapString(messageStr, 30, ofGetHeight() - 10);
 
 		/*sprintf(messageStr, "Enable/Disable wall: 1,2,3 ... 0");
@@ -1019,19 +1019,19 @@ void ofApp::keyPressed(int key) {
 		moveSource(Common::CVector3(0, 0, -SOURCE_STEP));
 		break;	
 
-	case 'u': //Yaw
+	case 'j': //Yaw
 	{
 		listenerTransform.Rotate(Common::CVector3(0, 0, 1), PI / 32);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	}
-	case 'i': //Yaw
+	case 'l': //Yaw
 	{
 		listenerTransform.Rotate(Common::CVector3(0, 0, 1), -PI / 32);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	}
-	case 'j': //Pitch
+	case 'i': //Pitch
 	{
 		listenerTransform.Rotate(Common::CVector3(0, 1, 0), PI / 32);
 		listener->SetListenerTransform(listenerTransform);
@@ -1043,13 +1043,13 @@ void ofApp::keyPressed(int key) {
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	}
-	case 'n': //Roll
+	case 'u': //Roll
 	{
 		listenerTransform.Rotate(Common::CVector3(1, 0, 0), -PI / 32);
 		listener->SetListenerTransform(listenerTransform);
 		break;
 	}
-	case 'm': //Roll
+	case 'p': //Roll
 	{
 		listenerTransform.Rotate(Common::CVector3(1, 0, 0), PI / 32);
 		listener->SetListenerTransform(listenerTransform);

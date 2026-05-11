@@ -63,14 +63,47 @@
 
 #define MAX_ORDER_TO_DRAW_ROOMS 5
 
-static const std::string APP_VERSION = "v2.1.1.Beta";
+static const std::string APP_VERSION = "v2.0.0";
+
+struct TCaseStudy {
+	std::string id;
+	std::string geometryFilePath;
+	std::string hrtfFilePath;
+	std::string brirFilePath;
+	float transitionTime;
+	int reflectionOrder;
+	Common::CVector3 sourcePosition;
+	Common::CVector3 listenerPosition;
+	
+	TCaseStudy() = default;
+
+	TCaseStudy(const std::string& _id, const std::string& _geometryFilePath, const std::string& _hrtfFilePath, const std::string& _brirFilePath, float _transitionTime, int _reflectionOrder, const Common::CVector3& _sourcePosition, const Common::CVector3& _listenerPosition)
+		: id{ _id }
+		, geometryFilePath{ _geometryFilePath }
+		, hrtfFilePath{ _hrtfFilePath }
+		, brirFilePath{ _brirFilePath }
+		, transitionTime{ _transitionTime }
+		, reflectionOrder{ _reflectionOrder }
+		, sourcePosition{ _sourcePosition }
+		, listenerPosition{ _listenerPosition }
+	{
+	}
+};
 
 class ofApp : public ofBaseApp{
 
 	public:
-		void setup();				
+		void setup();
+		void setupHybridMethod();
+		void setupCaseStudies(std::string& pathResources);
 		void update();
 		void draw();
+
+		void drawHelp();
+
+		void drawAbout();
+
+		void drawLogos_Acknowledgements();
 
 		void DrawRecordingOffline();
 		
@@ -107,7 +140,7 @@ private:
 
 		ofTrueTypeFont titleFont;
 		ofImage logoUMA;
-		ofImage logoSAVLab;
+		ofImage logoSonix;
 		ofImage logoSONICOM;
 
 		ofxPanel leftPanel;
@@ -199,7 +232,8 @@ private:
 		float currentMaxDistanceSourcesToListener;	// meters
 		float currentWindowThreshold;				// milliseconds
 		float currentWindowSlopeWidth;				// milliseconds
-		float reverbGainLinear;						// linear gain for reverb tail 
+		float reverbGainLinear;						// linear gain for reverb tail 		
+		
 
 		std::vector<ofSoundDevice> deviceList;
 		//ofSoundStream systemSoundStream;
@@ -239,13 +273,13 @@ private:
 		//std::string fullPathHRTF;
 		//std::string fullPathBRIR;
 
-		std::string caseARoomGeometryFilePath;			// path of the geometry file for case study A
-		std::string caseAHRTFFilePath;					// path of the HRTF file for case study A
-		std::string caseABRIRFilePath;					// path of the BRIR file for case study A
-		
-		std::string caseBRoomGeometryFilePath;			// path of the geometry file for case study B		
-		std::string caseBHRTFFilePath;					// path of the HRTF file for case study B		
-		std::string caseBBRIRFilePath;					// path of the BRIR file for case study B
+		//std::string caseARoomGeometryFilePath;			// path of the geometry file for case study A
+		//std::string caseAHRTFFilePath;					// path of the HRTF file for case study A
+		//std::string caseABRIRFilePath;					// path of the BRIR file for case study A
+		//
+		//std::string caseBRoomGeometryFilePath;			// path of the geometry file for case study B		
+		//std::string caseBHRTFFilePath;					// path of the HRTF file for case study B		
+		//std::string caseBBRIRFilePath;					// path of the BRIR file for case study B
 
 		std::string loadedRoomGeometryFilePath;				// path of the loaded geometry file, to check if it has changed when loading a new one.
 		std::string loadedRoomGeometryFileName;				// path of the loaded geometry file, to check if it has changed when loading a new one.
@@ -258,13 +292,15 @@ private:
 		
 		std::shared_ptr< CAudioInterfaceController> audioInterfaceController;
 		
+
+		std::vector<TCaseStudy>	caseStudies;		// Vector with the different case studies that can be loaded in the application. 
+		TCaseStudy loadedCaseStudy;				// Current case study loaded in the application.
+
 		//////////////////////////////
 		// METHODS
 		////////////////////////////
 		
-		/// Methods to setup the application
-		bool SetupCaseStudy(const std::string& geometryFilePath, const std::string& hrtfFilePath, const std::string& brirFilePath);
-		
+		/// Methods to setup the application			
 		bool SetupAudioFile(const std::string& pathResources, const int& sampleRate);
 		void SetEnvironmentFadeInWindow(float& maxDistanceSourcesToListener);
 		void SetupGUI(const std::string& pathResources);
@@ -305,6 +341,7 @@ private:
 		void changeZoom(int &zoom);
 		void changeReflectionOrder(int &reflectionOrder);
 		void changeMaxDistanceImageSources(float &maxDistanceSourcesToListener);
+		void UpdateMaxDistanceAndWinThresholdParameters(const float& _maxDistanceSourcesToListener, bool& retFlag);
 		void changeWinThreshold(float& windowThreshold);
 		void changeWindowSlope(int &windowSlope);
 		void changeReverbGain(float &reverbGain);
@@ -324,10 +361,13 @@ private:
 		void changeHRTF(bool& active);
 		void changeBRIR(bool& active);
 		
-		bool changeToCaseStudy(const std::string& geometryFilePath, const std::string& hrtfFilePath, const std::string& brirFilePath);
+		bool SetupCaseStudy(const TCaseStudy& caseStudy);
+		bool changeToCaseStudy(const TCaseStudy& caseStudy);
+		bool changeToCaseStudy(std::string _id);
 		void changeToCaseStudyA(bool& active);
 		void changeToCaseStudyB(bool& active);
-				
+		void ClearLoadedCaseStudy();
+
 		void playToStop(bool &active);
 		void stopToPlay(bool &active);		
 		void toogleHelpDisplay(bool &_active);
@@ -397,4 +437,6 @@ private:
 		void OscCallBackChangeReverbOrder(const ofxOscMessage& message);
 		
 		void SendOSCMessageToMatlab_Ready();
+
+		TCaseStudy FindCaseStudy(std::string _id);
 };

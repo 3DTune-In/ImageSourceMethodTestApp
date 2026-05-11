@@ -249,6 +249,7 @@
     <ClInclude Include="..\src\OscManager.hpp" />
     <ClInclude Include="..\src\SoundSource.h" />
     <ClInclude Include="..\src\WavWriter.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
@@ -261,6 +262,10 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/D_DEBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>$(OF_ROOT)\libs\openFrameworksCompiled\project\vs</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\bin\data\sonix.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

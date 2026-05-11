@@ -227,8 +227,13 @@
     <ClInclude Include="..\src\AudioInterfaceController.hpp">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\bin\data\sonix.ico" />
   </ItemGroup>
 </Project>

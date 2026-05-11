@@ -34,8 +34,7 @@
 #include <BRIR/BRIRFactory.h>
 #include <BRIR/BRIRCereal.h>
 #include "SoundSource.h"
-#include "ISM/ISM.h"
-#include "ISM/ISM2.hpp"
+#include "ISM/ISM.hpp"
 #include "ofxGui\src\ofxGui.h"
 #include "WavWriter.h"
 #include "OscManager.hpp"
@@ -195,7 +194,7 @@ private:
 
 		//ISM::ISM ISMHandler;
 		//shared_ptr<ISM::CISM> ISMHandler;
-		shared_ptr<ISM::CISM2> ISMHandler2;
+		shared_ptr<ISM::CISM> ISMHandler2;
 		
 		ISM::Room mainRoom;
 

@@ -197,7 +197,7 @@ void ofApp::setupHybridMethod()
 	currentReflectionOrder = INITIAL_REFLECTION_ORDER;
 	//ISMHandler->setReflectionOrder(currentReflectionOrder);
 
-	ISMHandler2 = std::make_shared<ISM::CISM2>(&myCore);		// Initialize ISM
+	ISMHandler2 = std::make_shared<ISM::CISM>(&myCore);		// Initialize ISM
 	//ISMHandler2->enableStaticDistanceCriterion();
 	ISMHandler2->disableStaticDistanceCriterion();
 	ISMHandler2->setSourceLocation(FindCaseStudy("roomB").sourcePosition);
